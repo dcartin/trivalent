@@ -1,0 +1,1 @@
+This repository has tools to create trivalent multigraphs by induction of both vertices and edges. The basic ideas start from the paper "Generations of triangulations of the sphere" by Robert Bowen and Stephen Fisk.
