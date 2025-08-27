@@ -3,19 +3,6 @@
 Created on Sun May 11 08:43:37 2025
 
 @author: cartin
-
-To-do list:
-
-* Need to change Graph.addEdges to reflect possibility of failed Vertex.connectEdge?
-
-* Vertex.removeEdge:
-	-- what if self-loop?
-	-- is it dealing with color correctly?
-    
-* Why are the following graphs being given as the same?
-    [[0, 1, 1], [1, 2, 1], [0, 4, 1], [3, 4, -1], [2, 5, 1], [0, 5, -1], [1, 3, -1], [2, 3, -1], [4, 5, -1]]
-    [[0, 1, 1], [1, 4, 1], [1, 5, -1], [2, 4, 1], [4, 5, 1], [0, 3, -1], [0, 2, -1], [3, 5, -1], [2, 3, -1]]
-
 """
 
 from itertools import product
@@ -627,7 +614,7 @@ class Graph:
             # return True
             
             if len(edge_match_dict) == 3 * self.num_vert // 2 == len(set(edge_match_dict.values())):
-                return True
+                return edge_match_dict
             
         # No consistent solutions
         
@@ -1119,6 +1106,172 @@ class Graph:
     
     def fiveMove(self):
         pass
+        
+    #-------------------------------------------------------------------------#
+    
+    def pachner22(self, edge_label = None, no_multi = True):
+        
+        if edge_label != None:
+            
+            if type(edge_label) != int or edge_label < 0:
+                raise ValueError('edge label must be positive integer')
+                
+            if edge_label >= 3 * self.num_vert // 2:
+                raise ValueError('edge label must be between 0 and {}'.format(3 * self.num_vert // 2))
+            
+            current_edge = self.edge_list[edge_label]
+            current_start = current_edge.start
+            current_end = current_edge.end
+            
+            if current_start == current_end:
+                raise ValueError('start, end vertices must be distinct')
+            
+            # This is similar to fourMove() defined earlier, except no new
+            # vertices are created; instead, existing edges have their start,
+            # end attributes changed around. We also remove the color (if it
+            # exists) of current_edge, and return it at the end.
+            
+            # We have the current edge with vertices x < y. The starting cyclic
+            # order of x is of the form ax bx xy, while that for y is cy dy xy. 
+            # We want to change it so that the final cyclic order of x is
+            # bx cx xy, while that of y is dy ay xy.
+            
+            start_current_edge_index = current_start.edge_order.index(current_edge)
+            end_current_edge_index = current_end.edge_order.index(current_edge)
+            
+            if no_multi:
+                
+                # If no_multi is True, we must verify that a, b, c, d are
+                # distinct vertices.
+            
+                adj_vert_list = []
+                
+                for shift in [-2, -1]:
+                    edge = current_start.edge_order[start_current_edge_index + shift]
+                    if edge.start != current_start:
+                        adj_vert_list += [edge.start]
+                    else:
+                        adj_vert_list += [edge.end]
+                
+                for shift in [-2, -1]:
+                    edge = current_end.edge_order[end_current_edge_index + shift]
+                    if edge.start != current_end:
+                        adj_vert_list += [edge.start]
+                    else:
+                        adj_vert_list += [edge.end]
+                            
+                if len(set(adj_vert_list)) < 4:
+                    raise AttributeError('Pachner 2-2 move would create multi-edge')
+                    
+            # (0) remove color from xy, if necessary
+            
+            if current_edge.color:
+                current_edge.color = None
+        
+            # (1) Change ax to ay
+            
+            edge_ax = current_start.edge_order[start_current_edge_index - 2]
+            
+            if edge_ax.start == current_start:
+                edge_ax.start = current_end
+            else:
+                edge_ax.end = current_end
+                
+            if edge_ax.start.label > edge_ax.end.label:
+                edge_ax.start, edge_ax.end = edge_ax.end, edge_ax.start
+                if edge_ax.color:
+                    edge_ax.color = -edge_ax.color
+                
+            # (2) Change cy to cx
+            
+            edge_cy = current_end.edge_order[end_current_edge_index - 2]
+                
+            if edge_cy.start == current_end:
+                edge_cy.start = current_start
+            else:
+                edge_cy.end = current_start
+                
+            if edge_cy.start.label > edge_cy.end.label:
+                edge_cy.start, edge_cy.end = edge_cy.end, edge_cy.start
+                if edge_cy.color:
+                    edge_cy.color = -edge_cy.color
+                
+            # (3) Change cyclic order for vertex x to be bx cx xy, for vertex
+            # y to be dy ay xy. While this is done, ensure that in_arrow is
+            # correct for x, y.
+            
+            edge_bx = current_start.edge_order[start_current_edge_index - 1]
+            edge_dy = current_end.edge_order[end_current_edge_index - 1]
+            
+            current_start.edge_order = []
+            current_start.in_arrow = []
+            
+            for edge in [edge_bx, edge_cy, current_edge]:
+                current_start.edge_order += [edge]
+                if edge.color:
+                    if (edge.color > 0 and current_start == edge.end) or \
+                        (edge.color < 0 and current_start == edge.start):
+                        current_start.in_arrow += [1]
+                    else:
+                        current_start.in_arrow += [-1]
+                else:
+                    current_start.in_arrow += [0]
+                    
+            current_end.edge_order = []
+            current_end.in_arrow = []
+                    
+            for edge in [edge_dy, edge_ax, current_edge]:
+                current_end.edge_order += [edge]
+                if edge.color:
+                    if (edge.color > 0 and current_end == edge.end) or \
+                        (edge.color < 0 and current_end == edge.start):
+                        current_end.in_arrow += [1]
+                    else:
+                        current_end.in_arrow += [-1]
+                else:
+                    current_end.in_arrow += [0]
+            
+            # (4) Change edge list for graph; to be consistent with vertex
+            # cyclic orders, we need to permute the order of the edges in the
+            # edge list so that
+            #
+            #   ax bx xy -> bx cx xy
+            #   cy dy xy -> dy ay xy
+            #
+            # However, we also have to worry about how the ordering of the
+            # vertices a, b, c, d are changed by this permutation. So to keep
+            # the cyclic orders for these vertices the same, we only move the
+            # edge xy in the graph edge list; this edge is placed in the
+            # earliest possible spot in the graph edge list, because why not.
+            #
+            # We also remove current_edge from the edge_list, to avoid
+            # shifting the indices of the other edges by 1.
+            
+            self.edge_list.remove(current_edge)
+            edge_list = [edge_ax, edge_bx, edge_cy, edge_dy]
+            index_list = [self.edge_list.index(edge) for edge in edge_list]
+            
+            # for iii in range(4):
+            #     self.edge_list[index_list[iii - 1]] = edge_list[iii]
+        
+            if index_list[2] < index_list[1]:           # cy comes before bx
+                slot_list = [iii for iii in range(3 * self.num_vert // 2) \
+                              if index_list[2] < iii <= index_list[1]]
+            else:                                       # bx comes before cy
+                slot_list = [iii for iii in range(3 * self.num_vert // 2) \
+                              if (iii <= index_list[1] or index_list[2] < iii)]
+                
+            if index_list[0] < index_list[3]:           # ax comes before dy
+                slot_list = [label for label in slot_list \
+                              if index_list[0] < label <= index_list[3]]
+            else:                                       # dy comes before ax
+                slot_list = [label for label in slot_list \
+                              if (label <= index_list[3] or index_list[0] < label)]
+            
+            slot = slot_list[0]
+            self.edge_list = self.edge_list[:slot] + [current_edge] + self.edge_list[slot:]
+                
+            return current_edge
         
     #-------------------------------------------------------------------------#
     
