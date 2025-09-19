@@ -3,6 +3,7 @@
 Created on Sun May 11 09:26:45 2025
 
 @author: cartin
+    
 """
 
 # Go to trivalent folder and run "python -m unittest tests.test_trivalent"

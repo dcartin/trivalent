@@ -4,14 +4,109 @@ Created on Sun May 11 08:43:37 2025
 
 @author: cartin
 """
-
+S
 from itertools import product
+
+#=== Helper functions ========================================================#
+
+def colorList(r):
+    """
+    Find all possible colorings of stubs incident on a trivalent vertex when
+    using representations of SU(2)_q, with q = exp(i pi / r) and r >= 3. The
+    conditions for the three colors i, j, k are
+    
+    (1) i, j, k from [0, 1, ..., r - 1]
+    (2) i + j - k is positive and even, as are j + k - i, k + i - j
+    (3) i + j + k <= 2r - 4
+    
+    Parameters
+    ----------
+    r : int
+        Parameter defining root of unity q for representations
+        of SU(2)_q used to color edges.
+
+    Returns
+    -------
+    list
+        Sorted list of all possible colorings for stubs incident
+        to a trivalent vertex, for the chosen representations of SU(2)_q.
+
+    """
+    
+    # Create list to keep results in
+    
+    edge_color_list = []
+    
+    # Create lists to increment colors
+    # along two of three edges
+    
+    add12 = [1, 1, 0]
+    add13 = [1, 0, 1]
+    add23 = [0, 1, 1]
+    
+    # Start queue with all three colors
+    # equal to zero, then build up other
+    # possibilities by adding one to
+    # two of the edges
+    
+    edge_color_queue = [[0, 0, 0]]
+    
+    while len(edge_color_queue) > 0:
+        current_vertex = edge_color_queue.pop()
+        
+        # Add to results lists, if not already there,
+        # then process; otherwise, skip this list
+        
+        if (0 not in current_vertex) and (current_vertex not in edge_color_list):
+            edge_color_list += [current_vertex]
+        
+        # Create next possible entries for queue,
+        # if adding two to color sum does not
+        # exceed limit on sum
+        
+        if sum(current_vertex) <= (2 * r - 6):
+            
+            # Increment colors on 1st, 2nd edges, then
+            # see if this is already in queue
+            
+            next_vertex = sorted([sum(iii) for iii in zip(current_vertex, add12)])
+            
+            if next_vertex not in edge_color_queue:
+                edge_color_queue += [next_vertex]
+            
+            # Increment colors on 1st, 3rd edges, then
+            # see if this is already in queue
+            
+            next_vertex = sorted([sum(iii) for iii in zip(current_vertex, add13)])
+            
+            if next_vertex not in edge_color_queue:
+                edge_color_queue += [next_vertex]
+                
+            # Increment colors on 2nd, 3rd edges, then
+            # see if this is already in queue
+            
+            next_vertex = sorted([sum(iii) for iii in zip(current_vertex, add23)])
+            
+            if next_vertex not in edge_color_queue:
+                edge_color_queue += [next_vertex]
+                
+    # Return resulting list
+    
+    return sorted(edge_color_list)
 
 #=============================================================================#
 
 class Vertex:
     
-    def __init__(self, label = 0):
+    def __init__(self, label = None, COLOR_LIST = None):
+        
+        if label and (type(label) != int or label < 0):
+            raise ValueError('vertex label must be non-negative integer')
+            
+        if COLOR_LIST and (type(COLOR_LIST) != list or not all([len(triad) == 3 for triad in COLOR_LIST]) or \
+            not all([all([type(label) == int for label in triad]) for triad in COLOR_LIST])):
+                
+            raise ValueError('color list must be list of integer triples')
         
         self.label = label
         
@@ -19,8 +114,19 @@ class Vertex:
         
         self.edge_order = []
         
+        # Color list records colors for edges incident to vertex, to ensure
+        # they meet SU_q(2) requirements; allowed color list constant records
+        # all triples that meet these requirements.
+        
+        self.color_list = []
+        
+        if COLOR_LIST:
+            self.ALLOWED_COLOR_LIST = COLOR_LIST
+        else:
+            self.ALLOWED_COLOR_LIST = []
+        
         # Arrow list keeps track of edge orientations pointing into (+1) or
-        # out of (-1) the vertex. If zero is given, edge has no color.
+        # out of (-1) the vertex. If zero is given, edge has no orientation.
         
         self.in_arrow = []
         
@@ -42,31 +148,46 @@ class Vertex:
         # if self != added_edge.start or self != added_edge.end:
         #     raise ValueError('Vertex {} not incident to added edge'.format(self.label))
         
-        # Check whether edge has color; if so, compute whether the orientation
-        # points towards (+) or away from (-) the vertex. This value is stored
-        # separately, just in case a source/sink would be created by the
-        # connected edge.
+        # Check whether edge has orientation; if so, compute whether this
+        # orientation points towards (+) or away from (-) the vertex. This
+        # value is stored separately, just in case a source/sink would be
+        # created by the connected edge.
         
-        if added_edge.color:
-            if (added_edge.color > 0 and self == added_edge.end) or \
-                (added_edge.color < 0 and self == added_edge.start):
+        if added_edge.orient:
+            if (added_edge.orient > 0 and self == added_edge.end) or \
+                (added_edge.orient < 0 and self == added_edge.start):
                     
                 added_arrow = 1
             else:
                 added_arrow = -1
         else:
-            self.edge_order += [added_edge]
-            self.in_arrow += [0]
-            return True
+            added_arrow = 0
         
         # Check here if source or sink created
         
         if abs(sum(self.in_arrow) + added_arrow) == 3:
             raise AttributeError('Edge orientation results in source or sink')
+            
+        # Check that colors assigned are valid; only check if all three colors
+        # are assigned (i.e. no zeros appear in list)
+        
+        if added_edge.color:
+            added_color = added_edge.color
         else:
-            self.edge_order += [added_edge]
-            self.in_arrow += [added_arrow]
-            return True
+            added_color = 0
+            
+        temp_color_list = sorted([color for color in self.color_list] + [added_color])
+        if (0 not in temp_color_list) and len(temp_color_list) == 3 and \
+            temp_color_list not in self.ALLOWED_COLOR_LIST:
+            raise AttributeError('Edge color does not satisfy vertex rules')
+        
+        # All tests passed
+            
+        self.edge_order += [added_edge]
+        self.color_list += [added_color]
+        self.in_arrow += [added_arrow]
+        
+        return True
         
     #-------------------------------------------------------------------------#
     
@@ -84,114 +205,80 @@ class Vertex:
         # edge; assumes trivalent vertex, and that we are not replacing a
         # self-loop with another self-loop
             
-        if added_edge.color:
-            if (added_edge.color > 0 and self == added_edge.end) or \
-                (added_edge.color < 0 and self == added_edge.start):
+        if added_edge.orient:
+            if (added_edge.orient > 0 and self == added_edge.end) or \
+                (added_edge.orient < 0 and self == added_edge.start):
                     
                 replace_arrow = 1
             else:
                 replace_arrow = -1
         else:
-            if self.edge_order[(place + 1) % 3] == remove_edge:
-                self.edge_order[(place + 1) % 3] = added_edge
-                place = (place + 1) % 3
-            else:
-                self.edge_order[place] = added_edge
-            self.in_arrow[place] = 0
+            replace_arrow = 0
             
-            return True
+            # FOR NOW, assume that there is no self-loop involved; FIX LATER
+            
+            # if self.edge_order[(place + 1) % 3] == remove_edge:
+            #     self.edge_order[(place + 1) % 3] = added_edge
+            #     place = (place + 1) % 3
+            # else:
+            #     self.edge_order[place] = added_edge
+            # self.in_arrow[place] = 0
+            
+            # return True
         
         # Since self.in_arrow already has the old value, we added twice the
         # new value; if this is equal to +/- 3, then we have a source or sink.
+        # If orientation does not change, then test is unnecessary.
     
         if replace_arrow != self.in_arrow[place] and abs(sum(self.in_arrow) + 2 * replace_arrow) == 3:
             raise AttributeError('Orientation change results in source or sink')
-        else:
-            if self.edge_order[(place + 1) % 3] == remove_edge:
-                self.edge_order[(place + 1) % 3] = added_edge
-                place = (place + 1) % 3
-            else:
-                self.edge_order[place] = added_edge
-            self.in_arrow[place] = replace_arrow
             
-            return True
+        # Check that colors are still valid at vertex
+        
+        if added_edge.color:
+            replace_color = added_edge.color
+        else:
+            replace_color = 0
+            
+        if replace_color != self.color_list[place]:
+            temp_color_list = [color for color in self.color_list]
+            temp_color_list[place] = replace_color
+            
+            if (0 not in temp_color_list) and len(temp_color_list) == 3 and \
+                temp_color_list not in self.ALLOWED_COLOR_LIST:
+                raise AttributeError('Edge color does not satisfy vertex rules')
+            
+        # All tests passed
+        
+        self.edge_order[place] = added_edge
+        self.color_list[place] = replace_color
+        self.in_arrow[place] = replace_arrow
+            
+        # else:
+        #     if self.edge_order[(place + 1) % 3] == remove_edge:
+        #         self.edge_order[(place + 1) % 3] = added_edge
+        #         place = (place + 1) % 3
+        #     else:
+        #         self.edge_order[place] = added_edge
+        #     self.in_arrow[place] = replace_arrow
+            
+        #     return True
     
     #-------------------------------------------------------------------------#
     
     def removeEdge(self, remove_edge = None):
         
         if len(self.edge_order) == 0:
-            raise ValueError('Vertex {} already disconnected'.format(self.label))
-            
-        place = self.edge_order.index(remove_edge)
+            raise ValueError(f'Vertex {self.label} already disconnected')
             
         if remove_edge in self.edge_order:
-            self.edge_order.remove(remove_edge)
+            place = self.edge_order.index(remove_edge)
             
-        if remove_edge.color:
+            del self.edge_order[place]
+            del self.color_list[place]
             del self.in_arrow[place]
-        
-    #-------------------------------------------------------------------------#
-    
-    def permuteOrder(self, dir = True):
-        """
-            Changes edge order e0 e1 e2 -> e1 e2 e0 (dir = True) or e2 e0 e1
-        """
-        
-        if dir:
-            self.edge_order = self.edge_order[1:] + [self.edge_order[0]]
-            self.in_arrow = self.in_arrow[1:] + [self.in_arrow[0]]
         else:
-            self.edge_order = [self.edge_order[-1]] + self.edge_order[:-1]
-            self.in_arrow = [self.in_arrow[-1]] + self.in_arrow[:-1]
-        
-    #-------------------------------------------------------------------------#
-    
-    def addEdgeOrient(self, added_edge = None):
-        """
-            Add an orientation to added_edge at vertex
-        """
-        
-        if type(added_edge) != Edge:
-            raise ValueError('Must have Edge object to change edge color')
-            
-        if type(added_edge.color) != int or added_edge.color == 0:
-            raise ValueError('color must be a non-zero integer')
-            
-        if added_edge in self.edge_order:       # Assumes not a self-loop
-            place = self.edge_order.index(added_edge)
-            
-            new_in_arrow_list = [arrow for arrow in self.in_arrow]
-            if (added_edge.color > 0 and self == added_edge.end) or \
-                (added_edge.color < 0 and self == added_edge.start):
-                    
-                added_arrow = 1
-            else:
-                added_arrow = -1
-                
-            new_in_arrow_list[place] = added_arrow
-            
-            if abs(sum(new_in_arrow_list)) == 3:
-                raise AttributeError('Orientation addition results in source or sink')
-            else:
-                self.in_arrow[place] = added_arrow
-                
-        else:
-            
-            new_in_arrow_list = [arrow for arrow in self.in_arrow]
-            if (added_edge.color > 0 and self == added_edge.end) or \
-                (added_edge.color < 0 and self == added_edge.start):
-                    
-                added_arrow = 1
-            else:
-                added_arrow = -1
-            new_in_arrow_list += [added_arrow]
-                
-            if abs(sum(new_in_arrow_list)) == 3:
-                raise AttributeError('Orientation addition results in source or sink')
-            else:
-                self.edge_order += [added_edge]
-                self.in_arrow += [added_arrow]
+            raise ValueError(f'Edge {remove_edge} not connected to vertex {self.label}')
             
     #-------------------------------------------------------------------------#
     
@@ -201,7 +288,7 @@ class Vertex:
         """
         
         if type(change_edge) != Edge:
-            raise ValueError('Must have Edge object to change edge color')
+            raise ValueError('Must have Edge object to change edge orientation')
             
         edge_index = self.edge_order.index(change_edge)
         new_in_arrow_list = [arrow for arrow in self.in_arrow]
@@ -211,6 +298,11 @@ class Vertex:
             raise AttributeError('Orientation change results in source or sink')
         else:
             self.in_arrow[edge_index] = -self.in_arrow[edge_index]
+        
+    #-------------------------------------------------------------------------#
+    
+    def colorList(self):
+        return [color for color in self.color_list if color != 0]
         
     #-------------------------------------------------------------------------#
     
@@ -231,16 +323,29 @@ class Vertex:
 
 class Edge:
     
-    def __init__(self, start = None, end = None, color = None, twist = None):
+    def __init__(self, start = None, end = None, orient = None, color = None, twist = None):
+        
+        if start and type(start) != Vertex:
+            raise ValueError('start must be a Vertex object')
+        
+        if end and type(end) != Vertex:
+            raise ValueError('end must be a Vertex object')
+            
+        if orient and (type(orient) != int or abs(orient) != 1):
+            raise ValueError('orient must be +/- 1')
+            
+        if color and (type(color) != int or color <= 0):
+            raise ValueError('color must be positive integer')
         
         self.start = start
         self.end = end
         
         # Sign of twist gives whether twist is right-handed (+), or left-handed
-        # (-). The orientation is given by the sign of color, whether from start
-        # to end (+), or end to start (-). Color is an integer, which is twice
-        # the representation value j.
+        # (-). The orientation is given by +/- 1, whether from start to end (+1),
+        # or end to start (-1). Color is an integer, which is twice the
+        # representation value j.
         
+        self.orient = orient
         self.color = color
         self.twist = twist
         
@@ -248,15 +353,27 @@ class Edge:
         
     def __repr__(self):
         
-        edge_str = "[" + repr(self.start) + ", " + repr(self.end)
-        if self.color != None:
-            # edge_str += ", color = {}".format(self.color)
-            edge_str += ", " + repr(self.color)
-        # if self.twist != None:
-        #     edge_str += ", twist = {}".format(self.twist)
-        edge_str += "]"
+        # edge_str = "[" + repr(self.start) + ", " + repr(self.end)
+        # if self.orient != None:
+        #     edge_str += ", orient = " + repr(self.orient)
+        # if self.color != None:
+        #     edge_str += ", color = " + repr(self.color)
+        # # if self.twist != None:
+        # #     edge_str += ", twist = {}".format(self.twist)
+        # edge_str += "]"
         
-        return edge_str
+        if self.twist != None:
+            return "[" + repr(self.start) + ", " + repr(self.end) + ", " + \
+                repr(self.orient) + ", " + repr(self.color) + ", " + repr(self.twist) + \
+                + "]"
+        elif self.color != None:
+            return "[" + repr(self.start) + ", " + repr(self.end) + ", " + \
+                repr(self.orient) + ", " + repr(self.color) + "]"
+        elif self.orient != None:
+            return "[" + repr(self.start) + ", " + repr(self.end) + ", " + \
+                repr(self.orient) + "]"
+        else:
+            return "[" + repr(self.start) + ", " + repr(self.end) + "]"
         
     #-------------------------------------------------------------------------#
     
@@ -269,38 +386,84 @@ class Edge:
         
     #-------------------------------------------------------------------------#
     
-    def setColor(self, color):
+    def setColor(self, color = None):
         
         # NOTE: Currently assumes self.start, self.end exist, and that edge
         # is already attached to both
         
-        if type(color) != int or color == 0:
-            raise ValueError('color must be a non-zero integer')
-        
-        if self.color:
-            if (self.color > 0 and color > 0) or (self.color < 0 and color < 0):
-                
-                # Orientation does not change, simply change color magnitude
-                
-                self.color = color
-                return True
+        if color == None:
+            start_place = self.start.edge_order.index(self)
+            end_place = self.end.edge_order.index(self)
             
-            else:
+            self.color = None
+            self.start.color_list[start_place] = 0
+            self.end.color_list[end_place] = 0
+            
+            return True
+        
+        if type(color) != int or color <= 0:
+            raise ValueError('color must be positive integer')
+            
+        if color == self.color:
+            raise ValueError(f'color is already defined to be {color}')
+        
+        start_color_list = [color for color in self.start.color_list]
+        start_place = self.start.edge_order.index(self)
+        start_color_list[start_place] = color
+        start_color_list.sort()
+        
+        end_color_list = [color for color in self.end.color_list]
+        end_place = self.end.edge_order.index(self)
+        end_color_list[end_place] = color
+        end_color_list.sort()
+        
+        # Only check vertex color lists if they have no placeholders
+        
+        if (0 not in start_color_list) and (start_color_list not in self.start.ALLOWED_COLOR_LIST):
+            raise AttributeError('color requirements violated at edge start')
+        elif (0 not in end_color_list) and (end_color_list not in self.end.ALLOWED_COLOR_LIST):
+            raise AttributeError('color requirements violated at edge end')
+                   
+        self.color = color
+        self.start.color_list[start_place] = color
+        self.end.color_list[end_place] = color
+        
+        # self.start.color_list = start_color_list
+        # self.end.color_list = end_color_list
+           
+        return True
+        
+    #-------------------------------------------------------------------------#
+    
+    def setOrient(self, orient):
+        
+        # NOTE: Currently assumes self.start, self.end exist, and that edge
+        # is already attached to both
+        
+        if type(orient) != int or abs(orient) != 1:
+            raise ValueError('orient must be +/- 1')
+            
+        if orient == self.orient:
+            return True
+                
+        start_place = self.start.edge_order.index(self)
+        end_place = self.end.edge_order.index(self)
+        
+        if self.orient:
+            if (self.orient > 0 and orient < 0) or (self.orient < 0 and orient > 0):
                 
                 # Orientation exists and flips; need to check that there is no
                 # violation of source/sink rule at both incident vertices
                 
                 start_in_arrow_list = [arrow for arrow in self.start.in_arrow]
-                start_place = self.start.edge_order.index(self)
                 start_in_arrow_list[start_place] = -start_in_arrow_list[start_place]
                 
                 end_in_arrow_list = [arrow for arrow in self.end.in_arrow]
-                end_place = self.end.edge_order.index(self)
                 end_in_arrow_list[end_place] = -end_in_arrow_list[end_place]
                     
         else:
             
-            # Edge has no previous color, so do check at vertices with added
+            # Edge has no previous orient, so do check at vertices with added
             # arrow at each, and verify no sources or sinks at both incident
             # vertices
             
@@ -310,7 +473,7 @@ class Edge:
             end_in_arrow_list = [arrow for arrow in self.end.in_arrow]
             end_place = self.end.edge_order.index(self)
             
-            if color > 0:
+            if orient > 0:
                 start_in_arrow = -1
                 end_in_arrow = 1
             else:
@@ -323,7 +486,7 @@ class Edge:
         # Verify that no sources or sinks are created at incident vertices
             
         if abs(sum(start_in_arrow_list)) != 3 and abs(sum(end_in_arrow_list)) != 3:
-            self.color = color
+            self.orient = orient
             
             self.start.in_arrow = start_in_arrow_list
             self.end.in_arrow = end_in_arrow_list
@@ -332,27 +495,27 @@ class Edge:
         
         elif abs(sum(start_in_arrow_list)) == 3:
             raise AttributeError('Orientation change results in source/sink at start')
-            # return False
         else:
             raise AttributeError('Orientation change results in source/sink at end')
-            # return False
             
-        # We need to check that orientations for start, end vertices are
-        # consistent with requirement of no sources, sinks, so we keep the
-        # original color, and restore it if one of the vertex conditions is
-        # violated.
+        # WHAT IS THIS PART OF CODE FOR?
+            
+        # # We need to check that orientations for start, end vertices are
+        # # consistent with requirement of no sources, sinks, so we keep the
+        # # original orient, and restore it if one of the vertex conditions is
+        # # violated.
         
-        try:
+        # try:
             
-            self.start.changeEdgeOrient(self)        
-            self.end.changeEdgeOrient(self)
+        #     self.start.changeEdgeOrient(self)        
+        #     self.end.changeEdgeOrient(self)
             
-            self.color = color
+        #     self.orient = orient
             
-            return True
+        #     return True
         
-        except:
-            return False
+        # except:
+        #     return False
         
     #-------------------------------------------------------------------------#
     
@@ -433,10 +596,19 @@ class Edge:
     
     def color(self):
         """
-            Return color (twice the representation value) without orientation.
+            Return color (twice the spin representation value).
         """
         
         return abs(self.color)
+        
+    #-------------------------------------------------------------------------#
+    
+    def orient(self):
+        """
+            Return orientation
+        """
+        
+        return abs(self.orient)
         
     #-------------------------------------------------------------------------#
     
@@ -469,18 +641,42 @@ class Edge:
 
 class Graph:
     
-    def __init__(self, num_vert = 0):
+    def __init__(self, num_vert = None, r = None):
         
-        if type(num_vert) != int or num_vert <= 0:
-            raise ValueError('Number of vertices must be a positive integer')
+        # Number of vertices
         
-        if (num_vert % 2) == 1:
-            raise ValueError('Trivalent graphs must have an even number of vertices')
-    
+        if num_vert:
+            if (type(num_vert) != int or num_vert <= 0):
+                raise ValueError('Number of vertices must be a positive integer')
+        
+            if (num_vert % 2) == 1:
+                raise ValueError('Trivalent graphs must have an even number of vertices')
+                
         self.num_vert = num_vert
+        
+        # r value, to determine allowed incident edge colors; allowed color
+        # list constant gives all allowed triples coming from r
+            
+        if r:
+            if (type(r) != int or r <= 3):
+                raise ValueError('r value must be >= 4')
+            else:
+                self.ALLOWED_COLOR_LIST = colorList(r)
+        else:
+            
+            # Use default option of all 0's to allow testing with orientations
+            # but no chosen value of r. This choice also avoids confusion if
+            # colors are added to some of the edges.
+            
+            self.ALLOWED_COLOR_LIST = [[0, 0, 0]]
+            
+        self.R = r
+        
+        # Create vertices, edge list
+        
         self.vert_list = []
         for iii in range(num_vert):
-            self.vert_list += [Vertex(label = iii)]
+            self.vert_list += [Vertex(label = iii, COLOR_LIST = self.ALLOWED_COLOR_LIST)]
         
         self.edge_list = []
         
@@ -488,6 +684,22 @@ class Graph:
     
     def __repr__(self):
         return 'Graph of {} vertices and {} edges'.format(self.num_vert, len(self.edge_list))
+        
+    #-------------------------------------------------------------------------#
+    
+    def __copy__(self):
+        
+        # Create new graph; this automatically creates new vertices as well
+        
+        new_graph = Graph(num_vert = self.num_vert, r = self.R)
+        
+        # Copy edges with info
+        
+        for edge in self.edge_list:
+            new_graph.addEdges([[edge.start.label, edge.end.label, edge.orient, \
+                                edge.color, edge.twist]])
+                
+        return new_graph
         
     #-------------------------------------------------------------------------#
     
@@ -522,9 +734,10 @@ class Graph:
             # the process, we try both possibilities for the matching vertex
             # incident to the edge in the other graph.
             
-            if self.edge_list[0].color and other.edge_list[iii].color:
-                if (self.edge_list[0].color > 0 and other.edge_list[iii].color > 0) or \
-                    (self.edge_list[0].color < 0 and other.edge_list[iii].color < 0):
+            if self.edge_list[0].orient and other.edge_list[iii].orient:
+                
+                if (self.edge_list[0].orient > 0 and other.edge_list[iii].orient > 0) or \
+                    (self.edge_list[0].orient < 0 and other.edge_list[iii].orient < 0):
                         
                     other_vert = other.edge_list[iii].start
                 else:
@@ -554,23 +767,29 @@ class Graph:
                     elif edge_match_dict[current_self_edge] == current_other_edge:
                         continue    # Edge already visited, do not repeat
                     
-                # If the edges are colored, determine whether the orientations
+                # If the edges are oriented, determine whether the orientations
                 # of the two edges are consistent, i.e. both current_self_edge
                 # and current_other_edge point towards current_self_vert,
                 # current_other_vert, or both away. If they are inconsistent,
                 # then so is mapping.
                 
-                if current_self_edge.color and current_other_edge.color:
-                    if (current_self_vert == current_self_edge.start and current_self_edge.color < 0) \
-                        or (current_self_vert == current_self_edge.end and current_self_edge.color > 0):
+                if current_self_edge.orient and current_other_edge.orient:
+                    
+                    # Orientations are not consistent, so move on to next choice
+                    
+                    if abs(current_self_edge.orient) != abs(current_other_edge.orient):
+                        break
+                    
+                    if (current_self_vert == current_self_edge.start and current_self_edge.orient < 0) \
+                        or (current_self_vert == current_self_edge.end and current_self_edge.orient > 0):
                         
                         current_dir = True      # Orientation towards current_self_vert
                         
                     else:
                         current_dir = False
                         
-                    if (current_other_vert == current_other_edge.start and current_other_edge.color < 0) \
-                        or (current_other_vert == current_other_edge.end and current_other_edge.color > 0):
+                    if (current_other_vert == current_other_edge.start and current_other_edge.orient < 0) \
+                        or (current_other_vert == current_other_edge.end and current_other_edge.orient > 0):
                             
                         other_dir = True        # Orientation towards current_other_vert
                         
@@ -580,8 +799,14 @@ class Graph:
                     if current_dir != other_dir:
                         break       # Inconsistent edge orientation
                         
-                # Either edge orientations are consistent, or no colors and
-                # a mapping between edges does not already exist.
+                # Check that edge colors are equal, if they exist
+                
+                if current_self_edge.color and current_other_edge.color and \
+                    current_self_edge.color != current_other_edge.color:
+                        break       # Inconsistent edge colors
+                        
+                # Either edge orientations are consistent, or no orient value
+                # and a mapping between edges does not already exist.
                
                 edge_match_dict[current_self_edge] = current_other_edge
                     
@@ -614,7 +839,8 @@ class Graph:
             # return True
             
             if len(edge_match_dict) == 3 * self.num_vert // 2 == len(set(edge_match_dict.values())):
-                return edge_match_dict
+                # return edge_match_dict
+                return True
             
         # No consistent solutions
         
@@ -624,19 +850,19 @@ class Graph:
         
     def addEdges(self, added_edge_list):
         """
-            Add edges to graph, given as list of vertex labels [start, end, (color), (twist)]
+            Add edges to graph, given as list of vertex labels [start, end, (orient), (color), (twist)]
         """
         
         # Added edge list must be (1) a list of (2) lists in the form [start,
-        # end, (color), (twist)], where (3) start, end are integers from 0 to num_vert - 1, and
+        # end, (orient), (color), (twist)], where (3) start, end are integers from 0 to num_vert - 1, and
         # (4) start < end.
         
         if type(added_edge_list) != list:
             raise ValueError('Added edges must be given in list')
             
-        if any([(type(edge) != list or not(2 <= len(edge) <= 4) \
-                 or any([type(label) != int for label in edge])) for edge in added_edge_list]):
-            raise ValueError('Entries in added edge list must be in form [start, end, (color), (twist)]')
+        if any([(type(edge) != list or not(2 <= len(edge) <= 5) \
+                 or any([type(label) not in [int, type(None)] for label in edge])) for edge in added_edge_list]):
+            raise ValueError('Entries in added edge list must be in form [start, end, (orient), (color), (twist)]')
             
         if any([(min(edge[:2]) < 0 or max(edge[:2]) >= self.num_vert) for edge in added_edge_list]):
             raise ValueError('Vertex labels must be between 0 and {}'.format(self.num_vert - 1))
@@ -655,9 +881,13 @@ class Graph:
             if len(edge) == 2:
                 new_edge = Edge(start = start_vert, end = end_vert)
             elif len(edge) == 3:
-                new_edge = Edge(start = start_vert, end = end_vert, color = edge[2])
+                new_edge = Edge(start = start_vert, end = end_vert, orient = edge[2])
+            elif len(edge) == 4:
+                new_edge = Edge(start = start_vert, end = end_vert, orient = edge[2], \
+                                color = edge[3])
             else:
-                new_edge = Edge(start = start_vert, end = end_vert, color = edge[2], twist = edge[3])
+                new_edge = Edge(start = start_vert, end = end_vert, orient = edge[2], \
+                                color = edge[3], twist = edge[4])
             
             start_vert.connectEdge(new_edge)
             end_vert.connectEdge(new_edge)
@@ -697,7 +927,8 @@ class Graph:
             # labels larger than any other current vertices in the graph, so we
             # put them as the end of the vertex list.
             
-            self.vert_list += [Vertex(label = self.num_vert), Vertex(label = self.num_vert + 1)]
+            self.vert_list += [Vertex(label = self.num_vert, COLOR_LIST = self.ALLOWED_COLOR_LIST), \
+                               Vertex(label = self.num_vert + 1, COLOR_LIST = self.ALLOWED_COLOR_LIST)]
             self.num_vert += 2
             
             # We have the original edge ab, and we want to add vertices x, y
@@ -735,6 +966,11 @@ class Graph:
             self.vert_list[-1].connectEdge(edge_yy)
             self.vert_list[-1].connectEdge(edge_yy)
             
+            # Return edges that have changed in graph edge list, so that edge
+            # colors/orientations can be modified for new edges
+            
+            return [edge_xy, edge_yy]
+            
     #-------------------------------------------------------------------------#
     
     def twoMove(self, edge_label = None):
@@ -754,7 +990,8 @@ class Graph:
             # labels larger than any other current vertices in the graph, so we
             # put them as the end of the vertex list.
             
-            self.vert_list += [Vertex(label = self.num_vert), Vertex(label = self.num_vert + 1)]
+            self.vert_list += [Vertex(label = self.num_vert, COLOR_LIST = self.ALLOWED_COLOR_LIST), \
+                               Vertex(label = self.num_vert + 1, COLOR_LIST = self.ALLOWED_COLOR_LIST)]
             self.num_vert += 2
             
             # We have the original edge ab, and we want to add vertices x, y
@@ -790,6 +1027,11 @@ class Graph:
             self.vert_list[-1].connectEdge(edge_by)
             self.vert_list[-1].connectEdge(edge_xy2)
             
+            # Return edges that have changed in graph edge list, so that edge
+            # colors/orientations can be modified for new edges
+            
+            return [edge_by, edge_xy1, edge_xy2]
+            
     #-------------------------------------------------------------------------#
     
     def threeMove(self, vert_label = None):
@@ -808,7 +1050,8 @@ class Graph:
             # labels larger than any other current vertices in the graph, so we
             # put them as the end of the vertex list.
             
-            self.vert_list += [Vertex(label = self.num_vert), Vertex(label = self.num_vert + 1)]
+            self.vert_list += [Vertex(label = self.num_vert, COLOR_LIST = self.ALLOWED_COLOR_LIST), \
+                               Vertex(label = self.num_vert + 1, COLOR_LIST = self.ALLOWED_COLOR_LIST)]
             self.num_vert += 2
             
             # We have the current vertex x, and the three vertices a, b, c in
@@ -866,8 +1109,8 @@ class Graph:
             
             if adj_edges[1].start == None:              # To ensure ordered vertex labels
                 adj_edges[1].start = adj_edges[1].end
-                if adj_edges[1].color != None:
-                    adj_edges[1].color = -adj_edges[1].color
+                if adj_edges[1].orient != None:
+                    adj_edges[1].orient = -adj_edges[1].orient
             adj_edges[1].end = self.vert_list[-2]
                 
             edge_12 = Edge(start = self.vert_list[-2], end = self.vert_list[-1])
@@ -883,14 +1126,14 @@ class Graph:
             
             if adj_edges[2].start == None:              # To ensure ordered vertex labels
                 adj_edges[2].start = adj_edges[2].end
-                if adj_edges[2].color != None:
-                    adj_edges[2].color = -adj_edges[2].color
+                if adj_edges[2].orient != None:
+                    adj_edges[2].orient = -adj_edges[2].orient
             adj_edges[2].end = self.vert_list[-1]
                 
             self.vert_list[-1].connectEdge(adj_edges[2])
             
             # Return edges that have changed in graph edge list, so that edge
-            # orientations can be modified for new edges
+            # colors/orientations can be modified for new edges
             
             return [edge_01, edge_02, edge_12]
             
@@ -917,7 +1160,8 @@ class Graph:
             # labels larger than any other current vertices in the graph, so we
             # put them as the end of the vertex list.
             
-            self.vert_list += [Vertex(label = self.num_vert), Vertex(label = self.num_vert + 1)]
+            self.vert_list += [Vertex(label = self.num_vert, COLOR_LIST = self.ALLOWED_COLOR_LIST), \
+                               Vertex(label = self.num_vert + 1, COLOR_LIST = self.ALLOWED_COLOR_LIST)]
             self.num_vert += 2
             
             # We have the current edge with vertices x < y. The cyclic order of
@@ -1009,7 +1253,7 @@ class Graph:
                 if edge_ax.start == current_start:
                     edge_ax.start = edge_ax.end
                     if edge_ax.color != None:
-                        edge_ax.color = -edge_ax.color
+                        edge_ax.orient = -edge_ax.orient
                 edge_ax.end = self.vert_list[-2]
                 current_start.removeEdge(edge_ax)
                 
@@ -1067,8 +1311,8 @@ class Graph:
                 
                 if edge_cy.start == current_end:
                     edge_cy.start = edge_cy.end
-                    if edge_cy.color != None:
-                        edge_cy.color = -edge_cy.color
+                    if edge_cy.orient != None:
+                        edge_cy.orient = -edge_cy.orient
                 edge_cy.end = self.vert_list[-1]
                 current_end.removeEdge(edge_cy)
                 
@@ -1128,8 +1372,9 @@ class Graph:
             
             # This is similar to fourMove() defined earlier, except no new
             # vertices are created; instead, existing edges have their start,
-            # end attributes changed around. We also remove the color (if it
-            # exists) of current_edge, and return it at the end.
+            # end attributes changed around. We also remove the orientation and
+            # color (if they exists) of current_edge, and return these at end,
+            # so they can be modified later.
             
             # We have the current edge with vertices x < y. The starting cyclic
             # order of x is of the form ax bx xy, while that for y is cy dy xy. 
@@ -1163,8 +1408,12 @@ class Graph:
                 if len(set(adj_vert_list)) < 4:
                     raise AttributeError('Pachner 2-2 move would create multi-edge')
                     
-            # (0) remove color from xy, if necessary
+            # (0) remove orientation, color from xy, if necessary; in_arrow and
+            # color_list for start, end vertices are reconstructed later
             
+            if current_edge.orient:
+                current_edge.orient = None
+                
             if current_edge.color:
                 current_edge.color = None
         
@@ -1179,8 +1428,8 @@ class Graph:
                 
             if edge_ax.start.label > edge_ax.end.label:
                 edge_ax.start, edge_ax.end = edge_ax.end, edge_ax.start
-                if edge_ax.color:
-                    edge_ax.color = -edge_ax.color
+                if edge_ax.orient:
+                    edge_ax.orient = -edge_ax.orient
                 
             # (2) Change cy to cx
             
@@ -1193,8 +1442,8 @@ class Graph:
                 
             if edge_cy.start.label > edge_cy.end.label:
                 edge_cy.start, edge_cy.end = edge_cy.end, edge_cy.start
-                if edge_cy.color:
-                    edge_cy.color = -edge_cy.color
+                if edge_cy.orient:
+                    edge_cy.orient = -edge_cy.orient
                 
             # (3) Change cyclic order for vertex x to be bx cx xy, for vertex
             # y to be dy ay xy. While this is done, ensure that in_arrow is
@@ -1203,14 +1452,19 @@ class Graph:
             edge_bx = current_start.edge_order[start_current_edge_index - 1]
             edge_dy = current_end.edge_order[end_current_edge_index - 1]
             
+            temp_color_list = [edge.color for edge in [edge_ax, edge_bx, edge_cy, edge_dy]]
+            current_start.color_list = [temp_color_list[iii] for iii in [1, 2]] + [0]
+            current_end.color_list = [temp_color_list[iii] for iii in [3, 0]] + [0]
+            
             current_start.edge_order = []
             current_start.in_arrow = []
             
             for edge in [edge_bx, edge_cy, current_edge]:
                 current_start.edge_order += [edge]
-                if edge.color:
-                    if (edge.color > 0 and current_start == edge.end) or \
-                        (edge.color < 0 and current_start == edge.start):
+                
+                if edge.orient:
+                    if (edge.orient > 0 and current_start == edge.end) or \
+                        (edge.orient < 0 and current_start == edge.start):
                         current_start.in_arrow += [1]
                     else:
                         current_start.in_arrow += [-1]
@@ -1222,9 +1476,9 @@ class Graph:
                     
             for edge in [edge_dy, edge_ax, current_edge]:
                 current_end.edge_order += [edge]
-                if edge.color:
-                    if (edge.color > 0 and current_end == edge.end) or \
-                        (edge.color < 0 and current_end == edge.start):
+                if edge.orient:
+                    if (edge.orient > 0 and current_end == edge.end) or \
+                        (edge.orient < 0 and current_end == edge.start):
                         current_end.in_arrow += [1]
                     else:
                         current_end.in_arrow += [-1]
@@ -1310,7 +1564,22 @@ class Graph:
         
     #-------------------------------------------------------------------------#
     
+    def allowedColorList(self):
+        return self.ALLOWED_COLOR_LIST
+        
+    #-------------------------------------------------------------------------#
+    
+    def colorList(self):
+        return [edge.color for edge in self.edge_list]
+    
+    #-------------------------------------------------------------------------#
+    
     def edgeList(self):
         return [edge for edge in self.edge_list]
+    
+    #-------------------------------------------------------------------------#
+    
+    def orientList(self):
+        return [edge.orient for edge in self.edge_list]
     
     #-------------------------------------------------------------------------#
