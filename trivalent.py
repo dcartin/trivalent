@@ -209,7 +209,7 @@ class Vertex:
         
         # List of faces that are incident to the vertex
         
-        self.face_list = []
+        self.face_list = [None] * 3
         
     #-------------------------------------------------------------------------#
         
@@ -345,6 +345,20 @@ class Vertex:
             
         #     return True
     
+    #-------------------------------------------------------------------------#
+    
+    def permuteOrder(self, dir = True):
+        """
+            Changes edge order e0 e1 e2 -> e1 e2 e0 (dir = True) or e2 e0 e1
+        """
+        
+        if dir:
+            self.edge_order = self.edge_order[1:] + [self.edge_order[0]]
+            self.in_arrow = self.in_arrow[1:] + [self.in_arrow[0]]
+        else:
+            self.edge_order = [self.edge_order[-1]] + self.edge_order[:-1]
+            self.in_arrow = [self.in_arrow[-1]] + self.in_arrow[:-1]
+        
     #-------------------------------------------------------------------------#
     
     def removeEdge(self, remove_edge = None):
@@ -695,7 +709,7 @@ class Edge:
         if type(left_face) != Face:
             raise ValueError('left face must be a Face object')
         else:
-            self.left_face = left_face
+            self.face_left = left_face
         
     #-------------------------------------------------------------------------#
     
@@ -703,7 +717,7 @@ class Edge:
         if type(right_face) != Face:
             raise ValueError('right face must be a Face object')
         else:
-            self.right_face = right_face
+            self.face_right = right_face
         
     #-------------------------------------------------------------------------#
     
@@ -758,6 +772,18 @@ class Edge:
         """
         
         return self.end
+    
+    #-------------------------------------------------------------------------#
+    
+    def leftFace(self):
+        
+        return self.face_left
+    
+    #-------------------------------------------------------------------------#
+    
+    def rightFace(self):
+        
+        return self.face_right
         
 #=============================================================================#
 
@@ -775,8 +801,7 @@ class Face:
     #-------------------------------------------------------------------------#
         
     def addEdge(self, added_edge = None):
-        if type(added_edge) == Edge:
-            self.edge_list += [added_edge]
+        self.edge_list += [added_edge]
         
 #=============================================================================#
 
@@ -830,9 +855,10 @@ class Graph:
         
         self.edge_list = []
         
-        # Create list of faces
+        # Create list of faces, and list of face sizes
         
         self.face_list = []
+        self.face_size_list = []
         
     #-------------------------------------------------------------------------#
     
@@ -859,33 +885,6 @@ class Graph:
     
     def __eq__(self, other):
         
-        # # First, we check that the number of vertices and edges are equal; after
-        # # that, we check that the vertex degree lists are also the same.
-        
-        # if self.num_vert != other.num_vert or len(self.edge_list) != len(other.edge_list):
-        #     return False
-        
-        # if sorted([len(vert.edge_order) for vert in self.vert_list]) != \
-        #     sorted([len(vert.edge_order) for vert in other.vert_list]):
-        #         return False
-            
-        # # Use hash functions to test structure equality
-        
-        # if self.hashTuple() != other.hashTuple():
-        #     return False
-        
-        # # Tests for edge orientations, colors
-        
-        # if [edge.orient for edge in self.edge_list] != [edge.orient for edge in other.edge_list]:
-        #     return False
-        
-        # if [edge.color for edge in self.edge_list] != [edge.color for edge in other.edge_list]:
-        #     return False
-        
-        # return True
-        
-        #=====================================================================#
-        
         # First, we check that the number of vertices and edges are equal; after
         # that, we check that the vertex degree lists are also the same.
         
@@ -895,6 +894,17 @@ class Graph:
         if sorted([len(vert.edge_order) for vert in self.vert_list]) != \
             sorted([len(vert.edge_order) for vert in other.vert_list]):
                 return False
+            
+        # Finally, we check that the sizes of the graph faces are equal.
+            
+        if self.face_list == []:
+            self.findFaces()
+            
+        if other.face_list == []:
+            other.findFaces()
+            
+        if self.face_size_list != other.face_size_list:
+            return False
         
         # Use an edge-based solution for the multigraph isomorphism problem,
         # by matching only edges in the two graphs. We start with the first
@@ -1027,148 +1037,13 @@ class Graph:
         
         # return edge_match_dict
         return False
-    
-    #-------------------------------------------------------------------------#
-    
-    def hashTuple(self):
-        
-        if self.canonical:
-            return tuple([self.edge_list.index(edge) for vertex in self.vert_list \
-                          for edge in vertex.edge_order])
-        else:
-            num_edges = 3 * self.num_vert // 2
-            current_edge_index_dict = {edge: idx for idx, edge in enumerate(self.edge_list)}
-            min_hash = tuple([current_edge_index_dict[edge] for vert in self.vert_list for edge in vert.edge_order])
-            # final_edge_dict = {self.edge_list[label] : label for label in range(num_edges)}
-            
-            for start_vert_label, start_vert in enumerate(self.vert_list):
-                current_cyclic_order = [edge for edge in start_vert.edge_order]
-                
-                # The zero shift choice will always have a tuple starting with
-                # (0, 1, 2, ...), so we remove the other shifts.
-                
-                vert_map_dict = {vert: self.num_vert for vert in self.vert_list}
-                inv_vert_map_list = [None] * self.num_vert
-                temp_edge_dict = {edge: num_edges for edge in self.edge_list}
-                temp_cyclic_order = [[num_edges] * 3 for _ in range(self.num_vert)]
-                
-                # Here, we begin with start_vertex, and label it and its
-                # incident edges with new labels. We do not need to update
-                # temp_cyclic_order, since the first three edges will
-                # always have the same labels.
-                
-                vert_map_dict[start_vert], inv_vert_map_list[0] = 0, start_vert
-                # current_vert_label, next_vert_label, next_edge_label = 0, 0, 0
-                
-                for cycle_index in range(3):
-                    current_edge = current_cyclic_order[cycle_index]
-                    
-                    # Here, we assume a simple graph with no self-loops or
-                    # multiple edges
-                    
-                    if start_vert == current_edge.start:
-                        other_vert = current_edge.end
-                    else:
-                        other_vert = current_edge.start
-                        
-                    vert_map_dict[other_vert] = cycle_index + 1
-                    inv_vert_map_list[cycle_index + 1] = other_vert
-                    temp_edge_dict[current_edge] = cycle_index
-                    
-                temp_cyclic_order[0] = [temp_edge_dict[edge] for edge in start_vert.edge_order]
-                
-                # ADDED NEXT PART ----------------------------------------#
-                
-                temp_hash = [temp_edge_dict[edge] for edge in start_vert.edge_order]
-                # print(temp_cyclic_order[0], min_shash)
-                
-                # if temp_cyclic_order[0] > list(min_hash[0:3]):
-                #     continue
-                
-                #---------------------------------------------------------#
-                    
-                # Go through remaining vertices, and label both them and
-                # their incident edges
-                    
-                current_vert_label, next_vert_label, next_edge_label = 1, 4, 3
-                minFlag = False
-                
-                while (not minFlag) and current_vert_label < self.num_vert:
-                    current_vert = inv_vert_map_list[current_vert_label]
-                    # print(current_vert_label, current_vert)
-                    
-                    for edge in current_vert.edge_order:
-                        if current_vert == edge.start:
-                            other_vert = edge.end
-                        else:
-                            other_vert = edge.start
-                            
-                        if temp_edge_dict[edge] == num_edges:
-                            temp_edge_dict[edge] = next_edge_label
-                            next_edge_label += 1
-                                
-                        if vert_map_dict[other_vert] == self.num_vert:
-                            vert_map_dict[other_vert] = next_vert_label
-                            inv_vert_map_list[next_vert_label] = other_vert
-                            next_vert_label += 1
-                        
-                    temp_cyclic_order[current_vert_label] = [temp_edge_dict[edge] for edge in current_vert.edge_order]
-                    
-                    # ADDED NEXT PART ------------------------------------#
-                    
-                    temp_hash += [temp_edge_dict[edge] for edge in current_vert.edge_order]
-                    # min_label = min(this_vert_order)
-                    # shift = (-this_vert_order.index(min_label)) % 3
-                    
-                    # this_vert_order = [this_vert_order[iii - shift] for iii in range(3)]
-                    # print(temp_hash, min_hash, \
-                    #     temp_hash <= list(min_hash[0 : 3 * (current_vert_label + 1)]))
-                        
-                    # if temp_hash > list(min_hash[0 : 3 * (current_vert_label + 1)]):
-                    #     minFlag = True
-                    #     break
-                    
-                    #-----------------------------------------------------#
-                    
-                    # Put minimal edge label first, since this allows early
-                    # breaking if this list is
-                    
-                    current_vert_label += 1
-                    
-                # Since we drop the first vertex in self.vert_list, the
-                # vertex labels must be one smaller than the actual numbers
-                
-                # for vert_label in range(self.num_vert):
-                #     min_label = min(temp_cyclic_order[vert_label])
-                    
-                #     shift = (-temp_cyclic_order[vert_label].index(min_label)) % 3
-                #     temp_cyclic_order[vert_label] = [temp_cyclic_order[vert_label][iii - shift] \
-                #                                      for iii in range(3)]
-                        
-                temp_hash = tuple(edge_label for vert_label in range(self.num_vert) \
-                                   for edge_label in temp_cyclic_order[vert_label])
-                    
-                if temp_hash < min_hash:
-                # if (not minFlag) and temp_hash < min_hash:  # ADDED
-                    min_hash = temp_hash
-                    final_edge_dict = temp_edge_dict
-                # else:
-                    # print('Final:', False)
-                    
-                print(start_vert_label, temp_edge_dict, temp_cyclic_order)
-                        
-            # Record that hash function has been calculated for graph, and
-            # update ordering of edges in self.edge_list
-                        
-            self.canonical = True
-            self.edge_list = sorted(self.edge_list, key = lambda edge : final_edge_dict[edge])
-                        
-            return tuple(min_hash)
 
     #-------------------------------------------------------------------------#
     
     def graphSym(self, non_iso_edges = True):
-        graph_sym_list = []
+        
+        vert_sym_list = []
+        edge_sym_list = []
         
         num_edges = 3 * self.num_vert // 2
         
@@ -1181,6 +1056,7 @@ class Graph:
         
         for (iii, other_vert_flag) in product(range(num_edges), [True, False]):
             
+            vert_match_dict = {}
             edge_match_dict = {}
             
             # Given an oriented starting edge in the current graph, we find the
@@ -1268,6 +1144,7 @@ class Graph:
                 # and a mapping between edges does not already exist.
                
                 edge_match_dict[current_self_edge] = current_other_edge
+                vert_match_dict[current_self_vert] = current_other_vert
                     
                 # Go through and find other edges incident to current_self_vert, and
                 # add them to the queue. The vertices are those on the opposite side
@@ -1298,22 +1175,30 @@ class Graph:
             # return True
             
             if len(edge_match_dict) == num_edges == len(set(edge_match_dict.values())):
-                graph_sym_list += [[self.edge_list.index(edge_match_dict[key]) \
+                edge_sym_list += [[self.edge_list.index(edge_match_dict[key]) \
                                     for key in self.edge_list]]
+                vert_sym_list += [[self.vert_list.index(vert_match_dict[key]) \
+                                    for key in self.vert_list]]
                     
         # If desired, return only list of non-isomorphic edges; otherwise, return
         # all symmetries, given in terms of edge label mappings
         
         if non_iso_edges:
+            vert_union_find = UnionFind(self.num_vert)
+            
+            for sym in vert_sym_list:
+                for vert_label, map_label in enumerate(sym):
+                    vert_union_find.join(vert_label, map_label)
+            
             edge_union_find = UnionFind(num_edges)
             
-            for sym in graph_sym_list:
+            for sym in edge_sym_list:
                 for edge_label, map_label in enumerate(sym):
                     edge_union_find.join(edge_label, map_label)
                     
-            return edge_union_find.printRoots()
+            return [vert_union_find.printRoots(), edge_union_find.printRoots()]
             
-        return graph_sym_list
+        return [vert_sym_list, edge_sym_list]
 
     #-------------------------------------------------------------------------#
         
@@ -1504,6 +1389,7 @@ class Graph:
     #-------------------------------------------------------------------------#
     
     def threeMove(self, vert_label = None):
+        
         if vert_label != None:
             
             if type(vert_label) != int or vert_label < 0:
@@ -1559,18 +1445,28 @@ class Graph:
                 else:
                     adj_edges[iii].start = None
                     
+                    # Since the current vertex is the start of this edge, it
+                    # is removed, to be replaced later by one of the new
+                    # vertices, and the end is moved to the start. This flips
+                    # the edge orientation, so we flip the faces here as well.
+                    
+                    face_left, face_right = adj_edges[iii].face_left, adj_edges[iii].face_right
+                    
+                    adj_edges[iii].setLeftFace(face_right)
+                    adj_edges[iii].setRightFace(face_left)
+                    
                 current_vert.removeEdge(adj_edges[iii])
                     
-            edge_01 = Edge(start = current_vert, end = self.vert_list[-2])
-            edge_02 = Edge(start = current_vert, end = self.vert_list[-1])
+            edge_xy = Edge(start = current_vert, end = self.vert_list[-2])
+            edge_xz = Edge(start = current_vert, end = self.vert_list[-1])
             
-            self.edge_list = self.edge_list[:(first_index + 1)] + [edge_01, edge_02] + \
+            self.edge_list = self.edge_list[:(first_index + 1)] + [edge_xy, edge_xz] + \
                 self.edge_list[(first_index + 1):]
                 
-            current_vert.connectEdge(edge_01)
-            current_vert.connectEdge(edge_02)
-            self.vert_list[-2].connectEdge(edge_01)
-            self.vert_list[-1].connectEdge(edge_02)
+            current_vert.connectEdge(edge_xy)
+            current_vert.connectEdge(edge_xz)
+            self.vert_list[-2].connectEdge(edge_xy)
+            self.vert_list[-1].connectEdge(edge_xz)
                 
             # (2) change edge bx to by, add edge yz immediately after
             
@@ -1582,14 +1478,14 @@ class Graph:
                     adj_edges[1].orient = -adj_edges[1].orient
             adj_edges[1].end = self.vert_list[-2]
                 
-            edge_12 = Edge(start = self.vert_list[-2], end = self.vert_list[-1])
+            edge_yz = Edge(start = self.vert_list[-2], end = self.vert_list[-1])
             
-            self.edge_list = self.edge_list[:(second_index + 1)] + [edge_12] + \
+            self.edge_list = self.edge_list[:(second_index + 1)] + [edge_yz] + \
                 self.edge_list[(second_index + 1):]
             self.vert_list[-2].connectEdge(adj_edges[1])
             
-            self.vert_list[-2].connectEdge(edge_12)
-            self.vert_list[-1].connectEdge(edge_12)
+            self.vert_list[-2].connectEdge(edge_yz)
+            self.vert_list[-1].connectEdge(edge_yz)
             
             # (3) change edge cx to cz
             
@@ -1601,10 +1497,46 @@ class Graph:
                 
             self.vert_list[-1].connectEdge(adj_edges[2])
             
+            # Modify vertex, edge face lists as appropriate
+            
+            new_face = Face()
+            self.face_list += [new_face]
+            new_face.edge_list = [edge_xy, edge_yz, edge_xz]
+            
+            [face_a, face_b, face_c] = current_vert.face_list
+            
+            face_a_idx = face_a.edge_list.index(adj_edges[0])
+            face_a.edge_list = face_a.edge_list[:(face_a_idx + 1)] + [edge_xz] + \
+                face_a.edge_list[(face_a_idx + 1):]
+                
+            face_b_idx = face_b.edge_list.index(adj_edges[1])
+            face_b.edge_list = face_b.edge_list[:(face_b_idx + 1)] + [edge_xy] + \
+                face_b.edge_list[(face_b_idx + 1):]
+                
+            face_c_idx = face_c.edge_list.index(adj_edges[2])
+            face_c.edge_list = face_c.edge_list[:(face_c_idx + 1)] + [edge_yz] + \
+                face_c.edge_list[(face_c_idx + 1):]
+            
+            edge_xy.setLeftFace(new_face)
+            edge_xy.setRightFace(face_b)
+            
+            edge_xz.setLeftFace(face_a)
+            edge_xz.setRightFace(new_face)
+            
+            edge_yz.setLeftFace(new_face)
+            edge_yz.setRightFace(face_c)
+            
+            current_vert.face_list[2] = new_face
+            
+            self.vert_list[-2].face_list = [new_face, face_b, face_c]
+            self.vert_list[-1].face_list = [face_a, new_face, face_c]
+            
+            self.face_size_list = sorted([len(face.edge_list) for face in self.face_list])
+            
             # Return edges that have changed in graph edge list, so that edge
             # colors/orientations can be modified for new edges
             
-            return [edge_01, edge_02, edge_12]
+            return [edge_xy, edge_xz, edge_yz]
             
     #-------------------------------------------------------------------------#
     
@@ -1701,48 +1633,51 @@ class Graph:
             edge_xz = Edge(start = current_start, end = self.vert_list[-1])
             edge_xw = Edge(start = current_start, end = self.vert_list[-2])
             
-            if edge_ax == edge_bx:      # current_start has self-loop
+            # if edge_ax == edge_bx:      # current_start has self-loop
             
-                # (2a) if a = b = x (so cyclic order is xx xx xy), change first
-                #   xx -> xw, add xz xw immediately after
+            #     # (2a) if a = b = x (so cyclic order is xx xx xy), change first
+            #     #   xx -> xw, add xz xw immediately after
                 
-                edge_ax.end = self.vert_list[-2]
-                current_start.removeEdge(edge_bx)
+            #     edge_ax.end = self.vert_list[-2]
+            #     current_start.removeEdge(edge_ax)
                 
-                self.edge_list = self.edge_list[:(index_ax + 1)] + [edge_xz, \
-                    edge_xw] + self.edge_list[(index_ax + 1):]
+            #     self.edge_list = self.edge_list[:(index_ax + 1)] + [edge_xz, \
+            #         edge_xw] + self.edge_list[(index_ax + 1):]
                     
-                # new_edge_list = ['2a', edge_xz, edge_xw]
+            #     index_bx = index_ax
                 
-            else:
+            # else:
                 
-                # (2b) if a != b, change edge ax to aw, add xw immediately after;
-                #   add edge xz immediately after bx
-                
-                if edge_ax.start == current_start:
-                    edge_ax.start = edge_ax.end
-                    if edge_ax.color != None:
-                        edge_ax.orient = -edge_ax.orient
-                edge_ax.end = self.vert_list[-2]
-                current_start.removeEdge(edge_ax)
-                
-                self.edge_list = self.edge_list[:(index_ax + 1)] + [edge_xw] + \
-                    self.edge_list[(index_ax + 1):]
-                    
-                index_bx = self.edge_list.index(edge_bx)
-                
-                self.edge_list = self.edge_list[:(index_bx + 1)] + [edge_xz] + \
-                    self.edge_list[(index_bx + 1):]
-                    
-                # new_edge_list = ['2b', edge_xz]
-                    
-            current_start.connectEdge(edge_xz)
-            current_start.connectEdge(edge_xw)
+            # (2b) if a != b, change edge ax to aw, add xw immediately after;
+            #   add edge xz immediately after bx
             
-            self.vert_list[-2].connectEdge(edge_ax) 
-            self.vert_list[-2].connectEdge(edge_xw)
+            if edge_ax.start == current_start:
+                edge_ax.start = edge_ax.end
+                
+                # Since we are flipping the orientation of the edge, we must
+                # change the sign of the orientation, as well as the left,
+                # right faces
+                
+                if edge_ax.color != None:
+                    edge_ax.orient = -edge_ax.orient
+                    
+                ax_face_left, ax_face_right = edge_ax.face_left, edge_ax.face_right
+                
+                edge_ax.setLeftFace(ax_face_right)
+                edge_ax.setRightFace(ax_face_left)
+                    
+            edge_ax.end = self.vert_list[-2]
+            current_start.removeEdge(edge_ax)
             
-            self.vert_list[-1].connectEdge(edge_xz)
+            self.edge_list = self.edge_list[:(index_ax + 1)] + [edge_xw] + \
+                self.edge_list[(index_ax + 1):]
+                
+            # Check index of edge bx here, since it may have just shifted
+                
+            index_bx = self.edge_list.index(edge_bx)
+            
+            self.edge_list = self.edge_list[:(index_bx + 1)] + [edge_xz] + \
+                self.edge_list[(index_bx + 1):]
             
             new_edge_list = [edge_xz, edge_xw]
             
@@ -1754,59 +1689,158 @@ class Graph:
             index_cy = self.edge_list.index(edge_cy)
             
             edge_dy = current_end.edge_order[y_index - 1]     # current_edge not a self-loop
+            index_dy = self.edge_list.index(edge_dy)
             
             current_end.removeEdge(current_edge)
             
             edge_yw = Edge(start = current_end, end = self.vert_list[-2])
             edge_yz = Edge(start = current_end, end = self.vert_list[-1])
             
-            if edge_cy == edge_dy:      # current_start has self-loop
+            # if edge_cy == edge_dy:      # current_start has self-loop
             
-                # (4a) if c = d = y (so cyclic order is yy yy xy), change first
-                #   yy -> yz, add yw yz immediately after
+            #     # (4a) if c = d = y (so cyclic order is yy yy xy), change first
+            #     #   yy -> yz, add yw yz immediately after
                 
-                edge_cy.end = self.vert_list[-1]
-                current_end.removeEdge(edge_cy)
+            #     edge_cy.end = self.vert_list[-1]
+            #     current_end.removeEdge(edge_cy)
                 
-                self.edge_list = self.edge_list[:(index_cy + 1)] + [edge_yw, \
-                    edge_yz] + self.edge_list[(index_cy + 1):]
+            #     self.edge_list = self.edge_list[:(index_cy + 1)] + [edge_yw, \
+            #         edge_yz] + self.edge_list[(index_cy + 1):]
+                
+            # else:
+            
+            # (4b) if c != d, change edge cy to cz, add yz immediately after;
+            #   add edge yw immediately after dy
+            
+            if edge_cy.start == current_end:
+                edge_cy.start = edge_cy.end
+                
+                # Since we are flipping the orientation of the edge, we must
+                # change the sign of the orientation, as well as the left,
+                # right faces
+                
+                if edge_cy.orient != None:
+                    edge_cy.orient = -edge_cy.orient
                     
-                # new_edge_list[0] += '4a'
+                cy_face_left, cy_face_right = edge_cy.face_left, edge_cy.face_right
                 
-            else:
-                
-                # (4b) if c != d, change edge cy to cz, add yz immediately after;
-                #   add edge yw immediately after dy
-                
-                if edge_cy.start == current_end:
-                    edge_cy.start = edge_cy.end
-                    if edge_cy.orient != None:
-                        edge_cy.orient = -edge_cy.orient
-                edge_cy.end = self.vert_list[-1]
-                current_end.removeEdge(edge_cy)
-                
-                self.edge_list = self.edge_list[:(index_cy + 1)] + [edge_yz] + \
-                    self.edge_list[(index_cy + 1):]
-                
-                index_dy = self.edge_list.index(edge_dy)
-                
-                self.edge_list = self.edge_list[:(index_dy + 1)] + [edge_yw] + \
-                    self.edge_list[(index_dy + 1):]
+                edge_cy.setLeftFace(cy_face_right)
+                edge_cy.setRightFace(cy_face_left)
                     
-                # new_edge_list[0] += '4b'
+            edge_cy.end = self.vert_list[-1]
+            current_end.removeEdge(edge_cy)
+            
+            self.edge_list = self.edge_list[:(index_cy + 1)] + [edge_yz] + \
+                self.edge_list[(index_cy + 1):]
                 
-            current_end.connectEdge(edge_yw)
-            current_end.connectEdge(edge_yz)
+            # Check index of edge dy here, since it may have just shifted
+                
+            index_dy = self.edge_list.index(edge_dy)
             
-            self.vert_list[-2].connectEdge(edge_yw)
-            
-            self.vert_list[-1].connectEdge(edge_cy)
-            self.vert_list[-1].connectEdge(edge_yz)
-            
-            self.edge_list.remove(current_edge)
-            del current_edge
-            
+            self.edge_list = self.edge_list[:(index_dy + 1)] + [edge_yw] + \
+                self.edge_list[(index_dy + 1):]
+
             new_edge_list += [edge_yw, edge_yz]
+        
+            # Modify vertex, edge face lists as appropriate
+            
+            new_face = Face()
+            self.face_list += [new_face]
+            new_face.edge_list = [edge_xz, edge_yz, edge_yw, edge_xw]
+            
+            face_left = current_edge.face_left
+            face_right = current_edge.face_right
+            [face_start] = [face for face in current_start.face_list \
+                            if face not in [face_left, face_right]]
+            [face_end] = [face for face in current_end.face_list \
+                            if face not in [face_left, face_right]]
+                
+            face_left_idx = face_left.edge_list.index(current_edge)
+            face_left.edge_list[face_left_idx] = edge_yw
+                
+            face_right_idx = face_right.edge_list.index(current_edge)
+            face_right.edge_list[face_right_idx] = edge_xz
+            
+            face_start_idx = face_start.edge_list.index(edge_bx)
+            face_start.edge_list = face_start.edge_list[:(face_start_idx + 1)] + \
+                [edge_xw] + face_start.edge_list[(face_start_idx + 1):]
+                
+            face_end_idx = face_end.edge_list.index(edge_dy)
+            face_end.edge_list = face_end.edge_list[:(face_end_idx + 1)] + \
+                [edge_yz] + face_end.edge_list[(face_end_idx + 1):]
+                
+            self.face_size_list = sorted([len(face.edge_list) for face in self.face_list])
+                
+            edge_xz.setLeftFace(new_face)
+            edge_xz.setRightFace(face_right)
+            
+            edge_yz.setLeftFace(face_end)
+            edge_yz.setRightFace(new_face)
+            
+            edge_yw.setLeftFace(new_face)
+            edge_yw.setRightFace(face_left)
+            
+            edge_xw.setLeftFace(face_start)
+            edge_xw.setRightFace(new_face)
+                
+            # Now that we are associating the edges in vertex cyclic orders
+            # with the corresponding faces incident to the vertex, we have to
+            # make sure that the vertex cyclic order and face list are
+            # consistent with the edge list for the graph. The cyclic order
+            # for the vertex x depends on the original order of ax, bx in the
+            # edge list. All of the statements below assume that there are
+            # no self-loops.
+            
+            #   x: If ax comes before bx, then the procedure outlined above
+            #   will give a final edge list in the order aw xw bx xz, while
+            #   if bx comes before ax, then it will be bx xz aw xw.
+            
+            #   w: If ax comes before dy, then we will have aw xw dy wy, while
+            #   if dy comes before ax, then we get dy wy aw xw.
+            
+            #   y: If cy comes before dy, then we have cz yz dy wy, while if
+            #   dy comes before cy, we get dy wy cz yz.
+            
+            #   z: If bx comes before cy, we have bx xz cz yz, while if cy
+            #   comes before bx, we get cz yz bx xz.
+            
+            current_start.color_list = [0] * 3
+            current_start.in_arrow = [0] * 3
+            if index_ax < index_bx:
+                current_start.edge_order = [edge_xw, edge_bx, edge_xz]
+                current_start.face_list = [new_face, face_start, face_right]
+            else:
+                current_start.edge_order = [edge_bx, edge_xz, edge_xw]
+                current_start.face_list = [face_start, face_right, new_face]
+                
+            self.vert_list[-2].color_list = [0] * 3
+            self.vert_list[-2].in_arrow = [0] * 3
+            if index_ax < index_dy:
+                self.vert_list[-2].edge_order = [edge_ax, edge_xw, edge_yw]
+                self.vert_list[-2].face_list = [face_left, face_start, new_face]
+            else:
+                self.vert_list[-2].edge_order = [edge_yw, edge_ax, edge_xw]
+                self.vert_list[-2].face_list = [new_face, face_left, face_start]
+            
+            current_end.color_list = [0] * 3
+            current_end.in_arrow = [0] * 3
+            if index_cy < index_dy:
+                current_end.edge_order = [edge_yz, edge_dy, edge_yw]
+                current_end.face_list = [new_face, face_end, face_left]
+            else:
+                current_end.edge_order = [edge_dy, edge_yw, edge_yz]
+                current_end.face_list = [face_end, face_left, new_face]
+                
+            self.vert_list[-1].color_list = [0] * 3
+            self.vert_list[-1].in_arrow = [0] * 3
+            if index_bx < index_cy:
+                self.vert_list[-1].edge_order = [edge_xz, edge_cy, edge_yz]
+                self.vert_list[-1].face_list = [new_face, face_right, face_end]
+            else:
+                self.vert_list[-1].edge_order = [edge_cy, edge_yz, edge_xz]
+                self.vert_list[-1].face_list = [face_right, face_end, new_face]
+                
+            self.edge_list.remove(current_edge)
             
             # Return edges that have been added to graph edge list, so that edge
             # orientations, colors can be modified for new edges; note that
@@ -1823,6 +1857,9 @@ class Graph:
     #-------------------------------------------------------------------------#
     
     def findFaces(self):
+        
+        if len(self.face_list) == 2 + self.num_vert // 2:
+            return False
         
         # Find all possible ways of traveling through each graph vertex such
         # that the incoming, outgoing edges are CCW as seen in cyclic order
@@ -1842,20 +1879,30 @@ class Graph:
             
             (current_vert, next_edge, start_edge) = corner_queue.pop()
             
-            # Create new face, update incident vertex and starting edge
+            # Create new face, update incident vertex and starting edge; since
+            # the start edge is "before" tbe current vertex as you go around
+            # the face, the face assignment here is opposite to the rest of the
+            # face below.
             
             current_face = Face()
             self.face_list += [current_face]
             
-            current_edge = start_edge
-            
             if current_vert == start_edge.start:
-                start_edge.setLeftFace(current_face)
-            else:
                 start_edge.setRightFace(current_face)
+            else:
+                start_edge.setLeftFace(current_face)
                 
-            current_vert.addFace(current_face)
+            # current_vert.addFace(current_face)
             current_face.addEdge(start_edge)
+            
+            # We associate the ordering in the face list for the vertex with
+            # the same ordering as the cyclic edge order. To make this work,
+            # edge iii in the cyclic order means we place the face at index iii
+            # which also contains this edge; this requires the edge be
+            # incoming at the vertex.
+            
+            start_edge_idx = current_vert.edge_order.index(start_edge)
+            current_vert.face_list[start_edge_idx] = current_face
             
             # Go through the rest of the face
             
@@ -1874,8 +1921,11 @@ class Graph:
                     
                 # Add current face to vertex, and current edge to face
                     
-                current_vert.addFace(current_face)
+                # current_vert.addFace(current_face)
                 current_face.addEdge(current_edge)
+                
+                current_edge_idx = current_vert.edge_order.index(current_edge)
+                current_vert.face_list[current_edge_idx] = current_face
                 
                 # Find next edge to travel down, remove the vertex and edge
                 # pair from queue
@@ -1884,6 +1934,10 @@ class Graph:
                 next_edge = current_vert.edge_order[current_vert_idx - 1]
                 
                 corner_queue.remove((current_vert, next_edge, current_edge))
+                
+        # Record face sizes for posterity
+        
+        self.face_size_list = sorted([len(face.edge_list) for face in self.face_list])
         
     #-------------------------------------------------------------------------#
     
@@ -1908,7 +1962,14 @@ class Graph:
             
             if self.face_list == []:
                 self.findFaces()
-            
+                
+            face_left = current_edge.leftFace()
+            face_right = current_edge.rightFace()
+            [face_start] = [face for face in current_start.face_list \
+                            if face not in [face_left, face_right]]
+            [face_end] = [face for face in current_end.face_list \
+                            if face not in [face_left, face_right]]
+                
             # This is similar to fourMove() defined earlier, except no new
             # vertices are created; instead, existing edges have their start,
             # end attributes changed around. We also remove the orientation and
@@ -1926,16 +1987,12 @@ class Graph:
             if no_multi:
                 
                 # If no_multi is True (i.e. no multiple edges allowed between
-                # vertices), we must check that the two faces not shared by
+                # vertices), we must check that the two faces *not* shared by
                 # x, y do not have an edge in common
                 
-                union_face_list = list(set(current_start.face_list).union(current_end.face_list))
-                intersection_face_list = list(set(current_start.face_list).intersection(current_end.face_list))
-                
-                unshared_face_list = [face for face in union_face_list \
-                                      if face not in intersection_face_list]
+                shared_edge_list = list(set(face_start.edge_list).intersection(face_end.edge_list))
 
-                if len(unshared_face_list) < 2 or len(list(set(unshared_face_list[0].edge_list).intersection(unshared_face_list[1].edge_list))) > 0:
+                if len(shared_edge_list) > 0:
                     raise AttributeError('Pachner 2-2 move gives graph not dual to triangulation')
                     
             # (0) remove orientation, color from xy, if necessary; in_arrow and
@@ -1958,8 +2015,14 @@ class Graph:
                 
             if edge_ax.start.label > edge_ax.end.label:
                 edge_ax.start, edge_ax.end = edge_ax.end, edge_ax.start
+                
+                # Flip orientation (if it exists), and which face is on which side
+                
                 if edge_ax.orient:
                     edge_ax.orient = -edge_ax.orient
+                    
+                ax_face_left, ax_face_right = edge_ax.face_left, edge_ax.face_right
+                edge_ax.face_left, edge_ax.face_right = ax_face_right, ax_face_left
                 
             # (2) Change cy to cx
             
@@ -1972,8 +2035,14 @@ class Graph:
                 
             if edge_cy.start.label > edge_cy.end.label:
                 edge_cy.start, edge_cy.end = edge_cy.end, edge_cy.start
+                
+                # Flip orientation (if it exists), and which face is on which side
+                
                 if edge_cy.orient:
                     edge_cy.orient = -edge_cy.orient
+                    
+                cy_face_left, cy_face_right = edge_cy.face_left, edge_cy.face_right
+                edge_cy.face_left, edge_cy.face_right = cy_face_right, cy_face_left
                 
             # (3) Change cyclic order for vertex x to be bx cx xy, for vertex
             # y to be dy ay xy. While this is done, ensure that in_arrow is
@@ -2034,9 +2103,6 @@ class Graph:
             self.edge_list.remove(current_edge)
             edge_list = [edge_ax, edge_bx, edge_cy, edge_dy]
             index_list = [self.edge_list.index(edge) for edge in edge_list]
-            
-            # for iii in range(4):
-            #     self.edge_list[index_list[iii - 1]] = edge_list[iii]
         
             if index_list[2] < index_list[1]:           # cy comes before bx
                 slot_list = [iii for iii in range(3 * self.num_vert // 2) \
@@ -2054,6 +2120,33 @@ class Graph:
             
             slot = slot_list[0]
             self.edge_list = self.edge_list[:slot] + [current_edge] + self.edge_list[slot:]
+            
+            # Modify vertex face lists, edge face list as appropriate
+            
+            current_edge.start.face_list.remove(face_left)
+            current_edge.end.face_list.remove(face_right)
+            
+            current_edge.start.face_list.append(face_end)
+            current_edge.end.face_list.append(face_start)
+            
+            current_edge.setLeftFace(face_start)
+            current_edge.setRightFace(face_end)
+            
+            face_left.edge_list.remove(current_edge)
+            face_right.edge_list.remove(current_edge)
+            
+            edge_bx_idx = face_start.edge_list.index(edge_bx)
+            face_start.edge_list = face_start.edge_list[:edge_bx_idx] + [current_edge] + \
+                face_start.edge_list[edge_bx_idx:]
+                
+            edge_dy_idx = face_end.edge_list.index(edge_dy)
+            face_end.edge_list = face_end.edge_list[:edge_dy_idx] + [current_edge] + \
+                face_end.edge_list[edge_dy_idx:]
+                
+            self.face_size_list = sorted([len(face.edge_list) for face in self.face_list])
+            
+            # Return new edge, so that the orientation, color can be updated
+            # as desired
                 
             return current_edge
         
