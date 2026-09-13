@@ -4,7 +4,7 @@
 
 This package allows one to create a Graph object representing a 3-regular graph embedded in a 2d surface. This graph is thus dual to the simplicial triangulation of the surface. One can study the properties of the graph, and use Pachner moves (dual to those for the triangulation) to obtain other graphs.
 
-Below is a brief description of the package. For more information, see the `marimo` notebooks located in the folder `docs/`.
+Below is a brief description of the package. For more information, see the `marimo` [notebook](https://molab.marimo.io/github/dcartin/trivalent/blob/master/docs/trivalent-guide.py) for an overview of using `Graph` objects.
 
 ## Dependencies
 
