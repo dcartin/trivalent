@@ -412,8 +412,8 @@ class Graph:
         
         # Default placeholders for quantities to be computed when needed
         
-        self.num_faces = None
-        self.face_idx_list = None
+        self._num_faces = None
+        self._face_idx_list = None
         self.face_size_list = None
         
         # Set hard limit for maximum number of vertices, edges here
@@ -433,8 +433,8 @@ class Graph:
             
             edge_array = np.array(ordered_edge_list, dtype = np.int8)
         
-            self.num_edges = edge_array.shape[0]
-            self.num_vert = 2 * self.num_edges // 3
+            self._num_edges = edge_array.shape[0]
+            self._num_vert = 2 * self._num_edges // 3
             
             # Pre-allocate arrays to have room for max number of vertices, edges
                 
@@ -448,7 +448,7 @@ class Graph:
             if validate == True:
                 self._validate_edge_list(edge_array)
                 
-            self.edge_list[:self.num_edges] = edge_array
+            self.edge_list[:self._num_edges] = edge_array
             
             # Use implicit edge order to determine vertex cyclic orders
             
@@ -460,10 +460,43 @@ class Graph:
             # (not coded at this moment, but could include external specification
             # of the following variables)
             
-            self.num_vert = None
-            self.num_edges = None
+            self._num_vert = None
+            self._num_edges = None
             self.edge_list = None
             self.vert_cyc_order = None
+            
+    #-------------------------------------------------------------------------#
+    
+    @property
+    def num_vert(self):
+        """
+            Return number of vertices for graph
+        """
+        
+        return self._num_vert
+        
+    #-------------------------------------------------------------------------#
+    
+    @property
+    def num_edges(self):
+        """
+            Return number of edges for graph
+        """
+        
+        return self._num_edges
+        
+    #-------------------------------------------------------------------------#
+    
+    @property
+    def num_faces(self):
+        """
+            Return number of faces for graph
+        """
+    
+        if self._face_idx_list is None:
+            self.find_faces()
+        
+        return self._num_faces
             
     #-------------------------------------------------------------------------#
     
@@ -545,11 +578,11 @@ class Graph:
         
         # Track where to put the next appearance of an edge for each vertex
         
-        vertex_places = np.zeros(self.num_vert, dtype = np.uint8)
+        vertex_places = np.zeros(self._num_vert, dtype = np.uint8)
         
         # Go through edge list, place edges in proper vertex cyclic order
         
-        for edge_idx in range(self.num_edges):
+        for edge_idx in range(self._num_edges):
             start, end = self.edge_list[edge_idx]
             
             start_place = vertex_places[start]
@@ -566,7 +599,7 @@ class Graph:
         
         # Verify whether number of vertices, edges are equal
         
-        if self.num_vert != other.num_vert or self.num_edges != other.num_edges:
+        if self._num_vert != other._num_vert or self._num_edges != other._num_edges:
             return False
         
         # Load in vertex face triples to (1) compute profile dicts for each
@@ -603,7 +636,7 @@ class Graph:
         # condition. Then choose *one* vertex from self, and try to map this
         # vertex to all of the vertices in the set from other.
         
-        match_buffer = np.zeros((1, self.num_edges), dtype = np.int8)
+        match_buffer = np.zeros((1, self._num_edges), dtype = np.int8)
         
         min_triple = min(self_profile, key = lambda k : self_profile[k])
         
@@ -616,10 +649,10 @@ class Graph:
         result = _graph_isomorphism(
             self_vert_choices[0],
             other_vert_choices,
-            self.edge_list[:self.num_edges].astype(np.int8),
-            self.vert_cyc_order[:self.num_vert],
-            other.edge_list[:other.num_edges].astype(np.int8),
-            other.vert_cyc_order[:other.num_vert],
+            self.edge_list[:self._num_edges].astype(np.int8),
+            self.vert_cyc_order[:self._num_vert],
+            other.edge_list[:other._num_edges].astype(np.int8),
+            other.vert_cyc_order[:other._num_vert],
             find_all = False,
             symmetry_buffer = match_buffer
             )
@@ -655,12 +688,12 @@ class Graph:
         # 3. Calculate bounded buffer allocation size: 3 * K
         
         max_bound = min(3 * len(vert_choices), self.DEFAULT_MAX_SYM)
-        sym_list = np.zeros((max_bound, self.num_edges), dtype=np.int8)
+        sym_list = np.zeros((max_bound, self._num_edges), dtype=np.int8)
         
         # Slice raw properties down to active graph limits
         
-        el = self.edge_list[:self.num_edges].astype(np.int8)
-        vco = self.vert_cyc_order[:self.num_vert].astype(np.int8)
+        el = self.edge_list[:self._num_edges].astype(np.int8)
+        vco = self.vert_cyc_order[:self._num_vert].astype(np.int8)
         
         sym_count = _graph_isomorphism(
             vert_choices[0], vert_choices,
@@ -680,7 +713,7 @@ class Graph:
             Return only those edges that are currently active
         """
         
-        return self.edge_list[:self.num_edges]
+        return self.edge_list[:self._num_edges]
         
     #-------------------------------------------------------------------------#
     
@@ -690,7 +723,7 @@ class Graph:
             Return only cyclic orders of currently active vertices
         """
         
-        return self.vert_cyc_order[:self.num_vert]
+        return self.vert_cyc_order[:self._num_vert]
         
     #-------------------------------------------------------------------------#
     
@@ -700,10 +733,10 @@ class Graph:
             Return left-, right-hand face indices for all active edges
         """
         
-        if self.face_idx_list is None:
+        if self._face_idx_list is None:
             self.find_faces()
         
-        return self.face_idx_list[:self.num_edges]
+        return self._face_idx_list[:self._num_edges]
         
     #-------------------------------------------------------------------------#
     
@@ -713,10 +746,10 @@ class Graph:
             Return face sizes
         """
         
-        if self.face_idx_list is None:
+        if self._face_idx_list is None:
             self.find_faces()
         
-        return self.face_size_list[:self.num_edges]
+        return self.face_size_list[:self._num_edges]
         
     #-------------------------------------------------------------------------#
     
@@ -728,16 +761,16 @@ class Graph:
         
         # See if face indices, signatures have been calculated; if not, do so
         
-        if self.face_idx_list is None:
+        if self._face_idx_list is None:
             self.find_faces()
             
         # Go through every vertex, find sizes of incident faces and sort so it
         # is smallest version; note we preserve the cyclic order of the faces
         # around each vertex to weed out mirror images
         
-        vert_triples = np.zeros((self.num_vert, 3), dtype = np.uint8)
+        vert_triples = np.zeros((self._num_vert, 3), dtype = np.uint8)
         
-        for vert in range(self.num_vert):
+        for vert in range(self._num_vert):
             
             face_sizes = []
             
@@ -747,9 +780,9 @@ class Graph:
                 # to grab the correct face to maintain correct CCW direction
                 
                 if self.edge_list[edge, 0] == vert:
-                    face = self.face_idx_list[edge, 1]  # Start -> right face
+                    face = self._face_idx_list[edge, 1]  # Start -> right face
                 else:
-                    face = self.face_idx_list[edge, 0]  # End -> left face
+                    face = self._face_idx_list[edge, 0]  # End -> left face
                 
                 face_sizes.append(self.face_size_list[face])
                 
@@ -778,14 +811,14 @@ class Graph:
         # face_idx_list[edge_idx][0] the face index for the left-hand face,
         # and face_idx_list[edge_idx][1] the right-hand face
         
-        self.face_idx_list = np.full((self.max_num_edges, 2), self.max_num_vert, \
+        self._face_idx_list = np.full((self.max_num_edges, 2), self.max_num_vert, \
                                      dtype = np.uint8)
         
         # Track whether the edge has been traversed, in both directions, using
         # shape (numEdges, 2) array; visited[edge][0] is forward direction, i.e.
         # start -> end, while visited[edge_idx][1] is backwards direction
         
-        visited = np.zeros((self.num_edges, 2), dtype = np.bool_)
+        visited = np.zeros((self._num_edges, 2), dtype = np.bool_)
         
         face_signature_list = []
         
@@ -797,7 +830,7 @@ class Graph:
         
         face_idx = -1
         
-        for start_edge_idx in range(self.num_edges):
+        for start_edge_idx in range(self._num_edges):
             for start_dir in [0, 1]:
                 if visited[start_edge_idx][start_dir]:
                     continue  # Already visited edge in this direction
@@ -821,7 +854,7 @@ class Graph:
                     
                     visited[curr_edge_idx, curr_dir] = True
                     face_size += 1
-                    self.face_idx_list[curr_edge_idx, curr_dir] = face_idx
+                    self._face_idx_list[curr_edge_idx, curr_dir] = face_idx
                     
                     # At current vertex, travel around in CW direction to next
                     # vertex in path CCW around the face
@@ -859,7 +892,7 @@ class Graph:
                 
         # Update number of faces, list of face sizes indices by face_idx
         
-        self.num_faces = (face_idx + 1)
+        self._num_faces = (face_idx + 1)
         self.face_size_list = np.array(face_signature_list, dtype = np.uint8)
         
     #-------------------------------------------------------------------------#
@@ -869,7 +902,7 @@ class Graph:
             Use the Pachner 1-3 move to expand the given vertex into a 3-cycle
         """
         
-        if (self.num_vert + 2) > self.DEFAULT_MAX_VERT:
+        if (self._num_vert + 2) > self.DEFAULT_MAX_VERT:
             raise ValueError('Pachner 1-3 move exceeds MAX_NUM_VERT value')
         
         # Get incident edges to vertex, write new edge lists by including new
@@ -878,38 +911,38 @@ class Graph:
         edge_aaa, edge_bbb, edge_ccc = self.vert_cyc_order[vert_idx]
         
         if self.edge_list[edge_bbb, 0] == vert_idx:
-            self.edge_list[edge_bbb] = [self.edge_list[edge_bbb, 1], self.num_vert]
+            self.edge_list[edge_bbb] = [self.edge_list[edge_bbb, 1], self._num_vert]
         else:
-            self.edge_list[edge_bbb, 1] = self.num_vert
+            self.edge_list[edge_bbb, 1] = self._num_vert
             
         if self.edge_list[edge_ccc, 0] == vert_idx:
-            self.edge_list[edge_ccc] = [self.edge_list[edge_ccc, 1], self.num_vert + 1]
+            self.edge_list[edge_ccc] = [self.edge_list[edge_ccc, 1], self._num_vert + 1]
         else:
-            self.edge_list[edge_ccc, 1] = self.num_vert + 1
+            self.edge_list[edge_ccc, 1] = self._num_vert + 1
         
         # Create two new vertices, add them to end of edge list and vertex
         # cyclic order list
         
-        self.edge_list[self.num_edges] = [vert_idx, self.num_vert]
-        self.edge_list[self.num_edges + 1] = [vert_idx, self.num_vert + 1]
-        self.edge_list[self.num_edges + 2] = [self.num_vert, self.num_vert + 1]
+        self.edge_list[self._num_edges] = [vert_idx, self._num_vert]
+        self.edge_list[self._num_edges + 1] = [vert_idx, self._num_vert + 1]
+        self.edge_list[self._num_edges + 2] = [self._num_vert, self._num_vert + 1]
         
-        self.vert_cyc_order[vert_idx] = [edge_aaa, self.num_edges, self.num_edges + 1]
-        self.vert_cyc_order[self.num_vert] = [self.num_edges, edge_bbb, self.num_edges + 2]
-        self.vert_cyc_order[self.num_vert + 1] = [self.num_edges + 1, self.num_edges + 2, edge_ccc]
+        self.vert_cyc_order[vert_idx] = [edge_aaa, self._num_edges, self._num_edges + 1]
+        self.vert_cyc_order[self._num_vert] = [self._num_edges, edge_bbb, self._num_edges + 2]
+        self.vert_cyc_order[self._num_vert + 1] = [self._num_edges + 1, self._num_edges + 2, edge_ccc]
         
         # Change vertex, edge numbers
         
-        self.num_vert += 2
-        self.num_edges += 3
+        self._num_vert += 2
+        self._num_edges += 3
     
         # Face information is no longer valid
         
-        self.face_idx_list = None
+        self._face_idx_list = None
         self.face_size_list = None
         
-        if self.num_faces is not None:
-            self.num_faces += 2
+        if self._num_faces is not None:
+            self._num_faces += 2
     
     #-------------------------------------------------------------------------#
     
@@ -919,8 +952,8 @@ class Graph:
             with its four neighboring vertices
         """
         
-        if (edge_idx < 0) or (edge_idx >= self.num_edges):
-            raise ValueError(f'Edge index needs to be between 0 and {self.num_vert}')
+        if (edge_idx < 0) or (edge_idx >= self._num_edges):
+            raise ValueError(f'Edge index needs to be between 0 and {self._num_vert}')
         
         start_vert, end_vert = self.edge_list[edge_idx]
         
@@ -942,7 +975,7 @@ class Graph:
         # To preserve 3-connectedness, faces *not* incident to chosen edge
         # cannot already share an edge; first, find faces if not already done
         
-        if self.face_idx_list is None:
+        if self._face_idx_list is None:
             self.find_faces()
             
         # Find the faces at each vertex that are not incident to chosen edge,
@@ -954,13 +987,13 @@ class Graph:
         aaa_side = np.where(self.edge_list[aaa] == start_vert)[0].item()
         ccc_side = np.where(self.edge_list[ccc] == end_vert)[0].item()
             
-        start_face_idx = self.face_idx_list[aaa, aaa_side]
-        end_face_idx = self.face_idx_list[ccc, ccc_side]
+        start_face_idx = self._face_idx_list[aaa, aaa_side]
+        end_face_idx = self._face_idx_list[ccc, ccc_side]
         
-        appear_same = (self.face_idx_list[:, 0] == start_face_idx) & \
-                      (self.face_idx_list[:, 1] == end_face_idx)
-        appear_diff = (self.face_idx_list[:, 1] == start_face_idx) & \
-                      (self.face_idx_list[:, 0] == end_face_idx)
+        appear_same = (self._face_idx_list[:, 0] == start_face_idx) & \
+                      (self._face_idx_list[:, 1] == end_face_idx)
+        appear_diff = (self._face_idx_list[:, 1] == start_face_idx) & \
+                      (self._face_idx_list[:, 0] == end_face_idx)
         
         if np.any(appear_same | appear_diff):
             
@@ -981,7 +1014,7 @@ class Graph:
         # maintain start < end for vertex labels; these are ax -> ay and
         # cy -> cx.
         
-        move_perm = np.arange(1, self.num_edges + 1, dtype = np.int8)
+        move_perm = np.arange(1, self._num_edges + 1, dtype = np.int8)
         
         if start_vert == self.edge_list[aaa, 0]:
             aaa_vert = self.edge_list[aaa, 1]
@@ -1035,10 +1068,10 @@ class Graph:
         # so add one to start choices
     
         start_bc = ccc + 1
-        end_bc = bbb if (ccc < bbb) else (bbb + self.num_edges)
+        end_bc = bbb if (ccc < bbb) else (bbb + self._num_edges)
         
         start_ad = aaa + 1
-        end_ad = ddd if (aaa < ddd) else (ddd + self.num_edges)
+        end_ad = ddd if (aaa < ddd) else (ddd + self._num_edges)
         
         start_slot = max(start_bc, start_ad)
         end_slot = min(end_bc, end_ad)
@@ -1055,7 +1088,7 @@ class Graph:
         # The orderings ay dy cx bx does not have consistent starting orderings,
         # so cannot appear as final orders. 
         
-        if start_slot <= self.num_edges < end_slot:
+        if start_slot <= self._num_edges < end_slot:
             slot = 0
         elif end_slot < start_slot:
             
@@ -1063,7 +1096,7 @@ class Graph:
             
             slot = min(start_bc, start_ad)
         else:
-            slot = start_slot % self.num_edges
+            slot = start_slot % self._num_edges
             
         # Move edges according to chosen new position
 
@@ -1106,7 +1139,7 @@ class Graph:
             
         # Face information is no longer accurate, since faces have been permuted
         
-        self.face_idx_list = None
+        self._face_idx_list = None
         self.face_size_list = None
             
         # 2-2 move was successful, so return edge_idx as confirmation; if the
@@ -1129,8 +1162,8 @@ class Graph:
         if len(cycle_list) != 3:
             raise ValueError('A list of three edge indices must be given.')
 
-        if np.any((cycle_list < 0) | (cycle_list > self.num_edges)):
-            raise ValueError(f'Edge indices must be between 0 and {self.num_edges - 1}')
+        if np.any((cycle_list < 0) | (cycle_list > self._num_edges)):
+            raise ValueError(f'Edge indices must be between 0 and {self._num_edges - 1}')
 
         # Identify vertices on 3-cycle, and external edges incident to those
         # edges. The external edges are used for the cyclic order of the one
@@ -1218,21 +1251,21 @@ class Graph:
 
         new_vert = [iii for iii in range(bbb)] + [aaa] + \
             [(iii - 1) for iii in range(bbb + 1, ccc)] + [aaa] + \
-            [(iii - 2) for iii in range(ccc + 1, self.num_vert)]
+            [(iii - 2) for iii in range(ccc + 1, self._num_vert)]
 
-        new_edges = [iii for iii in range(xxx)] + [self.num_edges] + \
-            [(iii - 1) for iii in range(xxx + 1, yyy)] + [self.num_edges] + \
-            [(iii - 2) for iii in range(yyy + 1, zzz)] + [self.num_edges] + \
-            [(iii - 3) for iii in range(zzz + 1, self.num_edges)]
+        new_edges = [iii for iii in range(xxx)] + [self._num_edges] + \
+            [(iii - 1) for iii in range(xxx + 1, yyy)] + [self._num_edges] + \
+            [(iii - 2) for iii in range(yyy + 1, zzz)] + [self._num_edges] + \
+            [(iii - 3) for iii in range(zzz + 1, self._num_edges)]
 
         new_cyc_order[:bbb] = self.vert_cyc_order[:bbb]
         new_cyc_order[bbb : (ccc - 1)] = self.vert_cyc_order[(bbb + 1) : ccc]
-        new_cyc_order[(ccc - 1) : (self.num_vert - 2)] = self.vert_cyc_order[(ccc + 1) : self.num_vert]
+        new_cyc_order[(ccc - 1) : (self._num_vert - 2)] = self.vert_cyc_order[(ccc + 1) : self._num_vert]
 
         new_edge_list[:xxx] = self.edge_list[:xxx]
         new_edge_list[xxx : (yyy - 1)] = self.edge_list[(xxx + 1) : yyy]
         new_edge_list[(yyy - 1) : (zzz - 2)] = self.edge_list[(yyy + 1) : zzz]
-        new_edge_list[(zzz - 2) : (self.num_edges - 3)] = self.edge_list[(zzz + 1) : self.num_edges]
+        new_edge_list[(zzz - 2) : (self._num_edges - 3)] = self.edge_list[(zzz + 1) : self._num_edges]
 
         # Put new cyclic order for kept vertex v, so old edge labels are 
         # remapped by new_edges permutation
@@ -1241,11 +1274,11 @@ class Graph:
 
         # Map old vertex, edge labels to new ones after deletions
 
-        for row in range(self.num_vert - 2):
+        for row in range(self._num_vert - 2):
             for col in range(3):
                 new_cyc_order[row, col] = new_edges[new_cyc_order[row, col]]
 
-        for row in range(self.num_edges - 3):
+        for row in range(self._num_edges - 3):
             for col in range(2):
                 new_edge_list[row, col] = new_vert[new_edge_list[row, col]]
 
@@ -1257,8 +1290,8 @@ class Graph:
         self.vert_cyc_order = new_cyc_order
         self.edge_list = new_edge_list
 
-        self.num_vert -= 2
-        self.num_edges -= 3
+        self._num_vert -= 2
+        self._num_edges -= 3
         
         #---------------------------------------------------------------------#
         # Vertex cyclic order may be inconsistent with edge list, so recompute
@@ -1267,10 +1300,10 @@ class Graph:
 
         # Face information is no longer accurate, since faces have been permuted
 
-        self.face_idx_list = None
+        self._face_idx_list = None
         self.face_size_list = None
         
-        if self.num_faces is not None:
-            self.num_faces -= 1
+        if self._num_faces is not None:
+            self._num_faces -= 1
         
     #-------------------------------------------------------------------------#
