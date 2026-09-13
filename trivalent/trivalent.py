@@ -414,16 +414,16 @@ class Graph:
         
         self._num_faces = None
         self._face_idx_list = None
-        self.face_size_list = None
+        self._face_size_list = None
         
         # Set hard limit for maximum number of vertices, edges here
         
         if max_num_vert is not None:
-            self.max_num_vert = max_num_vert
-            self.max_num_edges = 3 * max_num_vert // 2
+            self._max_num_vert = max_num_vert
+            self._max_num_edges = 3 * max_num_vert // 2
         else:
-            self.max_num_vert = self.DEFAULT_MAX_VERT
-            self.max_num_edges = 3 * self.DEFAULT_MAX_VERT // 2
+            self._max_num_vert = self.DEFAULT_MAX_VERT
+            self._max_num_edges = 3 * self.DEFAULT_MAX_VERT // 2
             
         # If an edge list is passed when Graph is created, assume it has an
         # implicit order based on vertex cyclic orders; otherwise, initialize
@@ -438,9 +438,9 @@ class Graph:
             
             # Pre-allocate arrays to have room for max number of vertices, edges
                 
-            self.vert_cyc_order = np.full((self.max_num_vert, 3), self.max_num_edges, \
+            self._vert_cyc_order = np.full((self._max_num_vert, 3), self._max_num_edges, \
                                           dtype = np.uint8)
-            self.edge_list = np.full((self.max_num_edges, 2), self.max_num_vert, \
+            self._edge_list = np.full((self._max_num_edges, 2), self._max_num_vert, \
                                      dtype = np.int8)
             
             # Validate that edge list is sensible
@@ -448,7 +448,7 @@ class Graph:
             if validate == True:
                 self._validate_edge_list(edge_array)
                 
-            self.edge_list[:self._num_edges] = edge_array
+            self._edge_list[:self._num_edges] = edge_array
             
             # Use implicit edge order to determine vertex cyclic orders
             
@@ -462,40 +462,29 @@ class Graph:
             
             self._num_vert = None
             self._num_edges = None
-            self.edge_list = None
-            self.vert_cyc_order = None
+            self._edge_list = None
+            self._vert_cyc_order = None
             
     #-------------------------------------------------------------------------#
     
     @property
     def num_vert(self):
-        """
-            Return number of vertices for graph
-        """
-        
         return self._num_vert
-        
+                
     #-------------------------------------------------------------------------#
     
     @property
     def num_edges(self):
-        """
-            Return number of edges for graph
-        """
-        
         return self._num_edges
-        
+            
     #-------------------------------------------------------------------------#
     
     @property
     def num_faces(self):
-        """
-            Return number of faces for graph
-        """
     
         if self._face_idx_list is None:
             self.find_faces()
-        
+            
         return self._num_faces
             
     #-------------------------------------------------------------------------#
@@ -583,14 +572,14 @@ class Graph:
         # Go through edge list, place edges in proper vertex cyclic order
         
         for edge_idx in range(self._num_edges):
-            start, end = self.edge_list[edge_idx]
+            start, end = self._edge_list[edge_idx]
             
             start_place = vertex_places[start]
-            self.vert_cyc_order[start, start_place] = edge_idx
+            self._vert_cyc_order[start, start_place] = edge_idx
             vertex_places[start] += 1
             
             end_place = vertex_places[end]
-            self.vert_cyc_order[end, end_place] = edge_idx
+            self._vert_cyc_order[end, end_place] = edge_idx
             vertex_places[end] += 1
             
     #-------------------------------------------------------------------------#
@@ -649,8 +638,8 @@ class Graph:
         result = _graph_isomorphism(
             self_vert_choices[0],
             other_vert_choices,
-            self.edge_list[:self._num_edges].astype(np.int8),
-            self.vert_cyc_order[:self._num_vert],
+            self._edge_list[:self._num_edges].astype(np.int8),
+            self._vert_cyc_order[:self._num_vert],
             other.edge_list[:other._num_edges].astype(np.int8),
             other.vert_cyc_order[:other._num_vert],
             find_all = False,
@@ -692,8 +681,8 @@ class Graph:
         
         # Slice raw properties down to active graph limits
         
-        el = self.edge_list[:self._num_edges].astype(np.int8)
-        vco = self.vert_cyc_order[:self._num_vert].astype(np.int8)
+        el = self._edge_list[:self._num_edges].astype(np.int8)
+        vco = self._vert_cyc_order[:self._num_vert].astype(np.int8)
         
         sym_count = _graph_isomorphism(
             vert_choices[0], vert_choices,
@@ -713,7 +702,7 @@ class Graph:
             Return only those edges that are currently active
         """
         
-        return self.edge_list[:self._num_edges]
+        return self._edge_list[:self._num_edges]
         
     #-------------------------------------------------------------------------#
     
@@ -723,7 +712,7 @@ class Graph:
             Return only cyclic orders of currently active vertices
         """
         
-        return self.vert_cyc_order[:self._num_vert]
+        return self._vert_cyc_order[:self._num_vert]
         
     #-------------------------------------------------------------------------#
     
@@ -749,7 +738,7 @@ class Graph:
         if self._face_idx_list is None:
             self.find_faces()
         
-        return self.face_size_list[:self._num_edges]
+        return self._face_size_list[:self._num_edges]
         
     #-------------------------------------------------------------------------#
     
@@ -774,17 +763,17 @@ class Graph:
             
             face_sizes = []
             
-            for edge in self.vert_cyc_order[vert]:
+            for edge in self._vert_cyc_order[vert]:
                 
                 # Determine if vert is the start or end of the edge in order
                 # to grab the correct face to maintain correct CCW direction
                 
-                if self.edge_list[edge, 0] == vert:
+                if self._edge_list[edge, 0] == vert:
                     face = self._face_idx_list[edge, 1]  # Start -> right face
                 else:
                     face = self._face_idx_list[edge, 0]  # End -> left face
                 
-                face_sizes.append(self.face_size_list[face])
+                face_sizes.append(self._face_size_list[face])
                 
             # Find the index of the minimum face size, and cyclically shift to
             # put that value in front of the triple; ensure that the minimum
@@ -811,7 +800,7 @@ class Graph:
         # face_idx_list[edge_idx][0] the face index for the left-hand face,
         # and face_idx_list[edge_idx][1] the right-hand face
         
-        self._face_idx_list = np.full((self.max_num_edges, 2), self.max_num_vert, \
+        self._face_idx_list = np.full((self._max_num_edges, 2), self._max_num_vert, \
                                      dtype = np.uint8)
         
         # Track whether the edge has been traversed, in both directions, using
@@ -844,7 +833,7 @@ class Graph:
                 # -> start; thus, 'left' and 'right' will be consistent based
                 # on the canonical direction start -> end
                 
-                curr_vert = self.edge_list[curr_edge_idx][1 if curr_dir == 0 else 0]
+                curr_vert = self._edge_list[curr_edge_idx][1 if curr_dir == 0 else 0]
                 
                 while True:
                     
@@ -860,22 +849,22 @@ class Graph:
                     # vertex in path CCW around the face
                     
                     next_idx = 0
-                    if self.vert_cyc_order[curr_vert, 1] == curr_edge_idx:
+                    if self._vert_cyc_order[curr_vert, 1] == curr_edge_idx:
                         next_idx = 1
-                    elif self.vert_cyc_order[curr_vert, 2] == curr_edge_idx:
+                    elif self._vert_cyc_order[curr_vert, 2] == curr_edge_idx:
                         next_idx = 2
                         
-                    next_edge_idx = self.vert_cyc_order[curr_vert, next_idx - 1]
+                    next_edge_idx = self._vert_cyc_order[curr_vert, next_idx - 1]
                     
                     # Determine which direction relative to canonical edge
                     # orientation we travel as we move CCW around face
                     
-                    if self.edge_list[next_edge_idx, 0] == curr_vert:
+                    if self._edge_list[next_edge_idx, 0] == curr_vert:
                         next_dir = 0
-                        next_vert = self.edge_list[next_edge_idx, 1]
+                        next_vert = self._edge_list[next_edge_idx, 1]
                     else:
                         next_dir = 1
-                        next_vert = self.edge_list[next_edge_idx, 0]
+                        next_vert = self._edge_list[next_edge_idx, 0]
                         
                     # Move on to next vertex, edge
                     
@@ -893,7 +882,7 @@ class Graph:
         # Update number of faces, list of face sizes indices by face_idx
         
         self._num_faces = (face_idx + 1)
-        self.face_size_list = np.array(face_signature_list, dtype = np.uint8)
+        self._face_size_list = np.array(face_signature_list, dtype = np.uint8)
         
     #-------------------------------------------------------------------------#
     
@@ -908,28 +897,28 @@ class Graph:
         # Get incident edges to vertex, write new edge lists by including new
         # vertices, maintaining start < end format for each edge
         
-        edge_aaa, edge_bbb, edge_ccc = self.vert_cyc_order[vert_idx]
+        edge_aaa, edge_bbb, edge_ccc = self._vert_cyc_order[vert_idx]
         
-        if self.edge_list[edge_bbb, 0] == vert_idx:
-            self.edge_list[edge_bbb] = [self.edge_list[edge_bbb, 1], self._num_vert]
+        if self._edge_list[edge_bbb, 0] == vert_idx:
+            self._edge_list[edge_bbb] = [self._edge_list[edge_bbb, 1], self._num_vert]
         else:
-            self.edge_list[edge_bbb, 1] = self._num_vert
+            self._edge_list[edge_bbb, 1] = self._num_vert
             
-        if self.edge_list[edge_ccc, 0] == vert_idx:
-            self.edge_list[edge_ccc] = [self.edge_list[edge_ccc, 1], self._num_vert + 1]
+        if self._edge_list[edge_ccc, 0] == vert_idx:
+            self._edge_list[edge_ccc] = [self._edge_list[edge_ccc, 1], self._num_vert + 1]
         else:
-            self.edge_list[edge_ccc, 1] = self._num_vert + 1
+            self._edge_list[edge_ccc, 1] = self._num_vert + 1
         
         # Create two new vertices, add them to end of edge list and vertex
         # cyclic order list
         
-        self.edge_list[self._num_edges] = [vert_idx, self._num_vert]
-        self.edge_list[self._num_edges + 1] = [vert_idx, self._num_vert + 1]
-        self.edge_list[self._num_edges + 2] = [self._num_vert, self._num_vert + 1]
+        self._edge_list[self._num_edges] = [vert_idx, self._num_vert]
+        self._edge_list[self._num_edges + 1] = [vert_idx, self._num_vert + 1]
+        self._edge_list[self._num_edges + 2] = [self._num_vert, self._num_vert + 1]
         
-        self.vert_cyc_order[vert_idx] = [edge_aaa, self._num_edges, self._num_edges + 1]
-        self.vert_cyc_order[self._num_vert] = [self._num_edges, edge_bbb, self._num_edges + 2]
-        self.vert_cyc_order[self._num_vert + 1] = [self._num_edges + 1, self._num_edges + 2, edge_ccc]
+        self._vert_cyc_order[vert_idx] = [edge_aaa, self._num_edges, self._num_edges + 1]
+        self._vert_cyc_order[self._num_vert] = [self._num_edges, edge_bbb, self._num_edges + 2]
+        self._vert_cyc_order[self._num_vert + 1] = [self._num_edges + 1, self._num_edges + 2, edge_ccc]
         
         # Change vertex, edge numbers
         
@@ -939,7 +928,7 @@ class Graph:
         # Face information is no longer valid
         
         self._face_idx_list = None
-        self.face_size_list = None
+        self._face_size_list = None
         
         if self._num_faces is not None:
             self._num_faces += 2
@@ -955,14 +944,14 @@ class Graph:
         if (edge_idx < 0) or (edge_idx >= self._num_edges):
             raise ValueError(f'Edge index needs to be between 0 and {self._num_vert}')
         
-        start_vert, end_vert = self.edge_list[edge_idx]
+        start_vert, end_vert = self._edge_list[edge_idx]
         
         # .item() extracts the desired index out of np.array([idx])
         
-        start_row = self.vert_cyc_order[start_vert]
+        start_row = self._vert_cyc_order[start_vert]
         start_idx = np.where(start_row == edge_idx)[0].item()
         
-        end_row = self.vert_cyc_order[end_vert]
+        end_row = self._vert_cyc_order[end_vert]
         end_idx = np.where(end_row == edge_idx)[0].item()
         
         # Find edge indices of neighbors for chosen edge vertices, with specific
@@ -984,8 +973,8 @@ class Graph:
         # on the canonical direction of the edges, either towards (1) or away
         # (0) from the start, end vertices
         
-        aaa_side = np.where(self.edge_list[aaa] == start_vert)[0].item()
-        ccc_side = np.where(self.edge_list[ccc] == end_vert)[0].item()
+        aaa_side = np.where(self._edge_list[aaa] == start_vert)[0].item()
+        ccc_side = np.where(self._edge_list[ccc] == end_vert)[0].item()
             
         start_face_idx = self._face_idx_list[aaa, aaa_side]
         end_face_idx = self._face_idx_list[ccc, ccc_side]
@@ -1004,8 +993,8 @@ class Graph:
         
         # Change vertex cyclic orders for start, end vertices of chosen edge
         
-        self.vert_cyc_order[start_vert] = np.array([bbb, ccc, end_vert])
-        self.vert_cyc_order[end_vert] = np.array([ddd, aaa, start_vert])
+        self._vert_cyc_order[start_vert] = np.array([bbb, ccc, end_vert])
+        self._vert_cyc_order[end_vert] = np.array([ddd, aaa, start_vert])
         
         # Ensure that edge list still has implicit ordering matching the new
         # vertex cyclic order; shift the 2-2 move edge to its new slot in place;
@@ -1016,30 +1005,30 @@ class Graph:
         
         move_perm = np.arange(1, self._num_edges + 1, dtype = np.int8)
         
-        if start_vert == self.edge_list[aaa, 0]:
-            aaa_vert = self.edge_list[aaa, 1]
+        if start_vert == self._edge_list[aaa, 0]:
+            aaa_vert = self._edge_list[aaa, 1]
             aaa_loc = 1
         else:
-            aaa_vert = self.edge_list[aaa, 0]
+            aaa_vert = self._edge_list[aaa, 0]
             aaa_loc = 0
             
-        if end_vert == self.edge_list[ccc, 0]:
-            ccc_vert = self.edge_list[ccc, 1]
+        if end_vert == self._edge_list[ccc, 0]:
+            ccc_vert = self._edge_list[ccc, 1]
             ccc_loc = 1
         else:
-            ccc_vert = self.edge_list[ccc, 0]
+            ccc_vert = self._edge_list[ccc, 0]
             ccc_loc = 0
         
-        self.edge_list[aaa, 0] = min(aaa_vert, end_vert)
-        self.edge_list[aaa, 1] = max(aaa_vert, end_vert)
+        self._edge_list[aaa, 0] = min(aaa_vert, end_vert)
+        self._edge_list[aaa, 1] = max(aaa_vert, end_vert)
         
-        self.edge_list[ccc, 0] = min(ccc_vert, start_vert)
-        self.edge_list[ccc, 1] = max(ccc_vert, start_vert)
+        self._edge_list[ccc, 0] = min(ccc_vert, start_vert)
+        self._edge_list[ccc, 1] = max(ccc_vert, start_vert)
         
-        if self.edge_list[aaa, aaa_loc] != aaa_vert:
+        if self._edge_list[aaa, aaa_loc] != aaa_vert:
             move_perm[aaa] = -move_perm[aaa]
             
-        if self.edge_list[ccc, ccc_loc] != ccc_vert:
+        if self._edge_list[ccc, ccc_loc] != ccc_vert:
             move_perm[ccc] = -move_perm[ccc]
         
         # Find lowest index position that 2-2 move edge cna be moved to ensure
@@ -1102,7 +1091,7 @@ class Graph:
 
         if slot != edge_idx:
             
-            moved_edge = self.edge_list[edge_idx].copy()
+            moved_edge = self._edge_list[edge_idx].copy()
             
             if slot < edge_idx:
                 
@@ -1112,9 +1101,9 @@ class Graph:
                     move_perm[iii] = move_perm[iii + 1]
                 
                 for iii in range(edge_idx, slot, -1):
-                    self.edge_list[iii] = self.edge_list[iii - 1]
+                    self._edge_list[iii] = self._edge_list[iii - 1]
                     
-                self.edge_list[slot] = moved_edge
+                self._edge_list[slot] = moved_edge
                 move_perm[edge_idx] = slot + 1
                 
             else:
@@ -1128,9 +1117,9 @@ class Graph:
                     move_perm[iii] = move_perm[iii - 1]
                 
                 for iii in range(edge_idx, target_slot):
-                    self.edge_list[iii] = self.edge_list[iii + 1]
+                    self._edge_list[iii] = self._edge_list[iii + 1]
                     
-                self.edge_list[target_slot] = moved_edge
+                self._edge_list[target_slot] = moved_edge
                 move_perm[edge_idx] = slot
                 
         # Update vertex cyclic order
@@ -1140,7 +1129,7 @@ class Graph:
         # Face information is no longer accurate, since faces have been permuted
         
         self._face_idx_list = None
-        self.face_size_list = None
+        self._face_size_list = None
             
         # 2-2 move was successful, so return edge_idx as confirmation; if the
         # move cannot be done because it violates 3-connectedness, return -1
@@ -1185,15 +1174,15 @@ class Graph:
         # in this direction.
 
         for vert_idx in [0, 1]:
-            start_vert = self.edge_list[start_edge_idx, vert_idx]
-            cyc_idx = np.argmax(self.vert_cyc_order[start_vert] == start_edge_idx)
+            start_vert = self._edge_list[start_edge_idx, vert_idx]
+            cyc_idx = np.argmax(self._vert_cyc_order[start_vert] == start_edge_idx)
             
-            if self.vert_cyc_order[start_vert, cyc_idx - 1] in cycle_list:
-                curr_edge_idx = self.vert_cyc_order[start_vert, cyc_idx - 1]
+            if self._vert_cyc_order[start_vert, cyc_idx - 1] in cycle_list:
+                curr_edge_idx = self._vert_cyc_order[start_vert, cyc_idx - 1]
                 curr_vert = start_vert
 
                 vert_list.append(curr_vert)
-                ext_edges.append(self.vert_cyc_order[start_vert, cyc_idx - 2])
+                ext_edges.append(self._vert_cyc_order[start_vert, cyc_idx - 2])
 
                 break            
 
@@ -1202,20 +1191,20 @@ class Graph:
             # Explicitly write out both logic checks, so if there is a problem,
             # if is caused by break/if sequence that it would follow next.
 
-            if curr_vert == self.edge_list[curr_edge_idx, 0]:
-                curr_vert = self.edge_list[curr_edge_idx, 1]
-            elif curr_vert == self.edge_list[curr_edge_idx, 1]:
-                curr_vert = self.edge_list[curr_edge_idx, 0]
+            if curr_vert == self._edge_list[curr_edge_idx, 0]:
+                curr_vert = self._edge_list[curr_edge_idx, 1]
+            elif curr_vert == self._edge_list[curr_edge_idx, 1]:
+                curr_vert = self._edge_list[curr_edge_idx, 0]
 
             if curr_vert == start_vert:
                 break
             else:
                 vert_list.append(curr_vert)
 
-            cyc_idx = np.argmax(self.vert_cyc_order[curr_vert] == curr_edge_idx)
-            if self.vert_cyc_order[curr_vert, cyc_idx - 1] in cycle_list:
-                curr_edge_idx = self.vert_cyc_order[curr_vert, cyc_idx - 1]
-                ext_edges.append(self.vert_cyc_order[curr_vert, cyc_idx - 2])
+            cyc_idx = np.argmax(self._vert_cyc_order[curr_vert] == curr_edge_idx)
+            if self._vert_cyc_order[curr_vert, cyc_idx - 1] in cycle_list:
+                curr_edge_idx = self._vert_cyc_order[curr_vert, cyc_idx - 1]
+                ext_edges.append(self._vert_cyc_order[curr_vert, cyc_idx - 2])
 
         if len(vert_list) != 3:
             raise ValueError('Given edges do not form a 3-cycle')
@@ -1244,9 +1233,9 @@ class Graph:
         # 3-cycle; relabel vertices to match lower vertex number; delete all
         # three edges in cycle, and relabel others
 
-        new_cyc_order = np.full((self.max_num_vert, 3), self.max_num_edges, \
+        new_cyc_order = np.full((self._max_num_vert, 3), self._max_num_edges, \
                                 dtype = np.uint8)
-        new_edge_list = np.full((self.max_num_edges, 2), self.max_num_vert, \
+        new_edge_list = np.full((self._max_num_edges, 2), self._max_num_vert, \
                                 dtype = np.uint8)
 
         new_vert = [iii for iii in range(bbb)] + [aaa] + \
@@ -1258,14 +1247,14 @@ class Graph:
             [(iii - 2) for iii in range(yyy + 1, zzz)] + [self._num_edges] + \
             [(iii - 3) for iii in range(zzz + 1, self._num_edges)]
 
-        new_cyc_order[:bbb] = self.vert_cyc_order[:bbb]
-        new_cyc_order[bbb : (ccc - 1)] = self.vert_cyc_order[(bbb + 1) : ccc]
-        new_cyc_order[(ccc - 1) : (self._num_vert - 2)] = self.vert_cyc_order[(ccc + 1) : self._num_vert]
+        new_cyc_order[:bbb] = self._vert_cyc_order[:bbb]
+        new_cyc_order[bbb : (ccc - 1)] = self._vert_cyc_order[(bbb + 1) : ccc]
+        new_cyc_order[(ccc - 1) : (self._num_vert - 2)] = self._vert_cyc_order[(ccc + 1) : self._num_vert]
 
-        new_edge_list[:xxx] = self.edge_list[:xxx]
-        new_edge_list[xxx : (yyy - 1)] = self.edge_list[(xxx + 1) : yyy]
-        new_edge_list[(yyy - 1) : (zzz - 2)] = self.edge_list[(yyy + 1) : zzz]
-        new_edge_list[(zzz - 2) : (self._num_edges - 3)] = self.edge_list[(zzz + 1) : self._num_edges]
+        new_edge_list[:xxx] = self._edge_list[:xxx]
+        new_edge_list[xxx : (yyy - 1)] = self._edge_list[(xxx + 1) : yyy]
+        new_edge_list[(yyy - 1) : (zzz - 2)] = self._edge_list[(yyy + 1) : zzz]
+        new_edge_list[(zzz - 2) : (self._num_edges - 3)] = self._edge_list[(zzz + 1) : self._num_edges]
 
         # Put new cyclic order for kept vertex v, so old edge labels are 
         # remapped by new_edges permutation
@@ -1287,8 +1276,8 @@ class Graph:
             if new_edge_list[row, 0] > new_edge_list[row, 1]:
                 new_edge_list[row, 0], new_edge_list[row, 1] = new_edge_list[row, 1], new_edge_list[row, 0]
 
-        self.vert_cyc_order = new_cyc_order
-        self.edge_list = new_edge_list
+        self._vert_cyc_order = new_cyc_order
+        self._edge_list = new_edge_list
 
         self._num_vert -= 2
         self._num_edges -= 3
@@ -1301,9 +1290,9 @@ class Graph:
         # Face information is no longer accurate, since faces have been permuted
 
         self._face_idx_list = None
-        self.face_size_list = None
+        self._face_size_list = None
         
         if self._num_faces is not None:
             self._num_faces -= 1
         
-    #-------------------------------------------------------------------------#
+    #-------------------------------------------------------------------------#other
