@@ -6,7 +6,7 @@ This package allows one to create a Graph object representing a 3-regular graph 
 
 Below is a brief description of the package. For more information, see the `marimo` notebooks located in the folder `docs/`.
 
-# Dependencies
+## Dependencies
 
 - `numba`
 - `numpy`
@@ -29,10 +29,14 @@ Below is a brief description of the package. For more information, see the `mari
 Given a Graph object `G`, below are a list of all functions and properties defined for the graph.
 
 - `G = H`: test for isomorphism of `G` with a second Graph object `H`
+- `G.num_vert`, `G.num_edges`, `G.num_faces`: number of vertices $|V|$, edges $|E|$, and faces $|F|$ for the graph
 - `G.find_sym()`: find all signed permutations of the graph; the edge sign represents an orientation flip of the edge
 - `G.active_edges()`: a list of all graph edges
 - `G.active_vert()`: a list of the edge cyclic orders around each vertex
 - `G.active_face_indices()`: a list of the face indices on either side of each edge
 - `G.active_face_sizes()`: a list of the number of boundary edges for each graph face
-- `G.find_faces()`: find the faces of the graph
-- `G.pachner13()`, `G.pachner22()`, `G.pachner31()`: perform the Pachner 1-3, 2-2, and 3-1 moves on the graph
+- `G.pachner22()`: perform the Pachner 2-2 move on the graph, given a chosen edge
+
+## In progress
+
+- `G.pachner13()`, `G.pachner31()`: perform the Pachner 1-3 and 3-1 moves on the graph
