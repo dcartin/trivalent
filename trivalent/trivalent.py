@@ -419,19 +419,32 @@ class Graph:
         # Set hard limit for maximum number of vertices, edges here
         
         if max_num_vert is not None:
-            self._max_num_vert = max_num_vert
-            self._max_num_edges = 3 * max_num_vert // 2
-        else:
-            self._max_num_vert = self.DEFAULT_MAX_VERT
-            self._max_num_edges = 3 * self.DEFAULT_MAX_VERT // 2
             
+            if not isinstance(max_num_vert, (int, np.integer)):
+                raise ValueError("max_num_vert must be an integer")
+                
+            if max_num_vert <= 0:
+                raise ValueError("max_num_vert must be positive integer")
+            
+            self._max_num_vert = int(max_num_vert)
+        else:
+            self._max_num_vert = int(self.DEFAULT_MAX_VERT)
+            
+        # Check to make sure max number of vertices is valid, even if
+        # DEFAULT_MAX_VERT is changed
+    
+        if self._max_num_vert > 127:
+            raise ValueError("max_num_vert exceeds int8 capacity of 127")
+            
+        self._max_num_edges = 3 * self._max_num_vert // 2
+        
         # If an edge list is passed when Graph is created, assume it has an
         # implicit order based on vertex cyclic orders; otherwise, initialize
         # as empty object
         
         if ordered_edge_list is not None:
             
-            edge_array = np.array(ordered_edge_list, dtype = np.int8)
+            edge_array = np.asarray(ordered_edge_list, dtype = np.int8)
         
             self._num_edges = edge_array.shape[0]
             self._num_vert = 2 * self._num_edges // 3
@@ -445,7 +458,7 @@ class Graph:
             
             # Validate that edge list is sensible
             
-            if validate == True:
+            if validate:
                 self._validate_edge_list(edge_array)
                 
             self._edge_list[:self._num_edges] = edge_array
@@ -460,8 +473,8 @@ class Graph:
             # (not coded at this moment, but could include external specification
             # of the following variables)
             
-            self._num_vert = None
-            self._num_edges = None
+            self._num_vert = 0
+            self._num_edges = 0
             self._edge_list = None
             self._vert_cyc_order = None
             
@@ -486,49 +499,6 @@ class Graph:
             self.find_faces()
             
         return self._num_faces
-            
-    #-------------------------------------------------------------------------#
-    
-    @classmethod
-    def from_explicit_arrays(cls, edge_list, cyc_order):
-        
-        graph = cls()
-        
-        # Ensure provided data is consistent
-        
-        num_edges = edge_list.shape[0]
-        num_vert = cyc_order.shape[0]
-        
-        if num_edges % 3 != 0:
-            raise ValueError(f'Edge list has {num_edges} edges; trivalent graphs edge counts must be a multiple of 3')
-        
-        if 3 * num_vert != 2 * num_edges:
-            raise ValueError('Edge list and vertex cyclic order not consistent sizes')
-            
-        vertex_count = np.bincount(edge_list.ravel())
-        edge_count = np.bincount(cyc_order.ravel())
-        
-        if len(vertex_count) != num_vert:
-            raise ValueError(f'Vertex label mismatch. Expected {num_vert} labels in edge_list, but found {len(vertex_count) - 1}')
-
-        if not np.all(vertex_count == 3):
-            bad_vert = np.where(vertex_count != 3)[0]
-            raise ValueError(f'Graph is not 3-regular. Vertices {bad_vert} in edge_list have wrong degree.')
-            
-        if len(edge_count) != num_edges:
-            raise ValueError(f'Edges label mismatch. Expected {num_edges} labels in cyc_order, but found {len(vertex_count) - 1}')
-            
-        if not np.all(edge_count == 2):
-            bad_edges = np.where(edge_count != 2)[0]
-            raise ValueError(f'Edges must appear twice in cyc_order. Edges {bad_edges} have wrong count.')
-            
-        # Create class attributes
-            
-        graph.num_edges = num_edges
-        graph.edge_list = np.array(edge_list, dtype = np.int8)
-        
-        graph.num_vert = num_vert
-        graph.vert_cyc_order = np.array(cyc_order, dtype = np.uint8)
             
     #-------------------------------------------------------------------------#
             
@@ -1300,22 +1270,24 @@ class Graph:
     @classmethod
     def create_prism(cls, N):
         """
-        Create n-prism Graph object with 2n vertices.
+        Construct an n-prism Graph object with 2N vertices.
 
         Parameters
         ----------
         N : int
-            DESCRIPTION.
+            The order of the prism base polygons (number of vertices in the 
+            top/bottom faces). Must be at least 3.
 
         Returns
         -------
-        Graph object
-            DESCRIPTION.
+        Graph
+            An initialized Graph instance representing the n-prism topology.
 
         Raises
         ------
         ValueError
-            N >= 3 for valid 3-connected graph
+            If `N < 3`, as a valid 3-connected trivalent prism requires at 
+            least a triangular base.
         """
         
         if N < 3:
