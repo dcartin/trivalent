@@ -5,9 +5,10 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "trivalent"
 version = "0.1.0"
+requires-python = ">=3.11"
 dependencies = [
-    "numba",
-    "numpy"
+    "numba>=0.60",
+    "numpy>=2.0"
 ]
 
 [tool.setuptools]
