@@ -17,9 +17,11 @@ Below is a brief description of the package. For more information, see the `mari
 - Return the properties of the graph:
    - number of vertices $|V|$
    - number of edges $|E|$
-   - cyclic ordering of edges CCW around each vertex
    - number of faces $|F|$
+   - implicitly ordered edge list
+   - cyclic ordering of edges CCW around each vertex
    - boundary edges for each face
+   - number of boundary edges for each face
 - Test isomorphism between two Graphs
 - Find the symmetry group of a Graph, written as a signed permutation of the edges
 - Apply the graph Pachner moves, dual to those for a simplicial triangulation of a manifold
@@ -30,12 +32,16 @@ Given a Graph object `G`, below are a list of all functions and properties defin
 
 - `G = H`: test for isomorphism of `G` with a second Graph object `H`
 - `G.num_vert`, `G.num_edges`, `G.num_faces`: number of vertices $|V|$, edges $|E|$, and faces $|F|$ for the graph
+- `G.edge_list`: a list of all graph edges
+- `G.vert_cyc_order`: a list of the edge cyclic orders around each vertex
+- `G.face_idx_list`: a list of the face indices on either side of each edge
+- `G.face_size_list`: a list of the number of boundary edges for each graph face
 - `G.find_sym()`: find all signed permutations of the graph; the edge sign represents an orientation flip of the edge
-- `G.active_edges()`: a list of all graph edges
-- `G.active_vert()`: a list of the edge cyclic orders around each vertex
-- `G.active_face_indices()`: a list of the face indices on either side of each edge
-- `G.active_face_sizes()`: a list of the number of boundary edges for each graph face
-- `G.pachner22()`: perform the Pachner 2-2 move on the graph, given a chosen edge
+- `G.pachner22()`: perform the Pachner 2-2 move on the graph, given an edge label as argument
+
+## Standard graphs available
+
+- `G.create_prism(n)`: $n$-prism graph with $2n$ vertices, whose symmetry group is the dihedral group of order $2n$
 
 ## In progress
 

@@ -697,7 +697,7 @@ class Graph:
     #-------------------------------------------------------------------------#
     
     @property
-    def active_edges(self):
+    def edge_list(self):
         """
             Return only those edges that are currently active
         """
@@ -707,7 +707,7 @@ class Graph:
     #-------------------------------------------------------------------------#
     
     @property
-    def active_vert(self):
+    def vert_cyc_order(self):
         """
             Return only cyclic orders of currently active vertices
         """
@@ -717,7 +717,7 @@ class Graph:
     #-------------------------------------------------------------------------#
     
     @property
-    def active_face_indices(self):
+    def face_idx_list(self):
         """
             Return left-, right-hand face indices for all active edges
         """
@@ -730,7 +730,7 @@ class Graph:
     #-------------------------------------------------------------------------#
     
     @property
-    def active_face_sizes(self):
+    def face_size_list(self):
         """
             Return face sizes
         """
@@ -1295,4 +1295,54 @@ class Graph:
         if self._num_faces is not None:
             self._num_faces -= 1
         
-    #-------------------------------------------------------------------------#other
+    #-------------------------------------------------------------------------#
+    
+    @classmethod
+    def create_prism(cls, N):
+        """
+        Create n-prism Graph object with 2n vertices.
+
+        Parameters
+        ----------
+        N : int
+            DESCRIPTION.
+
+        Returns
+        -------
+        Graph object
+            DESCRIPTION.
+
+        Raises
+        ------
+        ValueError
+            N >= 3 for valid 3-connected graph
+        """
+        
+        if N < 3:
+            raise ValueError('For n-prism creation, n >= 3')
+
+        # Add three boundary edges of the first face
+        
+        edge_list = [[0, 1], [1, 2 * N - 1], [2 * N - 2, 2 * N - 1]]
+
+        # Add the remaing three boundary edges of an adjacent face. When the
+        # first edge is added, this allows the remaining edge of the first face
+        # to be added as well.
+        
+        edge_list += [[0, 2], [0, 2 * N - 2], [2, 3], [1, 3]]
+
+        # Work around the n-prism, completing all but last face
+
+        for iii in range(1, N - 2):
+            edge_list += [[2 * iii, 2 * (iii + 1)], [2 * (iii + 1), 2 * (iii + 1) + 1], \
+                         [2 * iii + 1, 2 * (iii + 1) + 1]]
+                
+        # Add last two edges
+
+        edge_list += [[2 * N - 4, 2 * N - 2], [2 * N - 3, 2 * N - 1]]
+        
+        # Return Graph object with given edge list
+        
+        return cls(edge_list)
+    
+    #-------------------------------------------------------------------------#
