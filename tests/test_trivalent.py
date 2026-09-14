@@ -8,9 +8,30 @@ Created on Sun May 11 09:26:45 2025
 # Go to trivalent folder and run "python -m unittest tests.test_trivalent"
 
 import unittest
-import numpy as np
 
+from collections import Counter
+from hypothesis import given, strategies as st
 from trivalent import Graph
+
+#=============================================================================#
+
+@st.composite
+def prism_w_tgt(draw):
+    """
+        Strategy to provide n-prism with chosen target edge
+    """
+    
+    # Setting min at 6 avoids situation for 5-prism where taxicab delta can be
+    # 4 (b/c face sizes exchange, reducing total number of changes); setting
+    # max n at 25 avoids exceeding DEFAULT_MAX_VERT = 50 limit in trivalent
+    
+    N = draw(st.integers(min_value = 6, max_value = 25))
+    G = Graph.create_prism(N)
+    tgt_edge = draw(st.integers(min_value = 0, max_value = 3 * N - 1))
+    
+    return N, G, tgt_edge
+
+#=============================================================================#
 
 class TestTrivalent(unittest.TestCase):
 
@@ -88,12 +109,18 @@ class TestTrivalent(unittest.TestCase):
             Choose edge of 3-cycle for 2-2 move
         """
         
-        G = Graph([[4, 6], [6, 9], [0, 5], [0, 8], [0, 9], [7, 8], [8, 9], [2, 7], \
-                   [1, 7], [3, 4], [4, 5], [2, 5], [1, 3], [1, 6], [2, 3]])
-        result = G.pachner22(4)
+        # For this V = 10 graph, the vertices 067, 123, and 489 all form
+        # 3-cycles, so any of these edges should give an invalid move
         
-        self.assertEqual(result[0], -1)
-        self.assertListEqual(result[1].tolist(), [])
+        expected = [0, -1, -1, -1, 4, -1, -1, -1, 8, -1, 10, 11, -1, -1, 14]
+        
+        for tgt in range(15):
+            G = Graph([[0, 1], [0, 6], [0, 7], [1, 2], [4, 6], [4, 8], [4, 9], [6, 7], \
+                       [3, 8], [8, 9], [2, 5], [5, 7], [1, 3], [2, 3], [5, 9]])
+                
+            result, perm = G.pachner22(tgt)
+            
+            self.assertEqual(result, expected[tgt], f"Incorrect validity at edge {tgt}")
 
     #-------------------------------------------------------------------------#
     
@@ -146,6 +173,108 @@ class TestTrivalent(unittest.TestCase):
         self.assertEqual(result[0], 14)
         self.assertListEqual(result[1].tolist(), movePerm)
         self.assertEqual(G, H)
+
+    #-------------------------------------------------------------------------#
+    
+    @given(prism_w_tgt())
+    def test_pachner22Involution(self, data_tuple):
+        """
+            Applying the 2-2 move twice restores the original graph
+        """
+        
+        n, G, tgtIdx = data_tuple
+        
+        # Apply 2-2 move on target edge
+
+        newEdge, movePerm = G.pachner22(tgtIdx)
+        
+        # Find index of new edge using 1-based signed permutation
+        
+        newTgtIdx = abs(movePerm[tgtIdx]) - 1
+        
+        # Apply 2-2 move to created edge
+        
+        G.pachner22(newTgtIdx)
+        
+        # Compare to another n-prism graph
+        
+        H = Graph.create_prism(n)
+        self.assertEqual(G, H)
+
+    #-------------------------------------------------------------------------#
+    
+    @given(prism_w_tgt())
+    def test_pachner22Locality(self, data_tuple):
+        """
+            The 2-2 move only affects adjacency near target edge
+        """
+        
+        n, G, tgtIdx = data_tuple
+        
+        # Find labels of vertices adjacent to all vertices
+        
+        adjBeforeList = {vvv : set() for vvv in range(2 * n)}
+        for u, v in G.edge_list:
+            adjBeforeList[u].add(v)
+            adjBeforeList[v].add(u)
+            
+        # Apply 2-2 move to target edge
+        
+        G.pachner22(tgtIdx)
+        
+        # Find adjacency list after transformation
+        
+        adjAfterList = {vvv : set() for vvv in range(2 * n)}
+        for u, v in G.edge_list:
+            adjAfterList[u].add(v)
+            adjAfterList[v].add(u)
+        
+        # Find all vertices where a change occurred in adjacency; at most, this
+        # should be four vertices -- two on the edge used, and two of their
+        # neighbors
+        
+        change = {vertex for vertex in adjBeforeList if adjBeforeList[vertex] != adjAfterList[vertex]}
+        self.assertLessEqual(len(change), 4, f"Locality violation; {len(change)} vertices affected")
+
+    #-------------------------------------------------------------------------#
+    
+    @given(prism_w_tgt())
+    def test_pachner22FaceConservation(self, data_tuple):
+        """
+            The total number of boundary edges for faces is conserved, and only
+            the face involved should change size.
+        """
+        
+        n, G, tgtIdx = data_tuple
+        
+        # Find number of boundary edges for all faces
+        
+        oldFaceSizeList = G.face_size_list.copy()
+        oldFaceSizeDict = Counter(oldFaceSizeList)
+        
+        # Apply 2-2 move to target edge
+        
+        G.pachner22(tgtIdx)
+        newFaceSizeList = G.face_size_list.copy()
+        newFaceSizeDict = Counter(newFaceSizeList)
+        
+        # Find new face size list, and see if (1) number of boundary edges is
+        # still 2|E|, and (2) the affected faces are altered in the pattern
+        # (+1, -1, -1, +1)
+        
+        self.assertEqual(sum(oldFaceSizeList), sum(G.face_size_list), 
+                         "Sums of face size list are not equal")
+        
+        self.assertEqual(sum(G.face_size_list), 6 * n,
+                         "Sum of face size list not equal to 2|E|")
+        
+        # The expected pattern in the face size changes should give a total
+        # taxicab distance of 8 between the old and new face size vectors
+        
+        allFaceSizes = set(oldFaceSizeDict.keys()).union(set(newFaceSizeDict.keys()))
+        change = sum(abs(oldFaceSizeDict[iii] - newFaceSizeDict[iii]) for iii in allFaceSizes)
+        
+        self.assertEqual(change, 8, "Face size taxicab delta ({change}) is incorrect, expected 8")
 
     #-------------------------------------------------------------------------#
     
