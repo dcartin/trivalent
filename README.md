@@ -1,4 +1,4 @@
-# Exploring 3-regular graphs dual to 2d surfaces
+# Exploring 3-regular graphs
 
 ## Purpose
 
@@ -32,12 +32,12 @@ Given a Graph object `G`, below are a list of all functions and properties defin
 
 - `G = H`: test for isomorphism of `G` with a second Graph object `H`
 - `G.num_vert`, `G.num_edges`, `G.num_faces`: number of vertices $|V|$, edges $|E|$, and faces $|F|$ for the graph
-- `G.edge_list`: a list of all graph edges
+- `G.edge_list`: a list of all graph edges, as pairs of vertex labels
 - `G.vert_cyc_order`: a list of the edge cyclic orders around each vertex
 - `G.face_idx_list`: a list of the face indices on either side of each edge
 - `G.face_size_list`: a list of the number of boundary edges for each graph face
 - `G.find_sym()`: find all signed permutations of the graph; the edge sign represents an orientation flip of the edge
-- `G.pachner22()`: perform the Pachner 2-2 move on the graph, given an edge label as argument
+- `G.pachner22(edge_label)`: perform the Pachner 2-2 move on the graph, given an edge label as argument
 
 ## Standard graphs available
 
