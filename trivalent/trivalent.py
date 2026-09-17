@@ -8,7 +8,7 @@ Created on Sat Jun  6 06:47:05 2026
 import numba as nb
 import numpy as np
 
-from collections import Counter
+from collections import Counter, deque
 
 #=============================================================================#
 # Complied Numba functions
@@ -554,6 +554,109 @@ class Graph:
             
     #-------------------------------------------------------------------------#
     
+    def _restore_implicit_order(self):
+        """
+            Given a correct vertex cyclic order, reorders the edge list to be
+            consistent
+        """
+        
+        # Helper functions, for finding correct vertex label inside edge pair,
+        # find next edge in CCW vertex cyclic order
+        
+        def get_other_vert(edge_idx, curr_vert):
+            """
+                Return vertex on edge 'edge_idx' that is *not* curr_vert
+            """
+            u, v = self._edge_list[edge_idx]
+            return v if u == curr_vert else u
+        
+        def get_ccw_edge(edge_idx, curr_vert):
+            """
+                Returns edge label for edge CCW from edge 'edge_idx'
+            """
+            cycle = self._vert_cyc_order[curr_vert]
+            if cycle[0] == edge_idx:
+                return cycle[1]
+            elif cycle[1] == edge_idx:
+                return cycle[2]
+            else:
+                return cycle[0]
+        
+        # Initialization
+        
+        visited = [False] * self._num_edges
+        active = [self._num_edges] * self._num_vert
+        queue = deque()
+        
+        new_edge_list = np.empty((self._num_edges, 2), dtype = np.int8)
+        edge_perm = np.full(self._num_edges, self._num_edges, dtype = np.int32)
+        new_idx = 0
+        
+        curr_edge_idx = 0
+        start_vert, curr_vert = self._edge_list[curr_edge_idx]
+        
+        # Main loop
+        
+        while new_idx < self._num_edges:
+            
+            # Current edge not already in edge list, active at both sides
+            
+            if not visited[curr_edge_idx] and active[curr_vert] in (curr_edge_idx, self._num_edges):
+                visited[curr_edge_idx] = True
+                
+                # Queue edge CCW to current edge at starting vertex
+                
+                CCW_start_idx = get_ccw_edge(curr_edge_idx, start_vert)
+                if not visited[CCW_start_idx]:
+                    queue.append((CCW_start_idx, start_vert, \
+                                  get_other_vert(CCW_start_idx, start_vert)))
+                    active[start_vert] = CCW_start_idx
+                else:
+                    active[start_vert] = self._num_edges
+                    
+                # Add current edge to reordered edge list, and update edge perm
+                # (NOTE: edge_perm takes the old index and gives the new, which
+                # is needed to update vertex cyclic order; we will return the
+                # inverse of this permutation at end)
+                
+                new_edge_list[new_idx] = self._edge_list[curr_edge_idx]
+                edge_perm[curr_edge_idx] = new_idx
+                new_idx += 1
+                
+                # Make CCW edge to current edge at current vertex next in line
+                
+                next_edge_idx = get_ccw_edge(curr_edge_idx, curr_vert)
+                start_vert = curr_vert
+                curr_vert = get_other_vert(next_edge_idx, curr_vert)
+                curr_edge_idx = next_edge_idx
+                
+            # Current edge cannot be added to edge list, either because already
+            # there, or else not active at current vertex
+            
+            else:
+                if not visited[curr_edge_idx]:
+                    queue.append((curr_edge_idx, start_vert, curr_vert))
+                    active[curr_vert] = curr_edge_idx
+                else:
+                    active[curr_vert] = self._num_edges
+                    
+                curr_edge_idx, start_vert, curr_vert = queue.popleft()
+                        
+        # Ordering complete -- put new edge list into self._edge_list, and
+        # use edge_perm to update new edge labels in vertex cyclic order
+        
+        self._edge_list[:self._num_edges] = new_edge_list
+        self._vert_cyc_order[:self._num_vert] = edge_perm[self._vert_cyc_order[:self._num_vert]]
+        
+        # Return edge permutation giving old edge list idx at each new idx
+        
+        inverse_edge_perm = np.empty(self._num_edges, dtype=np.int8)
+        inverse_edge_perm[edge_perm] = np.arange(self._num_edges, dtype=np.int8)
+        
+        return inverse_edge_perm
+            
+    #-------------------------------------------------------------------------#
+    
     def __eq__(self, other):
         
         # Verify whether number of vertices, edges are equal
@@ -861,8 +964,8 @@ class Graph:
             Use the Pachner 1-3 move to expand the given vertex into a 3-cycle
         """
         
-        if (self._num_vert + 2) > self.DEFAULT_MAX_VERT:
-            raise ValueError('Pachner 1-3 move exceeds MAX_NUM_VERT value')
+        if (self._num_vert + 2) > self._max_num_vert:
+            raise ValueError('Pachner 1-3 move exceeds max_num_vert value')
         
         # Get incident edges to vertex, write new edge lists by including new
         # vertices, maintaining start < end format for each edge
@@ -880,7 +983,8 @@ class Graph:
             self._edge_list[edge_ccc, 1] = self._num_vert + 1
         
         # Create two new vertices, add them to end of edge list and vertex
-        # cyclic order list
+        # cyclic order list. Note this means the remaining vertex, edge labels
+        # remain in place in the edge list and vertex cyclic orders.
         
         self._edge_list[self._num_edges] = [vert_idx, self._num_vert]
         self._edge_list[self._num_edges + 1] = [vert_idx, self._num_vert + 1]
@@ -902,6 +1006,13 @@ class Graph:
         
         if self._num_faces is not None:
             self._num_faces += 2
+            
+        # This move always succeeds, and the original edges remain in place in
+        # the edge list. The new edges are added to the end as the last three,
+        # and the last two vertices in the vertex cyclic order are the new
+        # vertices.
+        
+        return self._num_edges - 3, self._num_edges - 2, self._num_edges - 1
     
     #-------------------------------------------------------------------------#
     
@@ -1114,7 +1225,7 @@ class Graph:
             to a single vertex.
         """
 
-        cycle_list = np.array(cycle_list, dtype = np.int8)
+        cycle_list = np.asarray(cycle_list, dtype = np.int8)
 
         # Check that the given edges actually form a 3-cycle
     
@@ -1134,6 +1245,9 @@ class Graph:
         # a face. Explicitly checking the ordering of the edges in the vertex
         # cyclic orders ensures the resulting final vertex has the correct
         # edge ordering in its vertex cyclic order as well.
+        
+        # NOTE: If the original graph is 3-connected, then the vertices external
+        # to the 3-cycle *must* already be distinct. There is no need to check.
 
         vert_list = []
         ext_edges = []
@@ -1154,7 +1268,7 @@ class Graph:
                 vert_list.append(curr_vert)
                 ext_edges.append(self._vert_cyc_order[start_vert, cyc_idx - 2])
 
-                break            
+                break
 
         while True:
 
@@ -1201,12 +1315,18 @@ class Graph:
         # Choose lowest index vertex to keep, remove other two vertices; the
         # remaining vertex is connected to the external edges incident to the
         # 3-cycle; relabel vertices to match lower vertex number; delete all
-        # three edges in cycle, and relabel others
+        # three edges in cycle, and relabel others.
+        
+        # Added permutation tracker, to find map old label -> new label. Note
+        # this is 1-based signed permutation, since some of the labels may be
+        # flipped below.
 
         new_cyc_order = np.full((self._max_num_vert, 3), self._max_num_edges, \
                                 dtype = np.uint8)
         new_edge_list = np.full((self._max_num_edges, 2), self._max_num_vert, \
                                 dtype = np.uint8)
+        old_edge_perm = np.full(self._num_edges - 3, self._max_num_edges, \
+                                dtype = np.int8)
 
         new_vert = [iii for iii in range(bbb)] + [aaa] + \
             [(iii - 1) for iii in range(bbb + 1, ccc)] + [aaa] + \
@@ -1225,6 +1345,12 @@ class Graph:
         new_edge_list[xxx : (yyy - 1)] = self._edge_list[(xxx + 1) : yyy]
         new_edge_list[(yyy - 1) : (zzz - 2)] = self._edge_list[(yyy + 1) : zzz]
         new_edge_list[(zzz - 2) : (self._num_edges - 3)] = self._edge_list[(zzz + 1) : self._num_edges]
+        
+        old_edge_perm[:xxx] = np.arange(1, xxx + 1, dtype = np.int8)
+        old_edge_perm[xxx : (yyy - 1)] = np.arange(xxx + 2, yyy + 1, dtype = np.int8)
+        old_edge_perm[(yyy - 1) : (zzz - 2)] = np.arange(yyy + 2, zzz + 1, dtype = np.int8)
+        old_edge_perm[(zzz - 2) : (self._num_edges - 3)] = np.arange(zzz + 2, self._num_edges + 1, \
+                                                                     dtype = np.int8)
 
         # Put new cyclic order for kept vertex v, so old edge labels are 
         # remapped by new_edges permutation
@@ -1241,10 +1367,11 @@ class Graph:
             for col in range(2):
                 new_edge_list[row, col] = new_vert[new_edge_list[row, col]]
 
-            # Maintain start < end vertex labels
+            # Maintain start < end vertex labels;
 
             if new_edge_list[row, 0] > new_edge_list[row, 1]:
                 new_edge_list[row, 0], new_edge_list[row, 1] = new_edge_list[row, 1], new_edge_list[row, 0]
+                old_edge_perm[row] = -old_edge_perm[row]
 
         self._vert_cyc_order = new_cyc_order
         self._edge_list = new_edge_list
@@ -1252,10 +1379,15 @@ class Graph:
         self._num_vert -= 2
         self._num_edges -= 3
         
-        #---------------------------------------------------------------------#
-        # Vertex cyclic order may be inconsistent with edge list, so recompute
-        # edge list: WORK IN PROGRESS HERE
-        #---------------------------------------------------------------------#
+        # The new vertex cyclic order is correct, since it is easy to fix after
+        # the 3-1 move (adjust labels downward as necessary), but the edge list
+        # may be incompatible with this new order. In particular, the edge list
+        # may imply a twist in the incident edges to the remaining vertex that
+        # should not be there. We repair the incompatibility between the edge
+        # list and vertex cyclic order at this point; note that restore_edge_perm
+        # is 0-based, so no need to change it later.
+        
+        restore_edge_perm = self._restore_implicit_order()
 
         # Face information is no longer accurate, since faces have been permuted
 
@@ -1264,7 +1396,16 @@ class Graph:
         
         if self._num_faces is not None:
             self._num_faces -= 1
+            
+        # Three edges and two vertices are deleted by this move; return the
+        # permutation of the signed (old) edge indices, to update information
+        # on edge orientations and/or parities; here, the perm is of the form
+        # perm[new_edge_list_idx] = signed_old_edge_list_idx
         
+        return old_edge_perm[restore_edge_perm]
+        
+    #-------------------------------------------------------------------------#
+    # Library of standard graph families
     #-------------------------------------------------------------------------#
     
     @classmethod

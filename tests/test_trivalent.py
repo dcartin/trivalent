@@ -5,9 +5,13 @@ Created on Sun May 11 09:26:45 2025
 @author: cartin
 """
 
-# Go to trivalent folder and run "python -m unittest tests.test_trivalent"
+# Go to trivalent folder and run
+#
+#   conda activate notebooks
+#   python -m unittest tests.test_trivalent
 
 import unittest
+import numpy as np
 
 from collections import Counter
 from hypothesis import given, strategies as st
@@ -16,7 +20,7 @@ from trivalent import Graph
 #=============================================================================#
 
 @st.composite
-def prism_w_tgt(draw):
+def prism_w_edge(draw):
     """
         Strategy to provide n-prism with chosen target edge
     """
@@ -30,6 +34,24 @@ def prism_w_tgt(draw):
     tgt_edge = draw(st.integers(min_value = 0, max_value = 3 * N - 1))
     
     return N, G, tgt_edge
+
+#-------------------------------------------------------------------------#
+
+@st.composite
+def prism_w_vert(draw):
+    """
+        Strategy to provide n-prism with chosen target edge
+    """
+    
+    # Setting min at 6 avoids situation for 5-prism where taxicab delta can be
+    # 4 (b/c face sizes exchange, reducing total number of changes); setting
+    # max n at 24 avoids exceeding DEFAULT_MAX_VERT = 50 limit in trivalent
+    
+    N = draw(st.integers(min_value = 6, max_value = 24))
+    G = Graph.create_prism(N)
+    tgt_vert = draw(st.integers(min_value = 0, max_value = 2 * N - 1))
+    
+    return N, G, tgt_vert
 
 #=============================================================================#
 
@@ -176,7 +198,7 @@ class TestTrivalent(unittest.TestCase):
 
     #-------------------------------------------------------------------------#
     
-    @given(prism_w_tgt())
+    @given(prism_w_edge())
     def test_pachner22Involution(self, data_tuple):
         """
             Applying the 2-2 move twice restores the original graph
@@ -203,7 +225,7 @@ class TestTrivalent(unittest.TestCase):
 
     #-------------------------------------------------------------------------#
     
-    @given(prism_w_tgt())
+    @given(prism_w_edge())
     def test_pachner22Locality(self, data_tuple):
         """
             The 2-2 move only affects adjacency near target edge
@@ -238,7 +260,7 @@ class TestTrivalent(unittest.TestCase):
 
     #-------------------------------------------------------------------------#
     
-    @given(prism_w_tgt())
+    @given(prism_w_edge())
     def test_pachner22FaceConservation(self, data_tuple):
         """
             The total number of boundary edges for faces is conserved, and only
@@ -285,7 +307,9 @@ class TestTrivalent(unittest.TestCase):
         """
         
         G = Graph([[0, 1], [0, 4], [0, 5], [1, 2], [3, 4], [1, 3], [4, 5], [2, 5], [2, 3]])
-        G.pachner31([1, 2, 6])
+        perm = G.pachner31([1, 2, 6])
+        
+        self.assertListEqual(list(perm), [1, 4, -5, 6, -8, 9])
         
         H = Graph([[0, 1], [0, 2], [1, 3], [0, 3], [1, 2], [2, 3]])
         
@@ -301,14 +325,16 @@ class TestTrivalent(unittest.TestCase):
         
         G = Graph([[0, 1], [0, 6], [0, 7], [4, 6], [4, 8], [4, 9], [6, 7], [5, 7], \
                    [1, 2], [3, 8], [8, 9], [5, 9], [2, 5], [1, 3], [2, 3]])
-        G.pachner31([8, 13, 14])
+        perm = G.pachner31([8, 13, 14])
+        
+        self.assertListEqual(list(perm), [1, 13, 8, 2, 4, 5, 10, 12, 6, 3, 7, 11])
         
         H = Graph([[0, 1], [0, 6], [0, 7], [4, 6], [6, 7], [5, 7], \
                    [1, 2], [3, 4], [4, 5], [2, 5], [1, 3], [2, 3]])
         
         self.assertEqual(G, H)
 
-    #-------------------------------------------------------------------------#
+    # #-------------------------------------------------------------------------#
     
     def test_pachner31EdgeIdxFlip(self):
         """
@@ -317,14 +343,16 @@ class TestTrivalent(unittest.TestCase):
         
         G = Graph([[0, 1], [0, 6], [0, 7], [4, 6], [4, 8], [4, 9], [6, 7], [5, 7], \
                    [1, 2], [3, 8], [8, 9], [5, 9], [2, 5], [1, 3], [2, 3]])
-        G.pachner31([1, 2, 6])
+        perm = G.pachner31([1, 2, 6])
+        
+        self.assertListEqual(list(perm), [1, 9, 13, -4, 5, 10, 14, 15, -8, 6, 11, 12])
         
         H = Graph([[0, 1], [0, 6], [0, 7], [4, 6], [6, 7], [5, 7], \
                    [1, 2], [3, 4], [4, 5], [2, 5], [1, 3], [2, 3]])
         
         self.assertEqual(G, H)
 
-    #-------------------------------------------------------------------------#
+    # #-------------------------------------------------------------------------#
     
     def test_pachner31CycleOrder(self):
         """
@@ -333,13 +361,71 @@ class TestTrivalent(unittest.TestCase):
         
         G = Graph([[0, 1], [0, 6], [0, 7], [4, 6], [4, 8], [4, 9], [6, 7], [5, 7], \
                    [1, 2], [3, 8], [8, 9], [5, 9], [2, 5], [1, 3], [2, 3]])
-        G.pachner31([1, 2, 6])
+        perm = G.pachner31([1, 2, 6])
+        
+        self.assertListEqual(list(perm), [1, 9, 13, -4, 5, 10, 14, 15, -8, 6, 11, 12])
         
         H = Graph([[0, 1], [0, 6], [0, 7], [4, 6], [4, 8], [4, 9], [6, 7], [5, 7], \
                    [1, 2], [3, 8], [8, 9], [5, 9], [2, 5], [1, 3], [2, 3]])
         H.pachner31([2, 1, 6])
         
         self.assertEqual(G, H)
+
+    #-------------------------------------------------------------------------#
+    
+    def test_pachner31NotTriangle(self):
+        """
+            List of elements does not form a 3-cycle in graph
+        """
+        
+        G = Graph([[0, 1], [0, 6], [0, 7], [4, 6], [4, 8], [4, 9], [6, 7], [5, 7], \
+                   [1, 2], [3, 8], [8, 9], [5, 9], [2, 5], [1, 3], [2, 3]])
+        
+        self.assertRaises(ValueError, G.pachner31, [0, 1, 2])
+
+    #-------------------------------------------------------------------------#
+    
+    @given(prism_w_vert())
+    def test_pachner31Invariant(self, data_tuple):
+    
+        
+        G = Graph([[0, 1], [0, 6], [0, 7], [4, 6], [4, 8], [4, 9], [6, 7], [5, 7], \
+                   [1, 2], [3, 8], [8, 9], [5, 9], [2, 5], [1, 3], [2, 3]])
+        n, G, tgtIdx = data_tuple
+        
+        # Use 1-3 move on random vertex of n-prism
+        
+        G.pachner13(tgtIdx)
+        
+        # Check values of |V|, |E|, |F| after move
+        
+        self.assertEqual(G.num_vert, 2 * n + 2)
+        self.assertEqual(G.num_edges, 3 * n + 3)
+        self.assertEqual(G.num_faces, n + 3)
+        
+        # Check all vertices are 3-regular
+        
+        _, counts = np.unique(G.edge_list, return_counts = True)
+        self.assertTrue(np.all(counts == 3))
+
+    #-------------------------------------------------------------------------#
+    
+    @given(prism_w_vert())
+    def test_pachner13_31_Involution(self, data_tuple):
+    
+        n, G, tgtIdx = data_tuple
+        
+        # Perform 1-3 move, then 3-1 move on resulting 3-cycle
+        
+        G.pachner31(G.pachner13(tgtIdx))
+        
+        # Check values of |V|, |E|, |F| after move, isomorphism with n-prism
+        
+        self.assertEqual(G.num_vert, 2 * n)
+        self.assertEqual(G.num_edges, 3 * n)
+        self.assertEqual(G.num_faces, n + 2)
+        
+        self.assertTrue(G == Graph.create_prism(n))
 
     #-------------------------------------------------------------------------#
     
