@@ -36,6 +36,7 @@ Given a Graph object `G`, below are a list of all functions and properties defin
 - `G.vert_cyc_order`: a list of the edge CCW cyclic orders around each vertex
 - `G.face_idx_list`: a list of the face indices on either side of each edge
 - `G.face_size_list`: a list of the number of boundary edges for each graph face
+- `G.find_noniso_edges()`: find list of non-isomorphic edges under graph symmetry group, or subgroup preserving edge properties (orientation, parity)
 - `G.find_sym()`: find all signed permutations of the graph, as 1-based lists; the edge sign represents an orientation flip of the edge
 - `G.pachner13(vert_label)`: perform the Pachner 1-3 move on the graph, given a vertex label as argument
 - `G.pachner22(edge_label)`: perform the Pachner 2-2 move on the graph, given an edge label as argument
