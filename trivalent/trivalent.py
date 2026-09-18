@@ -264,13 +264,56 @@ def _compose_signed_perm(perm_A, perm_B):
 #-----------------------------------------------------------------------------#
 
 @nb.njit(cache = True)
-def _permute_orient_bits(orient_bits, signed_perm, num_edges = 20):
+def _permute_combined_bits(combined_bits, signed_perm, num_edges = 20):
+    """
+        Use signed permutation on combined bitmask (graph ID << 2E bits) +
+        (orient << E bits) + (parity bits)
+    """
+    
+    # Preserve the state ID by wiping the remaining 2E bits
+    
+    dbl_edge_shift = 2 * num_edges
+    perm_combined_bits = (combined_bits >> dbl_edge_shift) << dbl_edge_shift
     
     # The signed permutation is 1-based and records changes in edge orientation
     # due to the symmetry element; thus, if the orientation flips, the resulting
-    # orientation direction must flip as well, done by XOR on orientation value
+    # orientation direction must flip as well, done by XOR on orientation value;
+    # because left shift here can potentially exceed 64-bit limit, wrap in
+    # np.uint64().
     
-    perm_orient_bits = 0
+    for idx in range(num_edges):
+        target = signed_perm[idx]
+        tgt_parity_idx = abs(target) - 1
+        tgt_orient_idx = tgt_parity_idx + num_edges
+        
+        curr_orient_bit = np.uint64((combined_bits >> (idx + num_edges)) & 1)
+        curr_parity_bit = np.uint64((combined_bits >> idx) & 1)
+        
+        if target < 0:
+            curr_orient_bit ^= 1
+            
+        perm_combined_bits |= (curr_orient_bit << tgt_orient_idx)
+        perm_combined_bits |= (curr_parity_bit << tgt_parity_idx)
+        
+    return perm_combined_bits
+
+#-----------------------------------------------------------------------------#
+
+@nb.njit(cache = True)
+def _permute_orient_bits(orient_bits, signed_perm, num_edges = 20):
+    """
+        Use signed permutation on combined bitmask (graph ID << E bits) + (orient)
+    """
+    
+    # Preserve the state ID by wiping the remaining E bits
+    
+    perm_orient_bits = (orient_bits >> num_edges) << num_edges
+    
+    # The signed permutation is 1-based and records changes in edge orientation
+    # due to the symmetry element; thus, if the orientation flips, the resulting
+    # orientation direction must flip as well, done by XOR on orientation value;
+    # because left shift here can potentially exceed 64-bit limit, wrap in
+    # np.uint64().
     
     for idx in range(num_edges):
         target = signed_perm[idx]
@@ -280,7 +323,7 @@ def _permute_orient_bits(orient_bits, signed_perm, num_edges = 20):
         if target < 0:
             current_bit ^= 1
             
-        perm_orient_bits |= (current_bit << target_idx)
+        perm_orient_bits |= np.uint64(current_bit << target_idx)
         
     return perm_orient_bits
 
@@ -288,19 +331,39 @@ def _permute_orient_bits(orient_bits, signed_perm, num_edges = 20):
 
 @nb.njit(cache = True)
 def _permute_parity_bits(parity_bits, signed_perm, num_edges = 20):
+    """
+        Use signed permutation on combined bitmask (graph ID << E bits) + (parity)
+    """
+    
+    # Preserve the state ID by wiping the remaining E bits
+    
+    perm_parity_bits = (parity_bits >> num_edges) << num_edges
     
     # There is no check of edge orientation flip necessary, so no XOR needed,
-    # simply move old parity value to its new location
-    
-    perm_parity_bits = 0
+    # simply move old parity value to its new location; because left shift here
+    # can potentially exceed 64-bit limit, wrap in np.uint64().
     
     for idx in range(num_edges):
         target_idx = abs(signed_perm[idx]) - 1
         current_bit = (parity_bits >> idx) & 1
         
-        perm_parity_bits |= (current_bit << target_idx)
+        perm_parity_bits |= np.uint64(current_bit << target_idx)
         
     return perm_parity_bits
+
+#-----------------------------------------------------------------------------#
+
+@nb.njit(cache = True)
+def _find_min_combined_bits(combined_bits, sym_grp, num_edges = 20):
+    
+    min_combined_bits = combined_bits
+    
+    for idx in range(sym_grp.shape[0]):
+        temp_bits = _permute_combined_bits(combined_bits, sym_grp[idx], num_edges)
+        if temp_bits < min_combined_bits:
+            min_combined_bits = temp_bits
+            
+    return min_combined_bits
 
 #-----------------------------------------------------------------------------#
 
@@ -658,7 +721,7 @@ class Graph:
             
     #-------------------------------------------------------------------------#
     
-    def __eq__(self, other):
+    def is_isomorphic(self, other, return_perm = True):
         
         # Verify whether number of vertices, edges are equal
         
@@ -720,22 +783,110 @@ class Graph:
             symmetry_buffer = match_buffer
             )
         
-        return result > 0
+        # Return either True/False or None/map between graphs, depending on
+        # value of return_perm
+        
+        is_match = (result > 0)
+        
+        if not is_match:
+            return None if return_perm else False
+        
+        return match_buffer[0] if return_perm else True
     
     #-------------------------------------------------------------------------#
     
-    def find_noniso_edges(self, sym_grp = None):
+    def __eq__(self, other):
+        """
+            Overloads the == operator
+        """
+        
+        if not isinstance(other, Graph):
+            return NotImplemented
+        
+        return self.is_isomorphic(other, return_perm = False)
+
+    #-------------------------------------------------------------------------#
+    
+    def find_noniso_edges(self, mask_type = None, bitmask = None, sym_grp = None):
+        """
+        Find non-isomorphic edges of graph that preserve given edge property,
+        or if mask_type = None, all symmetries of the graph.
+
+        Parameters
+        ----------
+        mask_type : str, optional
+            Description of edge property to preserve, either 'orient', 'parity',
+            or 'combined'.
+        bitmask : int or np.integer, optional
+            Integer bitmask of edge properties (orientation, parities, or both);
+            if None, assume all edges are interchangable. 
+        sym_grp : np.array, optional
+            Symmetry group of graph, if provided; if None, this group will be
+            calculated.
+
+        Returns
+        -------
+        np.array
+            List of edge labels non-isomorphic under given property
+
+        Raises
+        ------
+        ValueError
+            If provided, mask_type must be string as given above, bitmask an
+            integer, and sym_grp must have same number of columns as number of
+            graph edges
+        """
+        
+        # Calculate full graph symmetry group if none is given
 
         if sym_grp is None:
             sym_grp = self.find_sym()
+        sym_grp = np.asarray(sym_grp, dtype = np.int8)
         
         if not isinstance(sym_grp, np.ndarray):
             raise ValueError("sym_grp must be a list of symmetry elements")
             
         if sym_grp.shape[1] != self._num_edges:
             raise ValueError(f"group elements must be {self._num_edges} in size")
+            
+        # If no edge property type is given, return non-isomorphic graph edges
+        # under all graph symmetries
           
-        return _get_non_iso_edges(self._num_edges, sym_grp)
+        if mask_type is None:
+            return _get_non_iso_edges(self._num_edges, sym_grp)
+        
+        # If graph property is given, return non-isomorphic edges that preserve
+        # this property, given as edges bitmask. To do this, we find the subgroup
+        # of symmetries preserving the given structure.
+        
+        if not isinstance(mask_type, str) or mask_type not in ['orient', 'parity', 'combined']:
+            raise ValueError("mask_type must bestring from ['orient', 'parity', 'combined']")
+            
+        if not isinstance(bitmask, (int, np.integer)):
+            raise ValueError("bitmask must be integer")
+            
+        sym_subgrp = np.empty((sym_grp.shape[0], self._num_edges), dtype = np.int8)
+        row = 0
+        
+        if mask_type == 'orient':
+            for sym in sym_grp:
+                if _permute_orient_bits(bitmask, sym, num_edges = self._num_edges) == bitmask:
+                    sym_subgrp[row] = sym
+                    row += 1
+                    
+        if mask_type == 'parity':
+            for sym in sym_grp:
+                if _permute_parity_bits(bitmask, sym, num_edges = self._num_edges) == bitmask:
+                    sym_subgrp[row] = sym
+                    row += 1
+                    
+        if mask_type == 'combined':
+            for sym in sym_grp:
+                if _permute_combined_bits(bitmask, sym, num_edges = self._num_edges) == bitmask:
+                    sym_subgrp[row] = sym
+                    row += 1
+                    
+        return _get_non_iso_edges(self._num_edges, sym_subgrp[:row])
     
     #-------------------------------------------------------------------------#
 
@@ -778,6 +929,39 @@ class Graph:
         
         return sym_list[:sym_count]
         
+    #-------------------------------------------------------------------------#
+    
+    def map_orient_bitmask(self, orient_bits, other):
+        """
+            Map orientation bitmask for current graph to match edge list of target graph
+        """
+        
+        signed_edge_perm = self.is_isomorphic(other).astype(dtype = np.int64)
+        
+        if signed_edge_perm is None:
+            raise ValueError("Graphs are not isomorphic")
+            
+        return _permute_orient_bits(orient_bits, signed_edge_perm, num_edges = self._num_edges)
+        
+    #-------------------------------------------------------------------------#
+    
+    def map_parity_bitmask(self, parity_bits, other):
+        """
+            Map parity bitmask for current graph to match edge list of target graph
+        """
+        
+        signed_edge_perm = self.is_isomorphic(other).astype(dtype = np.int64)
+        
+        if signed_edge_perm is None:
+            raise ValueError("Graphs are not isomorphic")
+            
+        return _permute_parity_bits(parity_bits, signed_edge_perm, num_edges = self._num_edges)
+        
+    #-------------------------------------------------------------------------#
+    
+    def permute_parity_bitmask(self, parity_bits, signed_edge_perm):
+        return _permute_parity_bits(parity_bits, signed_edge_perm, num_edges = self._num_edges)
+    
     #-------------------------------------------------------------------------#
     
     @property
@@ -968,6 +1152,8 @@ class Graph:
         self._num_faces = (face_idx + 1)
         self._face_size_list = np.array(face_signature_list, dtype = np.uint8)
         
+    #-------------------------------------------------------------------------#
+    # Pachner graph moves
     #-------------------------------------------------------------------------#
     
     def pachner13(self, vert_idx):
