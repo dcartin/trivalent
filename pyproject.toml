@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "trivalent"
-version = "0.1.0"
+dynamic = ["version"]
 requires-python = ">=3.11"
 dependencies = [
     "numba>=0.60",
@@ -13,3 +13,6 @@ dependencies = [
 
 [tool.setuptools]
 packages = ["trivalent"]
+
+[tool.setuptools.dynamic]
+version = {attr = "trivalent.__version__"}  # <--- Points setuptools to __init__.py
