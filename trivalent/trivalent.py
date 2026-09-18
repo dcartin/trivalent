@@ -371,7 +371,7 @@ def _uf_union(i, j, parent, rank):
 @nb.njit(cache=True)
 def _get_non_iso_edges(num_edges, sym_grp):
     """
-    sym_grp must be a 2D numpy array of shape (num_syms, num_edges)
+        sym_grp must be a 2D numpy array of shape (num_syms, num_edges)
     """
     parent = np.arange(num_edges, dtype=np.int32)
     rank = np.zeros(num_edges, dtype=np.int32)
@@ -386,13 +386,14 @@ def _get_non_iso_edges(num_edges, sym_grp):
             _uf_union(src, tgt, parent, rank)
             
     # Collect unique roots
-    roots = []
+    roots = np.zeros(num_edges, dtype=np.int32)
+    count = 0
     for i in range(num_edges):
         if parent[i] == i:
-            roots.append(i)
+            roots[count] = i
+            count += 1
             
-    # Convert list to array for Numba return types
-    return np.array(roots, dtype=np.int32)
+    return roots[:count].copy() # Return only the populated slice
 
 #=============================================================================#
 # Graph class
@@ -723,8 +724,18 @@ class Graph:
     
     #-------------------------------------------------------------------------#
     
-    def find_noniso_edges(self):
-        pass
+    def find_noniso_edges(self, sym_grp = None):
+
+        if sym_grp is None:
+            sym_grp = self.find_sym()
+        
+        if not isinstance(sym_grp, np.ndarray):
+            raise ValueError("sym_grp must be a list of symmetry elements")
+            
+        if sym_grp.shape[1] != self._num_edges:
+            raise ValueError(f"group elements must be {self._num_edges} in size")
+          
+        return _get_non_iso_edges(self._num_edges, sym_grp)
     
     #-------------------------------------------------------------------------#
 
