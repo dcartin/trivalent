@@ -30,7 +30,7 @@ Below is a brief description of the package. For more information, see the `mari
 
 Given a Graph object `G`, below are a list of all functions and properties defined for the graph.
 
-- `G = H`: test for isomorphism of `G` with a second Graph object `H`
+- `G = H`: test for isomorphism between `G` and second Graph object `H`
 - `G.num_vert`, `G.num_edges`, `G.num_faces`: number of vertices $|V|$, edges $|E|$, and faces $|F|$ for the graph
 - `G.edge_list`: a list of all graph edges, as pairs of vertex labels
 - `G.vert_cyc_order`: a list of the edge CCW cyclic orders around each vertex
