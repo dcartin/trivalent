@@ -1309,7 +1309,7 @@ class Graph:
         if self._edge_list[ccc, ccc_loc] != ccc_vert:
             move_perm[ccc] = -move_perm[ccc]
         
-        # Find lowest index position that 2-2 move edge cna be moved to ensure
+        # Find lowest index position that 2-2 move edge can be moved to ensure
         # implicit edge order. The logic behind the shift is the following. To
         # be consistent with vertex cyclic orders, we need to permute the order
         # of the edges in the edge list so that (up to cyclic permutations)
@@ -1325,9 +1325,9 @@ class Graph:
         #
         # Thus, there are two conditions:
         #
-        #   (1) xy must be placed either after cx (if bx comes before cx), or
+        #   (1) xy can be placed either after cx (if bx comes before cx), or
         #   between bx, cx (if cx comes before bx)
-        #   (2) xy must be placed either after ay (if dy comes before ay), or
+        #   (2) xy can be placed either after ay (if dy comes before ay), or
         #   between ay, dy (if ay comes before dy)
         #
         # In other words, for each interval, xy can go into the index *after*
@@ -1352,7 +1352,7 @@ class Graph:
         #   (4) ay cx dy bx -- same as (3)
         #   (5) ay dy bx cx -- place xy between ay, dy
         #
-        # The orderings ay dy cx bx does not have consistent starting orderings,
+        # The ordering ay dy cx bx does not have consistent starting ordering,
         # so cannot appear as final orders. 
         
         if start_slot <= self._num_edges < end_slot:
@@ -1382,6 +1382,7 @@ class Graph:
                     self._edge_list[iii] = self._edge_list[iii - 1]
                     
                 self._edge_list[slot] = moved_edge
+                final_edge_idx = slot
                 move_perm[edge_idx] = slot + 1
                 
             else:
@@ -1398,6 +1399,7 @@ class Graph:
                     self._edge_list[iii] = self._edge_list[iii + 1]
                     
                 self._edge_list[target_slot] = moved_edge
+                final_edge_idx = target_slot
                 move_perm[edge_idx] = slot
                 
         # Update vertex cyclic order
@@ -1409,10 +1411,11 @@ class Graph:
         self._face_idx_list = None
         self._face_size_list = None
             
-        # 2-2 move was successful, so return edge_idx as confirmation; if the
-        # move cannot be done because it violates 3-connectedness, return -1
+        # 2-2 move was successful, so return new location of edge_idx as
+        # confirmation; if the move cannot be done because it violates
+        # 3-connectedness, return -1 (done previously)
         
-        return edge_idx, move_perm
+        return final_edge_idx, move_perm
         
     #-------------------------------------------------------------------------#
     

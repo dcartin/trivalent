@@ -134,7 +134,7 @@ class TestTrivalent(unittest.TestCase):
         # For this V = 10 graph, the vertices 067, 123, and 489 all form
         # 3-cycles, so any of these edges should give an invalid move
         
-        expected = [0, -1, -1, -1, 4, -1, -1, -1, 8, -1, 10, 11, -1, -1, 14]
+        expected = [3, -1, -1, -1, 0, -1, -1, -1, 12, -1, 13, 3, -1, -1, 11]
         
         for tgt in range(15):
             G = Graph([[0, 1], [0, 6], [0, 7], [1, 2], [4, 6], [4, 8], [4, 9], [6, 7], \
@@ -142,7 +142,7 @@ class TestTrivalent(unittest.TestCase):
                 
             result, perm = G.pachner22(tgt)
             
-            self.assertEqual(result, expected[tgt], f"Incorrect validity at edge {tgt}")
+            self.assertEqual(result, expected[tgt], f"Incorrect validity or new edge idx at edge {tgt}")
 
     #-------------------------------------------------------------------------#
     
@@ -173,7 +173,7 @@ class TestTrivalent(unittest.TestCase):
         H = Graph([[4, 6], [6, 9], [0, 5], [0, 8], [0, 9], [7, 8], [8, 9], [2, 7], \
                    [1, 7], [3, 4], [4, 5], [2, 5], [1, 3], [1, 6], [2, 3]])
         
-        self.assertEqual(result[0], 0)
+        self.assertEqual(result[0], 6)
         self.assertListEqual(result[1].tolist(), movePerm)
         self.assertEqual(G, H)
 
@@ -192,7 +192,7 @@ class TestTrivalent(unittest.TestCase):
         H = Graph([[0, 1], [0, 8], [0, 9], [6, 8], [8, 9], [7, 9], [4, 6], [6, 7], \
                    [5, 7], [1, 2], [3, 4], [4, 5], [2, 5], [1, 3], [2, 3]])
         
-        self.assertEqual(result[0], 14)
+        self.assertEqual(result[0], 10)
         self.assertListEqual(result[1].tolist(), movePerm)
         self.assertEqual(G, H)
 
@@ -210,13 +210,9 @@ class TestTrivalent(unittest.TestCase):
 
         newEdge, movePerm = G.pachner22(tgtIdx)
         
-        # Find index of new edge using 1-based signed permutation
-        
-        newTgtIdx = abs(movePerm[tgtIdx]) - 1
-        
         # Apply 2-2 move to created edge
         
-        G.pachner22(newTgtIdx)
+        G.pachner22(newEdge)
         
         # Compare to another n-prism graph
         
@@ -356,7 +352,7 @@ class TestTrivalent(unittest.TestCase):
     
     def test_pachner31CycleOrder(self):
         """
-            Use same triangle with different edge orderings as arguments
+            Use triangle with edge labels in flipped numerical order
         """
         
         G = Graph([[0, 1], [0, 6], [0, 7], [4, 6], [4, 8], [4, 9], [6, 7], [5, 7], \
