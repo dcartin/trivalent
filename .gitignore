@@ -3,3 +3,10 @@ __pycache__/
 trivalent.egg-info/
 *.pyc
 *.pth
+
+# Ignore large data files
+
+data/V=12-cyc=*-Pachner-graph-combined.npz
+data/V=14-Pachner-graph-orient.npz
+data/V=16-orient-states.npz
+data/V=18-cyc=*-Pachner-graph-parity.npz

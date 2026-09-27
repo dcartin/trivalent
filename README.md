@@ -30,18 +30,23 @@ Below is a brief description of the package. For more information, see the `mari
 
 Given a Graph object `G`, below are a list of all functions and properties defined for the graph.
 
-- `G = H`: test for isomorphism between `G` and second Graph object `H`
 - `G.num_vert`, `G.num_edges`, `G.num_faces`: number of vertices $|V|$, edges $|E|$, and faces $|F|$ for the graph
 - `G.edge_list`: a list of all graph edges, as pairs of vertex labels
 - `G.vert_cyc_order`: a list of the edge CCW cyclic orders around each vertex
 - `G.face_idx_list`: a list of the face indices on either side of each edge
 - `G.face_size_list`: a list of the number of boundary edges for each graph face
+- `G = H`: test for isomorphism between `G` and second Graph object `H` (gives True/False)
+- `G.is_isomorphic(H)`: tests for isomorphism, returns 1-based signed permutation between edges
 - `G.find_noniso_edges()`: find list of non-isomorphic edges under graph symmetry group, or subgroup preserving edge properties (orientation, parity)
 - `G.find_sym()`: find all signed permutations of the graph, as 1-based lists; the edge sign represents an orientation flip of the edge
 - `G.pachner13(vert_label)`: perform the Pachner 1-3 move on the graph, given a vertex label as argument
 - `G.pachner22(edge_label)`: perform the Pachner 2-2 move on the graph, given an edge label as argument
 - `G.pachner31(cycle_list)`: perform the Pachner 3-1 move on the graph, given the edge labels of a 3-cycle
 
-## Standard graphs available
+## Standard graphs
 
 - `G.create_prism(n)`: $n$-prism graph with $2n$ vertices
+
+## Data files
+
+The data files included in `/data` give information about the possible graph states, including the possiblity of edge orientation and parities. For smaller vertex numbers, the adjacency matrix of the Pachner graph under the 2-2 move is also stored. Larger files are not included here.
