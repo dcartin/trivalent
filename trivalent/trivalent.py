@@ -264,7 +264,7 @@ def _compose_signed_perm(perm_A, perm_B):
 #-----------------------------------------------------------------------------#
 
 @nb.njit(cache = True)
-def _permute_combined_bits(combined_bits, signed_perm, num_edges = 20):
+def _permute_combined_bits(combined_bits, signed_perm, num_edges):
     """
         Use signed permutation on combined bitmask (graph ID << 2E bits) +
         (orient << E bits) + (parity bits)
@@ -273,7 +273,7 @@ def _permute_combined_bits(combined_bits, signed_perm, num_edges = 20):
     # Preserve the state ID by wiping the remaining 2E bits
     
     dbl_edge_shift = 2 * num_edges
-    perm_combined_bits = (combined_bits >> dbl_edge_shift) << dbl_edge_shift
+    perm_combined_bits = np.uint64(combined_bits >> dbl_edge_shift) << dbl_edge_shift
     
     # The signed permutation is 1-based and records changes in edge orientation
     # due to the symmetry element; thus, if the orientation flips, the resulting
@@ -281,9 +281,8 @@ def _permute_combined_bits(combined_bits, signed_perm, num_edges = 20):
     # because left shift here can potentially exceed 64-bit limit, wrap in
     # np.uint64().
     
-    for idx in range(num_edges):
-        target = signed_perm[idx]
-        tgt_parity_idx = abs(target) - 1
+    for idx, target in enumerate(signed_perm):
+        tgt_parity_idx = np.uint64(abs(target) - 1)
         tgt_orient_idx = tgt_parity_idx + num_edges
         
         curr_orient_bit = np.uint64((combined_bits >> (idx + num_edges)) & 1)
@@ -292,15 +291,15 @@ def _permute_combined_bits(combined_bits, signed_perm, num_edges = 20):
         if target < 0:
             curr_orient_bit ^= 1
             
-        perm_combined_bits |= (curr_orient_bit << tgt_orient_idx)
-        perm_combined_bits |= (curr_parity_bit << tgt_parity_idx)
+        perm_combined_bits |= (np.uint64(curr_orient_bit) << tgt_orient_idx)
+        perm_combined_bits |= (np.uint64(curr_parity_bit) << tgt_parity_idx)
         
     return perm_combined_bits
 
 #-----------------------------------------------------------------------------#
 
 @nb.njit(cache = True)
-def _permute_orient_bits(orient_bits, signed_perm, num_edges = 20):
+def _permute_orient_bits(orient_bits, signed_perm, num_edges):
     """
         Use signed permutation on combined bitmask (graph ID << E bits) + (orient)
     """
@@ -315,8 +314,7 @@ def _permute_orient_bits(orient_bits, signed_perm, num_edges = 20):
     # because left shift here can potentially exceed 64-bit limit, wrap in
     # np.uint64().
     
-    for idx in range(num_edges):
-        target = signed_perm[idx]
+    for idx, target in enumerate(signed_perm):
         target_idx = abs(target) - 1
         current_bit = (orient_bits >> idx) & 1
         
@@ -330,7 +328,7 @@ def _permute_orient_bits(orient_bits, signed_perm, num_edges = 20):
 #-----------------------------------------------------------------------------#
 
 @nb.njit(cache = True)
-def _permute_parity_bits(parity_bits, signed_perm, num_edges = 20):
+def _permute_parity_bits(parity_bits, signed_perm, num_edges):
     """
         Use signed permutation on combined bitmask (graph ID << E bits) + (parity)
     """
@@ -343,8 +341,8 @@ def _permute_parity_bits(parity_bits, signed_perm, num_edges = 20):
     # simply move old parity value to its new location; because left shift here
     # can potentially exceed 64-bit limit, wrap in np.uint64().
     
-    for idx in range(num_edges):
-        target_idx = abs(signed_perm[idx]) - 1
+    for idx, target in enumerate(signed_perm):
+        target_idx = abs(target) - 1
         current_bit = (parity_bits >> idx) & 1
         
         perm_parity_bits |= np.uint64(current_bit << target_idx)
@@ -354,7 +352,7 @@ def _permute_parity_bits(parity_bits, signed_perm, num_edges = 20):
 #-----------------------------------------------------------------------------#
 
 @nb.njit(cache = True)
-def _find_min_combined_bits(combined_bits, sym_grp, num_edges = 20):
+def _find_min_combined_bits(combined_bits, sym_grp, num_edges):
     
     min_combined_bits = combined_bits
     
@@ -368,7 +366,7 @@ def _find_min_combined_bits(combined_bits, sym_grp, num_edges = 20):
 #-----------------------------------------------------------------------------#
 
 @nb.njit(cache = True)
-def _find_min_orient_bits(orient_bits, sym_grp, num_edges = 20):
+def _find_min_orient_bits(orient_bits, sym_grp, num_edges):
     
     min_orient_bits = orient_bits
     
@@ -382,7 +380,7 @@ def _find_min_orient_bits(orient_bits, sym_grp, num_edges = 20):
 #-----------------------------------------------------------------------------#
 
 @nb.njit(cache = True)
-def _find_min_parity_bits(parity_bits, sym_grp, num_edges = 20):
+def _find_min_parity_bits(parity_bits, sym_grp, num_edges):
     
     min_parity_bits = parity_bits
     
@@ -479,6 +477,7 @@ class Graph:
         self._num_faces = None
         self._face_idx_list = None
         self._face_size_list = None
+        self._face_bndy_list = None
         
         # Set hard limit for maximum number of vertices, edges here
         
@@ -621,7 +620,7 @@ class Graph:
     def _restore_implicit_order(self):
         """
             Given a correct vertex cyclic order, reorders the edge list to be
-            consistent
+            consistent, relabels edges in vertex cyclic order to match this order
         """
         
         # Helper functions, for finding correct vertex label inside edge pair,
@@ -931,6 +930,21 @@ class Graph:
         
     #-------------------------------------------------------------------------#
     
+    def find_min_combined_bitmask(self, combined_bits, sym_grp):
+        return _find_min_combined_bits(combined_bits, sym_grp, num_edges = self._num_edges)
+    
+    #-------------------------------------------------------------------------#
+    
+    def find_min_orient_bitmask(self, orient_bits, sym_grp):
+        return _find_min_orient_bits(orient_bits, sym_grp, num_edges = self._num_edges)
+    
+    #-------------------------------------------------------------------------#
+    
+    def find_min_parity_bitmask(self, parity_bits, sym_grp):
+        return _find_min_parity_bits(parity_bits, sym_grp, num_edges = self._num_edges)
+    
+    #-------------------------------------------------------------------------#
+    
     def map_orient_bitmask(self, orient_bits, other):
         """
             Map orientation bitmask for current graph to match edge list of target graph
@@ -959,6 +973,16 @@ class Graph:
         
     #-------------------------------------------------------------------------#
     
+    def permute_combined_bitmask(self, combo_bits, signed_edge_perm):
+        return _permute_combined_bits(combo_bits, signed_edge_perm, num_edges = self._num_edges)
+    
+    #-------------------------------------------------------------------------#
+    
+    def permute_orient_bitmask(self, orient_bits, signed_edge_perm):
+        return _permute_orient_bits(orient_bits, signed_edge_perm, num_edges = self._num_edges)
+    
+    #-------------------------------------------------------------------------#
+    
     def permute_parity_bitmask(self, parity_bits, signed_edge_perm):
         return _permute_parity_bits(parity_bits, signed_edge_perm, num_edges = self._num_edges)
     
@@ -985,6 +1009,23 @@ class Graph:
     #-------------------------------------------------------------------------#
     
     @property
+    def face_bndy_list(self):
+        """
+        List of boundary edges for each face in graph
+
+        Returns
+        -------
+        np.array of num_faces length
+        """
+        
+        if self._face_bndy_list is None:
+            self.find_faces()
+            
+        return self._face_bndy_list[:self._num_faces]
+    
+    #-------------------------------------------------------------------------#
+    
+    @property
     def face_idx_list(self):
         """
             Return left-, right-hand face indices for all active edges
@@ -1006,7 +1047,7 @@ class Graph:
         if self._face_idx_list is None:
             self.find_faces()
         
-        return self._face_size_list[:self._num_edges]
+        return self._face_size_list[:self._num_faces]
         
     #-------------------------------------------------------------------------#
     
@@ -1070,6 +1111,8 @@ class Graph:
         
         self._face_idx_list = np.full((self._max_num_edges, 2), self._max_num_vert, \
                                      dtype = np.uint8)
+            
+        face_bndy_list = []
         
         # Track whether the edge has been traversed, in both directions, using
         # shape (numEdges, 2) array; visited[edge][0] is forward direction, i.e.
@@ -1095,6 +1138,7 @@ class Graph:
                 curr_edge_idx, curr_dir = start_edge_idx, start_dir
                 face_size = 0
                 face_idx += 1
+                curr_face_list = []             # SCRATCH
                 
                 # Find starting vertex based on direction traveling along edge,
                 # with curr_dir = 0 giving start -> end, and curr_dir = 1 end
@@ -1112,6 +1156,8 @@ class Graph:
                     visited[curr_edge_idx, curr_dir] = True
                     face_size += 1
                     self._face_idx_list[curr_edge_idx, curr_dir] = face_idx
+                        
+                    curr_face_list.append(int(curr_edge_idx))       # SCRATCH
                     
                     # At current vertex, travel around in CW direction to next
                     # vertex in path CCW around the face
@@ -1146,11 +1192,13 @@ class Graph:
                         break
                     
                 face_signature_list.append(face_size)
+                face_bndy_list.append(curr_face_list)
                 
         # Update number of faces, list of face sizes indices by face_idx
         
         self._num_faces = (face_idx + 1)
         self._face_size_list = np.array(face_signature_list, dtype = np.uint8)
+        self._face_bndy_list = face_bndy_list
         
     #-------------------------------------------------------------------------#
     # Pachner graph moves
@@ -1200,6 +1248,7 @@ class Graph:
         
         self._face_idx_list = None
         self._face_size_list = None
+        self._face_bndy_list = None
         
         if self._num_faces is not None:
             self._num_faces += 2
@@ -1365,7 +1414,8 @@ class Graph:
         else:
             slot = start_slot % self._num_edges
             
-        # Move edges according to chosen new position
+        # Move edges according to chosen new position, and preserve sign of
+        # edge index originally in that location
 
         if slot != edge_idx:
             
@@ -1376,7 +1426,10 @@ class Graph:
                 # Indices move to right between slot, edge_idx
                 
                 for iii in range(slot, edge_idx):
-                    move_perm[iii] = move_perm[iii + 1]
+                    if move_perm[iii] > 0:
+                        move_perm[iii] = abs(move_perm[iii + 1])
+                    else:
+                        move_perm[iii] = -abs(move_perm[iii + 1])
                 
                 for iii in range(edge_idx, slot, -1):
                     self._edge_list[iii] = self._edge_list[iii - 1]
@@ -1393,7 +1446,10 @@ class Graph:
                 target_slot = slot - 1
                 
                 for iii in range(target_slot, edge_idx, -1):
-                    move_perm[iii] = move_perm[iii - 1]
+                    if move_perm[iii] > 0:
+                        move_perm[iii] = abs(move_perm[iii - 1])
+                    else:
+                        move_perm[iii] = -abs(move_perm[iii - 1])
                 
                 for iii in range(edge_idx, target_slot):
                     self._edge_list[iii] = self._edge_list[iii + 1]
@@ -1410,6 +1466,7 @@ class Graph:
         
         self._face_idx_list = None
         self._face_size_list = None
+        self._face_bndy_list = None
             
         # 2-2 move was successful, so return new location of edge_idx as
         # confirmation; if the move cannot be done because it violates
@@ -1593,6 +1650,7 @@ class Graph:
 
         self._face_idx_list = None
         self._face_size_list = None
+        self._face_bndy_list = None
         
         if self._num_faces is not None:
             self._num_faces -= 1
