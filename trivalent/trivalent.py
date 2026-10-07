@@ -1138,7 +1138,7 @@ class Graph:
                 curr_edge_idx, curr_dir = start_edge_idx, start_dir
                 face_size = 0
                 face_idx += 1
-                curr_face_list = []             # SCRATCH
+                curr_face_list = []
                 
                 # Find starting vertex based on direction traveling along edge,
                 # with curr_dir = 0 giving start -> end, and curr_dir = 1 end
@@ -1156,8 +1156,15 @@ class Graph:
                     visited[curr_edge_idx, curr_dir] = True
                     face_size += 1
                     self._face_idx_list[curr_edge_idx, curr_dir] = face_idx
+                    
+                    # Record edges using 1-based signed index, so that direction
+                    # of canonical edge orientation relative to CCW direction
+                    # around face is given
                         
-                    curr_face_list.append(int(curr_edge_idx))       # SCRATCH
+                    if curr_dir == 0:
+                        curr_face_list.append(int(curr_edge_idx) + 1)
+                    else:
+                        curr_face_list.append(-(int(curr_edge_idx) + 1))
                     
                     # At current vertex, travel around in CW direction to next
                     # vertex in path CCW around the face
