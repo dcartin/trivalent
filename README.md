@@ -49,4 +49,4 @@ Given a Graph object `G`, below are a list of all functions and properties defin
 
 ## Data files
 
-The data files included in `/data` give information about the possible graph states, including the possibility of edge orientation and parities. For smaller vertex numbers, the adjacency matrix of the Pachner graph under the 2-2 move is also stored. Larger files are not included here.
+The data files included in `/data` give information about the possible graph states, including the possibility of edge orientation and parities. For smaller vertex numbers, the adjacency matrix of the Pachner graph under the 2-2 move is also stored. Larger files are not included here, but can be found on Zenodo: [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.22986927.svg)](https://doi.org/10.5281/zenodo.22986927)
