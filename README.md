@@ -35,7 +35,7 @@ Given a Graph object `G`, below are a list of all functions and properties defin
 - `G.vert_cyc_order`: a list of the edge CCW cyclic orders around each vertex
 - `G.face_idx_list`: a list of the face indices on either side of each edge
 - `G.face_size_list`: a list of the number of boundary edges for each graph face
-- `G = H`: test for isomorphism between `G` and second Graph object `H` (gives True/False)
+- `G == H`: test for isomorphism between `G` and second Graph object `H` (gives True/False)
 - `G.is_isomorphic(H)`: tests for isomorphism, returns 1-based signed permutation between edges
 - `G.find_noniso_edges()`: find list of non-isomorphic edges under graph symmetry group, or subgroup preserving edge properties (orientation, parity)
 - `G.find_sym()`: find all signed permutations of the graph, as 1-based lists; the edge sign represents an orientation flip of the edge

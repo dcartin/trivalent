@@ -9,6 +9,14 @@ import numba as nb
 import numpy as np
 
 from collections import Counter, deque
+from trivalent.states import (
+        find_min_parity_state,
+        find_min_orient_state,
+        find_min_combined_state,
+        permute_parity_state,
+        permute_orient_state,
+        permute_combined_state
+    )
 
 #=============================================================================#
 # Complied Numba functions
@@ -262,136 +270,6 @@ def _compose_signed_perm(perm_A, perm_B):
     return final_perm  
 
 #-----------------------------------------------------------------------------#
-
-@nb.njit(cache = True)
-def _permute_combined_bits(combined_bits, signed_perm, num_edges):
-    """
-        Use signed permutation on combined bitmask (graph ID << 2E bits) +
-        (orient << E bits) + (parity bits)
-    """
-    
-    # Preserve the state ID by wiping the remaining 2E bits
-    
-    dbl_edge_shift = 2 * num_edges
-    perm_combined_bits = np.uint64(combined_bits >> dbl_edge_shift) << dbl_edge_shift
-    
-    # The signed permutation is 1-based and records changes in edge orientation
-    # due to the symmetry element; thus, if the orientation flips, the resulting
-    # orientation direction must flip as well, done by XOR on orientation value;
-    # because left shift here can potentially exceed 64-bit limit, wrap in
-    # np.uint64().
-    
-    for idx, target in enumerate(signed_perm):
-        tgt_parity_idx = np.uint64(abs(target) - 1)
-        tgt_orient_idx = tgt_parity_idx + num_edges
-        
-        curr_orient_bit = np.uint64((combined_bits >> (idx + num_edges)) & 1)
-        curr_parity_bit = np.uint64((combined_bits >> idx) & 1)
-        
-        if target < 0:
-            curr_orient_bit ^= 1
-            
-        perm_combined_bits |= (np.uint64(curr_orient_bit) << tgt_orient_idx)
-        perm_combined_bits |= (np.uint64(curr_parity_bit) << tgt_parity_idx)
-        
-    return perm_combined_bits
-
-#-----------------------------------------------------------------------------#
-
-@nb.njit(cache = True)
-def _permute_orient_bits(orient_bits, signed_perm, num_edges):
-    """
-        Use signed permutation on combined bitmask (graph ID << E bits) + (orient)
-    """
-    
-    # Preserve the state ID by wiping the remaining E bits
-    
-    perm_orient_bits = (orient_bits >> num_edges) << num_edges
-    
-    # The signed permutation is 1-based and records changes in edge orientation
-    # due to the symmetry element; thus, if the orientation flips, the resulting
-    # orientation direction must flip as well, done by XOR on orientation value;
-    # because left shift here can potentially exceed 64-bit limit, wrap in
-    # np.uint64().
-    
-    for idx, target in enumerate(signed_perm):
-        target_idx = abs(target) - 1
-        current_bit = (orient_bits >> idx) & 1
-        
-        if target < 0:
-            current_bit ^= 1
-            
-        perm_orient_bits |= np.uint64(current_bit << target_idx)
-        
-    return perm_orient_bits
-
-#-----------------------------------------------------------------------------#
-
-@nb.njit(cache = True)
-def _permute_parity_bits(parity_bits, signed_perm, num_edges):
-    """
-        Use signed permutation on combined bitmask (graph ID << E bits) + (parity)
-    """
-    
-    # Preserve the state ID by wiping the remaining E bits
-    
-    perm_parity_bits = (parity_bits >> num_edges) << num_edges
-    
-    # There is no check of edge orientation flip necessary, so no XOR needed,
-    # simply move old parity value to its new location; because left shift here
-    # can potentially exceed 64-bit limit, wrap in np.uint64().
-    
-    for idx, target in enumerate(signed_perm):
-        target_idx = abs(target) - 1
-        current_bit = (parity_bits >> idx) & 1
-        
-        perm_parity_bits |= np.uint64(current_bit << target_idx)
-        
-    return perm_parity_bits
-
-#-----------------------------------------------------------------------------#
-
-@nb.njit(cache = True)
-def _find_min_combined_bits(combined_bits, sym_grp, num_edges):
-    
-    min_combined_bits = combined_bits
-    
-    for idx in range(sym_grp.shape[0]):
-        temp_bits = _permute_combined_bits(combined_bits, sym_grp[idx], num_edges)
-        if temp_bits < min_combined_bits:
-            min_combined_bits = temp_bits
-            
-    return min_combined_bits
-
-#-----------------------------------------------------------------------------#
-
-@nb.njit(cache = True)
-def _find_min_orient_bits(orient_bits, sym_grp, num_edges):
-    
-    min_orient_bits = orient_bits
-    
-    for idx in range(sym_grp.shape[0]):
-        temp_bits = _permute_orient_bits(orient_bits, sym_grp[idx], num_edges)
-        if temp_bits < min_orient_bits:
-            min_orient_bits = temp_bits
-            
-    return min_orient_bits
-
-#-----------------------------------------------------------------------------#
-
-@nb.njit(cache = True)
-def _find_min_parity_bits(parity_bits, sym_grp, num_edges):
-    
-    min_parity_bits = parity_bits
-    
-    for idx in range(sym_grp.shape[0]):
-        temp_bits = _permute_parity_bits(parity_bits, sym_grp[idx], num_edges)
-        if temp_bits < min_parity_bits:
-            min_parity_bits = temp_bits
-            
-    return min_parity_bits
-
-#-----------------------------------------------------------------------------#
 # Union-find data structure
 #-----------------------------------------------------------------------------#
 
@@ -475,9 +353,11 @@ class Graph:
         # Default placeholders for quantities to be computed when needed
         
         self._num_faces = None
+        
         self._face_idx_list = None
         self._face_size_list = None
         self._face_bndy_list = None
+        self._face_adj_matrix = None
         
         # Set hard limit for maximum number of vertices, edges here
         
@@ -496,8 +376,8 @@ class Graph:
         # Check to make sure max number of vertices is valid, even if
         # DEFAULT_MAX_VERT is changed
     
-        if self._max_num_vert > 127:
-            raise ValueError("max_num_vert exceeds int8 capacity of 127")
+        if self._max_num_vert > 84:
+            raise ValueError("max_num_vert <= 84 for signed edge permutations of int8")
             
         self._max_num_edges = 3 * self._max_num_vert // 2
         
@@ -558,7 +438,7 @@ class Graph:
     @property
     def num_faces(self):
     
-        if self._face_idx_list is None:
+        if self._num_faces is None:
             self.find_faces()
             
         return self._num_faces
@@ -721,6 +601,34 @@ class Graph:
     #-------------------------------------------------------------------------#
     
     def is_isomorphic(self, other, return_perm = True):
+        """
+            Test whether two embedded trivalent graphs are isomorphic.
+        
+            The isomorphism preserves the cyclic ordering of incident edges at every
+            vertex. Consequently, mirror embeddings are not regarded as isomorphic.
+        
+            Parameters
+            ----------
+            other : Graph
+                Graph to compare with this graph.
+            return_perm : bool, default=True
+                If True, return a signed permutation of the edge labels realizing an
+                isomorphism. If False, return only whether an isomorphism exists.
+        
+            Returns
+            -------
+            numpy.ndarray or None or bool
+                If `return_perm` is True, a 1-based signed edge permutation, or None
+                if no isomorphism exists. The sign records whether the canonical
+                orientation of an edge is reversed.
+        
+                If `return_perm` is False, return True or False.
+        
+            Notes
+            -----
+            This tests isomorphism of the graph together with its vertex cyclic
+            ordering, rather than abstract graph isomorphism.
+        """
         
         # Verify whether number of vertices, edges are equal
         
@@ -842,8 +750,8 @@ class Graph:
             sym_grp = self.find_sym()
         sym_grp = np.asarray(sym_grp, dtype = np.int8)
         
-        if not isinstance(sym_grp, np.ndarray):
-            raise ValueError("sym_grp must be a list of symmetry elements")
+        if sym_grp.ndim !=2:
+            raise ValueError("sym_grp must be 2d array")
             
         if sym_grp.shape[1] != self._num_edges:
             raise ValueError(f"group elements must be {self._num_edges} in size")
@@ -866,22 +774,22 @@ class Graph:
             
         sym_subgrp = np.empty((sym_grp.shape[0], self._num_edges), dtype = np.int8)
         row = 0
+            
+        if mask_type == 'parity':
+            for sym in sym_grp:
+                if permute_parity_state(bitmask, sym, num_edges = self._num_edges) == bitmask:
+                    sym_subgrp[row] = sym
+                    row += 1
         
         if mask_type == 'orient':
             for sym in sym_grp:
-                if _permute_orient_bits(bitmask, sym, num_edges = self._num_edges) == bitmask:
-                    sym_subgrp[row] = sym
-                    row += 1
-                    
-        if mask_type == 'parity':
-            for sym in sym_grp:
-                if _permute_parity_bits(bitmask, sym, num_edges = self._num_edges) == bitmask:
+                if permute_orient_state(bitmask, sym, num_edges = self._num_edges) == bitmask:
                     sym_subgrp[row] = sym
                     row += 1
                     
         if mask_type == 'combined':
             for sym in sym_grp:
-                if _permute_combined_bits(bitmask, sym, num_edges = self._num_edges) == bitmask:
+                if permute_combined_state(bitmask, sym, num_edges = self._num_edges) == bitmask:
                     sym_subgrp[row] = sym
                     row += 1
                     
@@ -927,41 +835,28 @@ class Graph:
         )
         
         return sym_list[:sym_count]
+    
+    #-------------------------------------------------------------------------#
+    
+    def find_min_parity_state(self, parity_state, sym_grp):
+        return find_min_parity_state(parity_state, sym_grp, num_edges = self._num_edges)
+    
+    #-------------------------------------------------------------------------#
+    
+    def find_min_orient_state(self, orient_state, sym_grp):
+        return find_min_orient_state(orient_state, sym_grp, num_edges = self._num_edges)
+    
         
     #-------------------------------------------------------------------------#
     
-    def find_min_combined_bitmask(self, combined_bits, sym_grp):
-        return _find_min_combined_bits(combined_bits, sym_grp, num_edges = self._num_edges)
-    
+    def find_min_combined_state(self, combined_state, sym_grp):
+        return find_min_combined_state(combined_state, sym_grp, num_edges = self._num_edges)
+        
     #-------------------------------------------------------------------------#
     
-    def find_min_orient_bitmask(self, orient_bits, sym_grp):
-        return _find_min_orient_bits(orient_bits, sym_grp, num_edges = self._num_edges)
-    
-    #-------------------------------------------------------------------------#
-    
-    def find_min_parity_bitmask(self, parity_bits, sym_grp):
-        return _find_min_parity_bits(parity_bits, sym_grp, num_edges = self._num_edges)
-    
-    #-------------------------------------------------------------------------#
-    
-    def map_orient_bitmask(self, orient_bits, other):
+    def map_parity_state(self, parity_state, other):
         """
-            Map orientation bitmask for current graph to match edge list of target graph
-        """
-        
-        signed_edge_perm = self.is_isomorphic(other).astype(dtype = np.int64)
-        
-        if signed_edge_perm is None:
-            raise ValueError("Graphs are not isomorphic")
-            
-        return _permute_orient_bits(orient_bits, signed_edge_perm, num_edges = self._num_edges)
-        
-    #-------------------------------------------------------------------------#
-    
-    def map_parity_bitmask(self, parity_bits, other):
-        """
-            Map parity bitmask for current graph to match edge list of target graph
+            Map parity state for current graph to match edge list of target graph
         """
         
         signed_edge_perm = self.is_isomorphic(other).astype(dtype = np.int64)
@@ -969,22 +864,50 @@ class Graph:
         if signed_edge_perm is None:
             raise ValueError("Graphs are not isomorphic")
             
-        return _permute_parity_bits(parity_bits, signed_edge_perm, num_edges = self._num_edges)
+        return permute_parity_state(parity_state, signed_edge_perm, num_edges = self._num_edges)
+    
+    #-------------------------------------------------------------------------#
+    
+    def map_orient_state(self, orient_state, other):
+        """
+            Map orientation state for current graph to match edge list of target graph
+        """
+        
+        signed_edge_perm = self.is_isomorphic(other).astype(dtype = np.int64)
+        
+        if signed_edge_perm is None:
+            raise ValueError("Graphs are not isomorphic")
+            
+        return permute_orient_state(orient_state, signed_edge_perm, num_edges = self._num_edges)
+    
+    #-------------------------------------------------------------------------#
+    
+    def map_combined_state(self, combined_state, other):
+        """
+            Map combined state for current graph to match edge list of target graph
+        """
+        
+        signed_edge_perm = self.is_isomorphic(other).astype(dtype = np.int64)
+        
+        if signed_edge_perm is None:
+            raise ValueError("Graphs are not isomorphic")
+            
+        return permute_combined_state(combined_state, signed_edge_perm, num_edges = self._num_edges)
+    
+    #-------------------------------------------------------------------------#
+    
+    def permute_parity_state(self, parity_state, signed_edge_perm):
+        return permute_parity_state(parity_state, signed_edge_perm, num_edges = self._num_edges)
+    
+    #-------------------------------------------------------------------------#
+    
+    def permute_orient_state(self, orient_state, signed_edge_perm):
+        return permute_orient_state(orient_state, signed_edge_perm, num_edges = self._num_edges)
         
     #-------------------------------------------------------------------------#
     
-    def permute_combined_bitmask(self, combo_bits, signed_edge_perm):
-        return _permute_combined_bits(combo_bits, signed_edge_perm, num_edges = self._num_edges)
-    
-    #-------------------------------------------------------------------------#
-    
-    def permute_orient_bitmask(self, orient_bits, signed_edge_perm):
-        return _permute_orient_bits(orient_bits, signed_edge_perm, num_edges = self._num_edges)
-    
-    #-------------------------------------------------------------------------#
-    
-    def permute_parity_bitmask(self, parity_bits, signed_edge_perm):
-        return _permute_parity_bits(parity_bits, signed_edge_perm, num_edges = self._num_edges)
+    def permute_combined_state(self, combo_state, signed_edge_perm):
+        return permute_combined_state(combo_state, signed_edge_perm, num_edges = self._num_edges)
     
     #-------------------------------------------------------------------------#
     
@@ -994,7 +917,7 @@ class Graph:
             Return only those edges that are currently active
         """
         
-        return self._edge_list[:self._num_edges]
+        return self._edge_list[:self._num_edges].copy()
         
     #-------------------------------------------------------------------------#
     
@@ -1004,7 +927,7 @@ class Graph:
             Return only cyclic orders of currently active vertices
         """
         
-        return self._vert_cyc_order[:self._num_vert]
+        return self._vert_cyc_order[:self._num_vert].copy()
         
     #-------------------------------------------------------------------------#
     
@@ -1021,7 +944,7 @@ class Graph:
         if self._face_bndy_list is None:
             self.find_faces()
             
-        return self._face_bndy_list[:self._num_faces]
+        return [boundary.copy() for boundary in self._face_bndy_list[:self._num_faces]]
     
     #-------------------------------------------------------------------------#
     
@@ -1034,8 +957,32 @@ class Graph:
         if self._face_idx_list is None:
             self.find_faces()
         
-        return self._face_idx_list[:self._num_edges]
+        return self._face_idx_list[:self._num_edges].copy()
         
+    #-------------------------------------------------------------------------#
+    
+    @property
+    def face_adj_matrix(self):
+        """
+            Returns symmetric face adjacency matrix
+        """
+        
+        if self._face_adj_matrix is None:
+            A = np.zeros((self.num_faces, self.num_faces), dtype = np.int32)
+            
+            if self._face_idx_list is None:
+                self.find_faces()
+            
+            left = self._face_idx_list[:, 0]
+            right = self._face_idx_list[:, 1]
+            
+            np.add.at(A, (left, right), 1)
+            np.add.at(A, (right, left), 1)
+            
+            self._face_adj_matrix = A
+            
+        return self._face_adj_matrix.copy()
+    
     #-------------------------------------------------------------------------#
     
     @property
@@ -1044,11 +991,11 @@ class Graph:
             Return face sizes
         """
         
-        if self._face_idx_list is None:
+        if self._face_size_list is None:
             self.find_faces()
         
-        return self._face_size_list[:self._num_faces]
-        
+        return self._face_size_list[:self._num_faces].copy()
+    
     #-------------------------------------------------------------------------#
     
     def _find_vert_triples(self):
@@ -1208,6 +1155,18 @@ class Graph:
         self._face_bndy_list = face_bndy_list
         
     #-------------------------------------------------------------------------#
+    
+    def _clear_face_data(self):
+        """
+            Clears all face information; used when graph face structure changes
+        """
+        
+        self._face_bndy_list = None
+        self._face_idx_list = None
+        self._face_size_list = None
+        self._face_adj_matrix = None
+        
+    #-------------------------------------------------------------------------#
     # Pachner graph moves
     #-------------------------------------------------------------------------#
     
@@ -1252,13 +1211,11 @@ class Graph:
         self._num_edges += 3
     
         # Face information is no longer valid
-        
-        self._face_idx_list = None
-        self._face_size_list = None
-        self._face_bndy_list = None
+
+        self._clear_face_data()
         
         if self._num_faces is not None:
-            self._num_faces += 2
+            self._num_faces += 1
             
         # This move always succeeds, and the original edges remain in place in
         # the edge list. The new edges are added to the end as the last three,
@@ -1276,7 +1233,7 @@ class Graph:
         """
         
         if (edge_idx < 0) or (edge_idx >= self._num_edges):
-            raise ValueError(f'Edge index needs to be between 0 and {self._num_vert}')
+            raise ValueError(f'Edge index needs to be between 0 and {self._num_edges - 1}')
         
         start_vert, end_vert = self._edge_list[edge_idx]
         
@@ -1470,10 +1427,8 @@ class Graph:
         self._parse_implicit_order()
             
         # Face information is no longer accurate, since faces have been permuted
-        
-        self._face_idx_list = None
-        self._face_size_list = None
-        self._face_bndy_list = None
+
+        self._clear_face_data()
             
         # 2-2 move was successful, so return new location of edge_idx as
         # confirmation; if the move cannot be done because it violates
@@ -1496,7 +1451,7 @@ class Graph:
         if len(cycle_list) != 3:
             raise ValueError('A list of three edge indices must be given.')
 
-        if np.any((cycle_list < 0) | (cycle_list > self._num_edges)):
+        if np.any((cycle_list < 0) | (cycle_list >= self._num_edges)):
             raise ValueError(f'Edge indices must be between 0 and {self._num_edges - 1}')
 
         # Identify vertices on 3-cycle, and external edges incident to those
@@ -1655,9 +1610,7 @@ class Graph:
 
         # Face information is no longer accurate, since faces have been permuted
 
-        self._face_idx_list = None
-        self._face_size_list = None
-        self._face_bndy_list = None
+        self._clear_face_data()
         
         if self._num_faces is not None:
             self._num_faces -= 1
