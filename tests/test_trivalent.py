@@ -9,6 +9,8 @@ Created on Sun May 11 09:26:45 2025
 #
 #   conda activate notebooks
 #   python -m unittest tests.test_trivalent
+#
+# The notebooks environment is needed to run the Hypothesis unittests
 
 import unittest
 import numpy as np
@@ -17,6 +19,8 @@ from collections import Counter
 from hypothesis import given, strategies as st
 from trivalent import Graph
 
+#=============================================================================#
+# Set-up for Hypothesis tests
 #=============================================================================#
 
 @st.composite
@@ -54,10 +58,55 @@ def prism_w_vert(draw):
     return N, G, tgt_vert
 
 #=============================================================================#
+# Main unittest code
+#=============================================================================#
 
 class TestTrivalent(unittest.TestCase):
 
-    #-------------------------------------------------------------------------#
+    #=========================================================================#
+    # Independence of internal variables
+    #=========================================================================#
+    
+    def test_immutableFaceProperties(self):
+        """
+            Internal face variables cannot be changed by user
+        """
+        
+        G = Graph.create_prism(3)
+    
+        original_idx = G.face_idx_list
+        original_bndy = G.face_bndy_list
+        original_size = G.face_size_list
+    
+        # Modify the returned data
+        
+        idx = G.face_idx_list
+        idx[0, 0] = 99
+    
+        bndy = G.face_bndy_list
+        bndy[0][0] = 99
+        bndy[0].append(99)
+    
+        size = G.face_size_list
+        size[0] = 99
+    
+        # Internal graph data must remain unchanged
+        
+        np.testing.assert_array_equal(
+            G.face_idx_list, original_idx
+        )
+    
+        self.assertEqual(
+            G.face_bndy_list, original_bndy
+        )
+    
+        np.testing.assert_array_equal(
+            G.face_size_list, original_size
+        )
+
+    #=========================================================================#
+    # Tests for input validity
+    #=========================================================================#
     
     def test_noHyperedges(self):
         """
@@ -85,8 +134,10 @@ class TestTrivalent(unittest.TestCase):
         """
         
         self.assertRaises(ValueError, Graph, [[0, 1], [0, 2], [1, 3], [1, 2], [0, 3], [0, 3]])
-        
-    #-------------------------------------------------------------------------#
+
+    #=========================================================================#
+    # Graph isomorphisms
+    #=========================================================================#
     
     def test_sameTet(self):
         """
@@ -113,7 +164,9 @@ class TestTrivalent(unittest.TestCase):
         
         self.assertNotEqual(G, H)
 
-    #-------------------------------------------------------------------------#
+    #=========================================================================#
+    # 1-3 move
+    #=========================================================================#
     
     def test_pachner13Valid(self):
         
@@ -124,7 +177,9 @@ class TestTrivalent(unittest.TestCase):
         
         self.assertEqual(G, H)
 
-    #-------------------------------------------------------------------------#
+    #=========================================================================#
+    # 2-2 move
+    #=========================================================================#
     
     def test_pachner22Triangle(self):
         """
@@ -294,7 +349,9 @@ class TestTrivalent(unittest.TestCase):
         
         self.assertEqual(change, 8, "Face size taxicab delta ({change}) is incorrect, expected 8")
 
-    #-------------------------------------------------------------------------#
+    #=========================================================================#
+    # 3-1 move
+    #=========================================================================#
     
     def test_pachner31Contractible(self):
         """
