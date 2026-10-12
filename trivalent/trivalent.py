@@ -973,8 +973,8 @@ class Graph:
             if self._face_idx_list is None:
                 self.find_faces()
             
-            left = self._face_idx_list[:, 0]
-            right = self._face_idx_list[:, 1]
+            left = self._face_idx_list[:self._num_edges, 0]
+            right = self._face_idx_list[:self._num_edges, 1]
             
             np.add.at(A, (left, right), 1)
             np.add.at(A, (right, left), 1)
