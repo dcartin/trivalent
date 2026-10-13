@@ -163,6 +163,26 @@ class TestTrivalent(unittest.TestCase):
                     [3, 8], [3, 9], [4, 5], [2, 5], [1, 8], [8, 9], [2, 9]])
         
         self.assertNotEqual(G, H)
+        
+        
+    #-------------------------------------------------------------------------#
+
+    def test_map_nonisomorphic_graphs(self):
+        """
+            Ensure isomorphism check is separate from mapping perm to np.uint64
+        """
+    
+        G = Graph.create_prism(3)
+        H = Graph.create_prism(4)
+    
+        for method in (
+            G.map_parity_state,
+            G.map_orient_state,
+            G.map_combined_state,
+        ):
+            with self.subTest(method=method.__name__):
+                with self.assertRaises(ValueError):
+                    method(0, H)
 
     #=========================================================================#
     # 1-3 move

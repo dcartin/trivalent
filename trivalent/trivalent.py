@@ -859,10 +859,12 @@ class Graph:
             Map parity state for current graph to match edge list of target graph
         """
         
-        signed_edge_perm = self.is_isomorphic(other).astype(dtype = np.int64)
+        signed_edge_perm = self.is_isomorphic(other)
         
         if signed_edge_perm is None:
             raise ValueError("Graphs are not isomorphic")
+            
+        signed_edge_perm = signed_edge_perm.astype(dtype = np.int64)
             
         return permute_parity_state(parity_state, signed_edge_perm, num_edges = self._num_edges)
     
@@ -873,10 +875,12 @@ class Graph:
             Map orientation state for current graph to match edge list of target graph
         """
         
-        signed_edge_perm = self.is_isomorphic(other).astype(dtype = np.int64)
+        signed_edge_perm = self.is_isomorphic(other)
         
         if signed_edge_perm is None:
             raise ValueError("Graphs are not isomorphic")
+            
+        signed_edge_perm = signed_edge_perm.astype(dtype = np.int64)
             
         return permute_orient_state(orient_state, signed_edge_perm, num_edges = self._num_edges)
     
@@ -887,10 +891,12 @@ class Graph:
             Map combined state for current graph to match edge list of target graph
         """
         
-        signed_edge_perm = self.is_isomorphic(other).astype(dtype = np.int64)
+        signed_edge_perm = self.is_isomorphic(other)
         
         if signed_edge_perm is None:
             raise ValueError("Graphs are not isomorphic")
+            
+        signed_edge_perm = signed_edge_perm.astype(dtype = np.int64)
             
         return permute_combined_state(combined_state, signed_edge_perm, num_edges = self._num_edges)
     
