@@ -2,14 +2,19 @@
 
 ## Purpose
 
-This package allows one to create a Graph object representing a 3-regular graph embedded in a 2d surface. This graph is thus dual to the simplicial triangulation of the surface. One can study the properties of the graph, and use Pachner moves (dual to those for the triangulation) to obtain other graphs.
+This package allows one to create a Graph object representing a 3-regular graph embedded in a 2d surface.
+This graph is thus dual to the simplicial triangulation of the surface. One can study the properties of
+the graph, and use Pachner moves (dual to those for the triangulation) to obtain other graphs.
 
-Below is a brief description of the package. For more information, see the `marimo` [notebook](https://molab.marimo.io/github/dcartin/trivalent/blob/master/docs/trivalent-guide.py) for an overview of using `Graph` objects.
+Below is a brief description of the package. For more information, see the
+`marimo` [notebook](https://molab.marimo.io/github/dcartin/trivalent/blob/master/docs/trivalent-guide.py)
+for an overview of using `Graph` objects.
 
 ## Dependencies
 
-- `numba`
-- `numpy`
+- `numba >= 0.60`
+- `numpy >= 2.0`
+- `python >= 3.11`
 
 ## Main features
 
@@ -25,7 +30,7 @@ Below is a brief description of the package. For more information, see the `mari
 - Test isomorphism between two Graphs
 - Find the symmetry group of a Graph, written as a signed permutation of the edges
 - Apply the graph Pachner moves, dual to those for a simplicial triangulation of a manifold
-- Represent edge orientations and Z₂ parities as bitmasks or packed graph states
+- Represent edge orientations and $Z_2$ parities as bitmasks or packed graph states
 - Transform and canonicalize edge decorations under graph automorphisms, including global orientation reversal
 
 ## Example
@@ -44,8 +49,8 @@ G = Graph.create_prism(3)
 
 # Obtain its symmetry group
 
-grp = G.find_sym()
-E = G.num_edges
+symmetry_grp = G.find_sym()
+num_edges = G.num_edges
 
 # Example edge orientation bitmask
 
@@ -53,20 +58,20 @@ orient_bits = 0b101001011
 
 # Find its canonical representative
 
-min_bits = find_min_orient_bits(orient_bits, sym_grp, E)
+min_bits = find_min_orient_bits(orient_bits, symmetry_grp, num_edges)
 
 # Pack graph ID and orientation bits into a state
 
-state = encode_orient_state(0, orient_bits, E)
+state = encode_orient_state(0, orient_bits, num_edges)
 
 # Reverse every orientation and canonicalize
 
 reversed_state = reverse_orientation(
-    state, E, canonical = True, sym_grp = grp
+    state, num_edges, canonical = True, sym_grp = symmetry_grp
 )
 ```
 
-## List of functions and properties
+## Principal functions and properties
 
 Given a Graph object `G`, below are a list of all functions and properties defined for the graph.
 
@@ -81,8 +86,10 @@ Given a Graph object `G`, below are a list of all functions and properties defin
 - `G.is_isomorphic(H)`: tests for isomorphism, returns 1-based signed permutation between edges;
 isomorphism preserves cyclic order of edges at each vertex, so mirror graphs are distinguished
 - `G.find_min_*_state(state, sym_grp)`: for all elements of a symmetry group, find lexicographic minimum state
-- `G.find_noniso_edges()`: find list of non-isomorphic edges under graph symmetry group, or subgroup preserving edge properties (orientation, parity)
-- `G.find_sym()`: find all signed permutations of the graph, as 1-based lists; the edge sign represents an orientation flip of the edge
+- `G.find_noniso_edges()`: find list of non-isomorphic edges under graph symmetry group, or subgroup preserving edge
+properties (orientation, parity)
+- `G.find_sym()`: find all signed permutations of the graph, as 1-based lists; the edge sign represents an orientation
+flip of the edge
 - `G.map_*_state(state, H)`: Map current graph state to match edge list of isomorphic graph `H`
 - `G.permute_*_state(state, perm)`: For given graph state and signed edge permutation, find permuted state
 - `G.pachner13(vert_label)`: perform the Pachner 1-3 move on the graph, given a vertex label as argument
@@ -103,7 +110,8 @@ with `num_edges` edges, the corresponding state would be `(0b1010 << num_edges) 
 - `permute_*_state(state)`: permute states using graph symmetry element
 - `find_min_*_bits(bitmask)`: for all elements of a symmetry group, find lexicographic minimum bitmask
 - `find_min_*_state(state)`: for all elements of a symmetry group, find lexicographic minimum state
-- `reverse_orientation(state)`: reverse edge orientations of a given state, with option to give minimal canonical version
+- `reverse_orientation(state)`: reverse edge orientations of a given state, with option to give minimal canonical
+version
 
 For `permute_*_bits(bitmask)`, the bitmasks represent either edge orientations or parities, while
 `reverse_orientation` takes a state with graph ID and edge orientation bitmask. For all other functions,
