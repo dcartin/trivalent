@@ -5,7 +5,7 @@ Created on Sun Sep 13 09:02:49 2026
 @author: cartin
 """
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 
 from .trivalent import Graph
 

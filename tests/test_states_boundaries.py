@@ -1,15 +1,14 @@
 """Regression tests for trivalent.states's intended public API.
 
 These tests deliberately exercise boundary cases absent from typical small-state
-examples. Some tests are EXPECTED TO FAIL on the uploaded 2026-10-12 version.
-After each implementation change, run:
+examples. After each implementation change, run:
     python -m unittest discover -s tests -p 'test_states*.py' -v
 
 Assumed public contract:
   * States are nonnegative integers fitting in 64 unsigned bits.
   * Ordinary Python integers and NumPy integer scalars are accepted.
-  * 'num_edges' is a positive integer; combined states permit E=32 only
-    with graph ID zero, and single-decoration states reserve >=1 graph-ID bit.
+  * 'num_edges' is a positive integer; orientation, parity states for |E| = 64,
+    and combined states for |E| = 32 only with graph ID zero.
   * Signed permutations are 1-based, have abs values 1..E exactly once,
     and map old edge i to abs(perm[i])-1; negative sign flips orientation.
   * Empty/malformed symmetry groups and permutations are rejected.
