@@ -625,6 +625,36 @@ class TestStates(unittest.TestCase):
         )
     
         self.assertNotEqual(independent, minimum)
+            
+    def test_minimization_invalid_edge_counts(self):
+        """
+        Canonicalization functions must validate num_edges
+        before processing bitmasks or symmetry groups.
+        """
+    
+        group = np.array([[1]], dtype=np.int64)
+    
+        cases = (
+            (find_min_parity_bits, (0, -1, 65)),
+            (find_min_orient_bits, (0, -1, 65)),
+            (find_min_combined_bits, (0, -1, 33)),
+            (find_min_parity_state, (0, -1, 65)),
+            (find_min_orient_state, (0, -1, 65)),
+            (find_min_combined_state, (0, -1, 33)),
+        )
+    
+        for function, invalid_counts in cases:
+    
+            for E in invalid_counts:
+    
+                with self.subTest(
+                    function=function.__name__,
+                    num_edges=E
+                ):
+                    with self.assertRaisesRegex(
+                        ValueError, "Number of edges"
+                    ):
+                        function(0, group, E)
 
 if __name__ == "__main__":
     unittest.main()

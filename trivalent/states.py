@@ -615,20 +615,24 @@ def _find_min_combined_state(combined_state, sym_grp, num_edges):
 
 def find_min_parity_bits(parity_bits, sym_grp, num_edges):
     
+    num_edges = _check_num_edges(num_edges, 64)
+    
     return _find_min_parity_bits(
         _check_edge_bits(parity_bits, num_edges),
         _check_sym_grp(sym_grp, num_edges),
-        _check_num_edges(num_edges, 64)
+        num_edges
         )
 
 #-----------------------------------------------------------------------------#
 
 def find_min_orient_bits(orient_bits, sym_grp, num_edges):
     
+    num_edges = _check_num_edges(num_edges, 64)
+    
     return _find_min_orient_bits(
         _check_edge_bits(orient_bits, num_edges),
         _check_sym_grp(sym_grp, num_edges),
-        _check_num_edges(num_edges, 64)
+        num_edges
         )
 
 #-----------------------------------------------------------------------------#
@@ -639,7 +643,8 @@ def find_min_combined_bits(combined_bits, sym_grp, num_edges):
     
     # Check all compatibility tests for given arguments, to ensure two
     # individual bitmasks can fit inside combined np.uint64 bitmask
-        
+    
+    num_edges = _check_num_edges(num_edges, 32)
     combined_bits = _as_uint64(combined_bits)
     
     if int(combined_bits) >= (1 << (2 * num_edges)):
@@ -647,36 +652,42 @@ def find_min_combined_bits(combined_bits, sym_grp, num_edges):
 
     sym_grp = _check_sym_grp(sym_grp, num_edges)
     
-    return int(_find_min_combined_bits(combined_bits, sym_grp, _check_num_edges(num_edges, 32)))
+    return int(_find_min_combined_bits(combined_bits, sym_grp, num_edges))
 
 #-----------------------------------------------------------------------------#
 
 def find_min_parity_state(parity_state, sym_grp, num_edges):
     
+    num_edges = _check_num_edges(num_edges, 64)
+    
     return _find_min_parity_state(
         _as_uint64(parity_state),
         _check_sym_grp(sym_grp, num_edges), 
-        _check_num_edges(num_edges, 64)
+        num_edges
         )
 
 #-----------------------------------------------------------------------------#
 
 def find_min_orient_state(orient_state, sym_grp, num_edges):
     
+    num_edges = _check_num_edges(num_edges, 64)
+    
     return _find_min_orient_state(
         _as_uint64(orient_state),
         _check_sym_grp(sym_grp, num_edges), 
-        _check_num_edges(num_edges, 64)
+        num_edges
         )
 
 #-----------------------------------------------------------------------------#
 
 def find_min_combined_state(combined_state, sym_grp, num_edges):
     
+    num_edges = _check_num_edges(num_edges, 32)
+    
     return _find_min_combined_state(
         _as_uint64(combined_state),
         _check_sym_grp(sym_grp, num_edges), 
-        _check_num_edges(num_edges, 32)
+        num_edges
         )
 
 #=============================================================================#
