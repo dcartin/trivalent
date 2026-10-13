@@ -18,9 +18,16 @@ from .states import (
         encode_orient_state,
         encode_combined_state,
         
+        permute_parity_bits,
+        permute_orient_bits,
+        
         permute_parity_state,
         permute_orient_state,
         permute_combined_state,
+        
+        find_min_parity_bits,
+        find_min_orient_bits,
+        find_min_combined_bits,
         
         find_min_parity_state,
         find_min_orient_state,
