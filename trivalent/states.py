@@ -30,6 +30,20 @@ def _as_uint64(state):
 
 #-----------------------------------------------------------------------------#
 
+def _check_num_edges(num_edges, max_edges):
+    """
+        Checks num_edges against maximum size for bitmask/state type
+    """
+
+    num_edges = operator.index(num_edges)
+
+    if not 1 <= num_edges <= max_edges:
+        raise ValueError(f"Number of edges must be between 1 and {max_edges}")
+
+    return num_edges
+
+#-----------------------------------------------------------------------------#
+
 def _check_edge_bits(bits, num_edges):
     """
         Validate a binary edge decoration of length num_edges, return as uint64
@@ -233,17 +247,17 @@ def _encode_combined_state(graph_num, orient_bits, parity_bits, num_edges):
 #-----------------------------------------------------------------------------#
 
 def decode_parity_state(parity_state, num_edges):
-    return _decode_parity_state(_as_uint64(parity_state), operator.index(num_edges))
+    return _decode_parity_state(_as_uint64(parity_state), _check_num_edges(num_edges, 64))
 
 #-----------------------------------------------------------------------------#
 
 def decode_orient_state(orient_state, num_edges):
-    return _decode_orient_state(_as_uint64(orient_state), operator.index(num_edges))
+    return _decode_orient_state(_as_uint64(orient_state), _check_num_edges(num_edges, 64))
 
 #-----------------------------------------------------------------------------#
 
 def decode_combined_state(combined_state, num_edges):
-    return _decode_combined_state(_as_uint64(combined_state), operator.index(num_edges))
+    return _decode_combined_state(_as_uint64(combined_state), _check_num_edges(num_edges, 32))
 
 #-----------------------------------------------------------------------------#
 
@@ -256,15 +270,9 @@ def encode_parity_state(graph_num, parity_bits, num_edges):
     
     graph_num = operator.index(graph_num)
     parity_bits = operator.index(parity_bits)
-    num_edges = operator.index(num_edges)
+    num_edges = _check_num_edges(num_edges, 64)
     
     # Check all compatibility tests for given arguments
-    
-    if num_edges <= 0:
-        raise ValueError('Number of edges must be greater than zero')
-    
-    if num_edges > 64:
-        raise ValueError('Parity bitmask exceeds 64 bits')
         
     if parity_bits < 0:
         raise ValueError('Parity bitmask must be non-negative')
@@ -293,15 +301,9 @@ def encode_orient_state(graph_num, orient_bits, num_edges):
     
     graph_num = operator.index(graph_num)
     orient_bits = operator.index(orient_bits)
-    num_edges = operator.index(num_edges)
+    num_edges = _check_num_edges(num_edges, 64)
     
     # Check all compatibility tests for given arguments
-    
-    if num_edges <= 0:
-        raise ValueError('Number of edges must be greater than zero')
-    
-    if num_edges > 64:
-        raise ValueError('Orientation bitmask exceeds 64 bits')
         
     if orient_bits < 0:
         raise ValueError('Orientation bitmask must be non-negative')
@@ -331,15 +333,9 @@ def encode_combined_state(graph_num, orient_bits, parity_bits, num_edges):
     graph_num = operator.index(graph_num)
     orient_bits = operator.index(orient_bits)
     parity_bits = operator.index(parity_bits)
-    num_edges = operator.index(num_edges)
+    num_edges = _check_num_edges(num_edges, 32)
     
     # Check all compatibility tests for given arguments
-    
-    if num_edges <= 0:
-        raise ValueError('Number of edges must be greater than zero')
-    
-    if num_edges > 32:
-        raise ValueError('Combined bitmask exceeds 64 bits')
         
     if orient_bits < 0 or parity_bits < 0:
         raise ValueError('Given bitmasks must be non-negative')
@@ -428,7 +424,7 @@ def permute_parity_bits(parity_bits, signed_perm, num_edges):
         Use signed permutation on parity bitmask, independent of graph ID
     """
     
-    num_edges = operator.index(num_edges)
+    num_edges = _check_num_edges(num_edges, 64)
     
     parity_bits = _check_edge_bits(parity_bits, num_edges)
     signed_perm = _check_signed_perm(signed_perm, num_edges)
@@ -442,7 +438,7 @@ def permute_orient_bits(orient_bits, signed_perm, num_edges):
         Use signed permutation on orientation bitmask, independent of graph ID
     """
     
-    num_edges = operator.index(num_edges)
+    num_edges = _check_num_edges(num_edges, 64)
     
     orient_bits = _check_edge_bits(orient_bits, num_edges)
     signed_perm = _check_signed_perm(signed_perm, num_edges)
@@ -459,14 +455,9 @@ def permute_parity_state(parity_state, signed_perm, num_edges):
     # Ensure that given arguments are integers
     
     parity_state = _as_uint64(parity_state)
-    num_edges = operator.index(num_edges)
+    num_edges = _check_num_edges(num_edges, 64)
     
     signed_perm = _check_signed_perm(signed_perm, num_edges)
-    
-    # Check all compatibility tests for given arguments
-    
-    if not 1 <= num_edges <= 64:
-        raise ValueError('Parity bitmask requires between 1 and 64 edges')
         
     # Return permuted state
     
@@ -485,14 +476,9 @@ def permute_orient_state(orient_state, signed_perm, num_edges):
     # Ensure that given arguments are integers
     
     orient_state = _as_uint64(orient_state)
-    num_edges = operator.index(num_edges)
+    num_edges = _check_num_edges(num_edges, 64)
     
     signed_perm = _check_signed_perm(signed_perm, num_edges)
-    
-    # Check all compatibility tests for given arguments
-    
-    if not 1 <= num_edges <= 64:
-        raise ValueError('Orientation bitmask requires between 1 and 64 edges')
         
     # Return permuted state
     
@@ -512,13 +498,10 @@ def permute_combined_state(combined_state, signed_perm, num_edges):
     # Ensure that given arguments are integers
     
     combined_state = _as_uint64(combined_state)
-    num_edges = operator.index(num_edges)
+    num_edges = _check_num_edges(num_edges, 32)
     
     # Check all compatibility tests for given arguments, to ensure two
     # individual bitmasks can fit inside combined np.uint64 bitmask
-    
-    if not 1 <= num_edges <= 32:
-        raise ValueError('Combined bitmask requires between 1 and 32 edges')
         
     signed_perm = _check_signed_perm(signed_perm, num_edges)
         
@@ -632,24 +615,20 @@ def _find_min_combined_state(combined_state, sym_grp, num_edges):
 
 def find_min_parity_bits(parity_bits, sym_grp, num_edges):
     
-    num_edges = operator.index(num_edges)
-    
     return _find_min_parity_bits(
         _check_edge_bits(parity_bits, num_edges),
         _check_sym_grp(sym_grp, num_edges),
-        num_edges
+        _check_num_edges(num_edges, 64)
         )
 
 #-----------------------------------------------------------------------------#
 
 def find_min_orient_bits(orient_bits, sym_grp, num_edges):
     
-    num_edges = operator.index(num_edges)
-    
     return _find_min_orient_bits(
         _check_edge_bits(orient_bits, num_edges),
         _check_sym_grp(sym_grp, num_edges),
-        num_edges
+        _check_num_edges(num_edges, 64)
         )
 
 #-----------------------------------------------------------------------------#
@@ -660,9 +639,6 @@ def find_min_combined_bits(combined_bits, sym_grp, num_edges):
     
     # Check all compatibility tests for given arguments, to ensure two
     # individual bitmasks can fit inside combined np.uint64 bitmask
-    
-    if not 1 <= num_edges <= 32:
-        raise ValueError('Combined bitmask requires between 1 and 32 edges')
         
     combined_bits = _as_uint64(combined_bits)
     
@@ -671,54 +647,89 @@ def find_min_combined_bits(combined_bits, sym_grp, num_edges):
 
     sym_grp = _check_sym_grp(sym_grp, num_edges)
     
-    return int(_find_min_combined_bits(combined_bits, sym_grp, num_edges))
+    return int(_find_min_combined_bits(combined_bits, sym_grp, _check_num_edges(num_edges, 32)))
 
 #-----------------------------------------------------------------------------#
 
 def find_min_parity_state(parity_state, sym_grp, num_edges):
     
-    num_edges = operator.index(num_edges)
-    
     return _find_min_parity_state(
         _as_uint64(parity_state),
         _check_sym_grp(sym_grp, num_edges), 
-        num_edges
+        _check_num_edges(num_edges, 64)
         )
 
 #-----------------------------------------------------------------------------#
 
 def find_min_orient_state(orient_state, sym_grp, num_edges):
     
-    num_edges = operator.index(num_edges)
-    
     return _find_min_orient_state(
         _as_uint64(orient_state),
         _check_sym_grp(sym_grp, num_edges), 
-        num_edges
+        _check_num_edges(num_edges, 64)
         )
 
 #-----------------------------------------------------------------------------#
 
 def find_min_combined_state(combined_state, sym_grp, num_edges):
     
-    num_edges = operator.index(num_edges)
-    
     return _find_min_combined_state(
         _as_uint64(combined_state),
         _check_sym_grp(sym_grp, num_edges), 
-        num_edges
+        _check_num_edges(num_edges, 32)
         )
 
 #=============================================================================#
 # Orientation reversed state
 #=============================================================================#
 
-@nb.njit(cache = True)
+#-----------------------------------------------------------------------------#
+# Compiled canonicalization kernels
+#-----------------------------------------------------------------------------#
+
+@nb.njit(cache=True)
+def _reverse_orient_bits(orient_bits, num_edges):
+    """
+        Reverse all orientation bits by taking complement
+    """
+
+    edge_mask = (np.uint64(0xFFFFFFFFFFFFFFFF) >> (64 - num_edges))
+
+    return np.uint64(orient_bits) ^ edge_mask
+
+#-----------------------------------------------------------------------------#
+# Public-facing functions with normalized states
+#-----------------------------------------------------------------------------#
+
 def reverse_orientation(orient_state, num_edges, canonical = True, sym_grp = None):
     """
-        Use signed permutation on orientation bitmask (graph ID << E bits) + (orientation bits)
+        Use signed permutation on orientation bitmask (graph ID << E bits) + (orientation bits);
+        if canonical = True, canonicalize the reversed orientation using given
+        graph symmetry group
     """
+
+    num_edges = _check_num_edges(num_edges, 64)
+    orient_state = _as_uint64(orient_state)
+
+    # Extract graph ID and orientation bits
     
-    raise NotImplementedError(
-        "reverse_orientation has not yet been implemented"
-    )
+    graph_num, orient_bits = _decode_orient_state(orient_state, num_edges)
+
+    # Reverse all edge orientations
+    
+    reversed_bits = _reverse_orient_bits(orient_bits, num_edges)
+
+    # Optionally canonicalize the reversed decoration
+    
+    if canonical:
+
+        if sym_grp is None:
+            raise ValueError("sym_grp is required when canonical = True")
+
+        sym_grp = _check_sym_grp(sym_grp, num_edges)
+
+        reversed_bits = _find_min_orient_bits(reversed_bits, sym_grp, num_edges)
+
+    # Reassemble the packed state using Python integers
+    
+    return (int(graph_num) << num_edges) | int(reversed_bits)
