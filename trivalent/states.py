@@ -121,6 +121,61 @@ def _check_sym_grp(sym_grp, num_edges):
     return np.ascontiguousarray(np.stack(checked_sym_grp))
 
 #=============================================================================#
+# Bitmask  utility functions
+#=============================================================================#
+
+#-----------------------------------------------------------------------------#
+# Compiled canonicalization kernels
+#-----------------------------------------------------------------------------#
+
+@nb.njit(inline = "always")
+def _combine_bits(orient_bits, parity_bits, num_edges):
+    return np.uint64((orient_bits << num_edges) | parity_bits)
+    
+#-----------------------------------------------------------------------------#
+
+@nb.njit(inline = "always")
+def _separate_bits(combined_bits, num_edges):
+
+    # Ensure unsigned integer arithmetic throughout, even if function is called
+    # using ordinary Python integer
+    
+    combined_bits = np.uint64(combined_bits)
+
+    # Edge mask is set this way, rather than (1 <'< num_edges) - 1, to avoid
+    # intermediate overflow issue for uint64 when |E| = 64.
+    
+    edge_mask = np.uint64(0xFFFFFFFFFFFFFFFF) >> (64 - num_edges)
+    
+    orient_bits = ((combined_bits >> num_edges) & edge_mask)
+    parity_bits = (combined_bits & edge_mask)
+    
+    return orient_bits, parity_bits
+
+#-----------------------------------------------------------------------------#
+# Public-facing functions with argument compatibility checks
+#-----------------------------------------------------------------------------#
+
+def combine_bits(orient_bits, parity_bits, num_edges):
+
+    # Ensure that given arguments are integers
+    
+    orient_bits = operator.index(orient_bits)
+    parity_bits = operator.index(parity_bits)
+    num_edges = _check_num_edges(num_edges, 32)
+    
+    return _combine_bits(orient_bits, parity_bits, num_edges)
+
+#-----------------------------------------------------------------------------#
+
+def separate_bits(combined_bits, num_edges):
+    
+    combined_bits = operator.index(combined_bits)
+    num_edges = _check_num_edges(num_edges, 32)
+    
+    return _separate_bits(combined_bits, num_edges)
+
+#=============================================================================#
 # Encode/decode graph states
 #=============================================================================#
 
@@ -256,8 +311,13 @@ def decode_orient_state(orient_state, num_edges):
 
 #-----------------------------------------------------------------------------#
 
-def decode_combined_state(combined_state, num_edges):
-    return _decode_combined_state(_as_uint64(combined_state), _check_num_edges(num_edges, 32))
+def decode_combined_state(combined_state, num_edges, separate = True):
+    graph_num, orient_bits, parity_bits = _decode_combined_state(_as_uint64(combined_state), _check_num_edges(num_edges, 32))
+
+    if separate:
+        return graph_num, orient_bits, parity_bits
+    else:
+        return graph_num, (orient_bits << num_edges) | parity_bits
 
 #-----------------------------------------------------------------------------#
 
@@ -356,6 +416,18 @@ def encode_combined_state(graph_num, orient_bits, parity_bits, num_edges):
     
     return (graph_num << (2 * num_edges)) | (orient_bits << num_edges) | parity_bits
 
+#-----------------------------------------------------------------------------#
+
+def encode_combined_bits_state(graph_num, combined_bits, num_edges):
+    """
+        Optional version if combined bitmask is easier than separated bitmasks
+    """
+    
+    num_edges = _check_num_edges(num_edges, 32)
+    orient_bits, parity_bits = separate_bits(combined_bits, num_edges)
+    
+    return encode_combined_state(graph_num, orient_bits, parity_bits, num_edges)
+
 #=============================================================================#
 # Permutations of graph states
 #=============================================================================#
@@ -416,6 +488,18 @@ def _permute_orient_bits(orient_bits, signed_perm, num_edges):
     return perm_orient_bits
 
 #-----------------------------------------------------------------------------#
+
+@nb.njit(cache = True)
+def _permute_combined_bits(combined_bits, signed_perm, num_edges):
+    
+    orient_bits, parity_bits = _separate_bits(combined_bits, num_edges)
+    
+    perm_orient_bits = _permute_orient_bits(orient_bits, signed_perm, num_edges)
+    perm_parity_bits = _permute_parity_bits(parity_bits, signed_perm, num_edges)
+    
+    return _combine_bits(perm_orient_bits, perm_parity_bits, num_edges)
+
+#-----------------------------------------------------------------------------#
 # Public-facing functions with argument compatibility checks
 #-----------------------------------------------------------------------------#
 
@@ -445,6 +529,20 @@ def permute_orient_bits(orient_bits, signed_perm, num_edges):
     
     return int(_permute_orient_bits(orient_bits, signed_perm, num_edges))
     
+#-----------------------------------------------------------------------------#
+    
+def permute_combined_bits(combined_bits, signed_perm, num_edges):
+    """
+        Use signed permutation on combined bitmask, independent of graph ID;
+        note it is assumed only 32 bits max, since must fit in combined state
+    """
+    
+    num_edges = _check_num_edges(num_edges, 32)
+    
+    signed_perm = _check_signed_perm(signed_perm, num_edges)
+    
+    return _permute_combined_bits(combined_bits, signed_perm, num_edges)
+
 #-----------------------------------------------------------------------------#
 
 def permute_parity_state(parity_state, signed_perm, num_edges):
@@ -525,13 +623,15 @@ def permute_combined_state(combined_state, signed_perm, num_edges):
 def _find_min_parity_bits(parity_bits, sym_grp, num_edges):
     
     min_parity_bits = np.uint64(parity_bits)
+    min_grp_idx = -1
     
     for idx in range(sym_grp.shape[0]):
         temp_parity_bits = _permute_parity_bits(parity_bits, sym_grp[idx], num_edges)
         if temp_parity_bits < min_parity_bits:
             min_parity_bits = temp_parity_bits
+            min_grp_idx = idx
             
-    return min_parity_bits
+    return min_parity_bits, min_grp_idx
 
 #-----------------------------------------------------------------------------#
 
@@ -539,13 +639,15 @@ def _find_min_parity_bits(parity_bits, sym_grp, num_edges):
 def _find_min_orient_bits(orient_bits, sym_grp, num_edges):
     
     min_orient_bits = np.uint64(orient_bits)
+    min_grp_idx = -1
     
     for idx in range(sym_grp.shape[0]):
         temp_orient_bits = _permute_orient_bits(orient_bits, sym_grp[idx], num_edges)
         if temp_orient_bits < min_orient_bits:
             min_orient_bits = temp_orient_bits
+            min_grp_idx = idx
             
-    return min_orient_bits
+    return min_orient_bits, min_grp_idx
 
 #-----------------------------------------------------------------------------#
 
@@ -558,6 +660,7 @@ def _find_min_combined_bits(combined_bits, sym_grp, num_edges):
     parity_bits = combined_bits & edge_mask
     
     min_combined_bits = combined_bits
+    min_grp_idx = -1
     
     for idx in range(sym_grp.shape[0]):
         perm = sym_grp[idx]
@@ -569,8 +672,9 @@ def _find_min_combined_bits(combined_bits, sym_grp, num_edges):
         
         if temp_combined_bits < min_combined_bits:
             min_combined_bits = temp_combined_bits
+            min_grp_idx = idx
             
-    return min_combined_bits
+    return min_combined_bits, min_grp_idx
     
 #-----------------------------------------------------------------------------#
 
@@ -578,9 +682,10 @@ def _find_min_combined_bits(combined_bits, sym_grp, num_edges):
 def _find_min_parity_state(parity_state, sym_grp, num_edges):
     
     graph_num, parity_bits = _decode_parity_state(parity_state, num_edges)
-    min_parity_bits = _find_min_parity_bits(parity_bits, sym_grp, num_edges)
-            
-    return _encode_parity_state(graph_num, min_parity_bits, num_edges)
+    min_parity_bits, min_grp_idx = _find_min_parity_bits(parity_bits, sym_grp, num_edges)
+    min_parity_state = _encode_parity_state(graph_num, min_parity_bits, num_edges)
+
+    return min_parity_state, min_grp_idx
 
 #-----------------------------------------------------------------------------#
 
@@ -588,9 +693,10 @@ def _find_min_parity_state(parity_state, sym_grp, num_edges):
 def _find_min_orient_state(orient_state, sym_grp, num_edges):
     
     graph_num, orient_bits = _decode_orient_state(orient_state, num_edges)
-    min_orient_bits = _find_min_orient_bits(orient_bits, sym_grp, num_edges)
-            
-    return _encode_orient_state(graph_num, min_orient_bits, num_edges)
+    min_orient_bits, min_grp_idx = _find_min_orient_bits(orient_bits, sym_grp, num_edges)
+    min_orient_state = _encode_orient_state(graph_num, min_orient_bits, num_edges)
+    
+    return min_orient_state, min_grp_idx
 
 #-----------------------------------------------------------------------------#
 
@@ -600,44 +706,76 @@ def _find_min_combined_state(combined_state, sym_grp, num_edges):
     graph_num, orient_bits, parity_bits = _decode_combined_state(combined_state, num_edges)
     combined_bits = (np.uint64(orient_bits) << num_edges) | np.uint64(parity_bits)
     
-    min_combined_bits = _find_min_combined_bits(combined_bits, sym_grp, num_edges)
+    min_combined_bits, min_grp_idx = _find_min_combined_bits(combined_bits, sym_grp, num_edges)
     
     edge_mask = (np.uint64(0xFFFFFFFFFFFFFFFF) >> (64 - num_edges))
     
     min_orient_bits = min_combined_bits >> num_edges
     min_parity_bits = min_combined_bits & edge_mask
             
-    return _encode_combined_state(graph_num, min_orient_bits, min_parity_bits, num_edges)
+    min_combined_state = _encode_combined_state(graph_num, min_orient_bits, min_parity_bits, num_edges)
+    
+    return min_combined_state, min_grp_idx
 
 #-----------------------------------------------------------------------------#
 # Public-facing functions with normalized states
 #-----------------------------------------------------------------------------#
 
-def find_min_parity_bits(parity_bits, sym_grp, num_edges):
+def find_min_parity_bits(parity_bits, sym_grp, num_edges, return_perm = False):
+    """
+        Find minimum parity bitmask, with option to return signed permutation
+    """
     
+    parity_bits = _check_edge_bits(parity_bits, num_edges)
+    sym_grp = _check_sym_grp(sym_grp, num_edges)
     num_edges = _check_num_edges(num_edges, 64)
     
-    return int(_find_min_parity_bits(
+    min_parity_bits, min_grp_idx = _find_min_parity_bits(
         _check_edge_bits(parity_bits, num_edges),
         _check_sym_grp(sym_grp, num_edges),
         num_edges
-        ))
+        )
+    
+    if not return_perm:
+        return int(min_parity_bits)
+    
+    if min_grp_idx == -1:   # No minimum permutation found
+        min_perm = np.arange(1, num_edges + 1, dtype = np.int64)
+    else:
+        min_perm = sym_grp[min_grp_idx].copy()
+        
+    return int(min_parity_bits), min_perm
 
 #-----------------------------------------------------------------------------#
 
-def find_min_orient_bits(orient_bits, sym_grp, num_edges):
+def find_min_orient_bits(orient_bits, sym_grp, num_edges, return_perm = False):
+    """
+        Find minimum orientation bitmask, with option to return signed permutation
+    """
     
+    orient_bits = _check_edge_bits(orient_bits, num_edges)
+    sym_grp = _check_sym_grp(sym_grp, num_edges)
     num_edges = _check_num_edges(num_edges, 64)
     
-    return int(_find_min_orient_bits(
+    min_orient_bits, min_grp_idx = _find_min_orient_bits(
         _check_edge_bits(orient_bits, num_edges),
         _check_sym_grp(sym_grp, num_edges),
         num_edges
-        ))
+        )
+    
+    if not return_perm:
+        return int(min_orient_bits)
+    
+    if min_grp_idx == -1:   # No minimum permutation found
+        min_perm = np.arange(1, num_edges + 1, dtype = np.int64)
+    else:
+        min_perm = sym_grp[min_grp_idx].copy()
+        
+    return int(min_orient_bits), min_perm
 
 #-----------------------------------------------------------------------------#
 
-def find_min_combined_bits(combined_bits, sym_grp, num_edges):
+def find_min_combined_bits(combined_bits, sym_grp, num_edges, return_perm = False):
     
     # Check all compatibility tests for given arguments, to ensure two
     # individual bitmasks can fit inside combined np.uint64 bitmask
@@ -650,43 +788,83 @@ def find_min_combined_bits(combined_bits, sym_grp, num_edges):
 
     sym_grp = _check_sym_grp(sym_grp, num_edges)
     
-    return int(_find_min_combined_bits(combined_bits, sym_grp, num_edges))
+    min_combined_bits, min_grp_idx = _find_min_combined_bits(combined_bits, sym_grp, num_edges)
+    
+    if not return_perm:
+        return int(min_combined_bits)
+    
+    if min_grp_idx == -1:   # No minimum permutation found
+        min_perm = np.arange(1, num_edges + 1, dtype = np.int64)
+    else:
+        min_perm = sym_grp[min_grp_idx].copy()
+        
+    return int(min_combined_bits), min_perm
 
 #-----------------------------------------------------------------------------#
 
-def find_min_parity_state(parity_state, sym_grp, num_edges):
+def find_min_parity_state(parity_state, sym_grp, num_edges, return_perm = False):
     
     num_edges = _check_num_edges(num_edges, 64)
     
-    return int(_find_min_parity_state(
+    min_parity_state, min_grp_idx = _find_min_parity_state(
         _as_uint64(parity_state),
         _check_sym_grp(sym_grp, num_edges), 
         num_edges
-        ))
+        )
+    
+    if not return_perm:
+        return int(min_parity_state)
+    
+    if min_grp_idx == -1:   # No minimum permutation found
+        min_perm = np.arange(1, num_edges + 1, dtype = np.int64)
+    else:
+        min_perm = sym_grp[min_grp_idx].copy()
+        
+    return int(min_parity_state), min_perm
 
 #-----------------------------------------------------------------------------#
 
-def find_min_orient_state(orient_state, sym_grp, num_edges):
+def find_min_orient_state(orient_state, sym_grp, num_edges, return_perm = False):
     
     num_edges = _check_num_edges(num_edges, 64)
     
-    return int(_find_min_orient_state(
+    min_orient_state, min_grp_idx = _find_min_orient_state(
         _as_uint64(orient_state),
         _check_sym_grp(sym_grp, num_edges), 
         num_edges
-        ))
+        )
+    
+    if not return_perm:
+        return int(min_orient_state)
+    
+    if min_grp_idx == -1:   # No minimum permutation found
+        min_perm = np.arange(1, num_edges + 1, dtype = np.int64)
+    else:
+        min_perm = sym_grp[min_grp_idx].copy()
+        
+    return int(min_orient_state), min_perm
 
 #-----------------------------------------------------------------------------#
 
-def find_min_combined_state(combined_state, sym_grp, num_edges):
+def find_min_combined_state(combined_state, sym_grp, num_edges, return_perm = False):
     
     num_edges = _check_num_edges(num_edges, 32)
     
-    return int(_find_min_combined_state(
+    min_combined_state, min_grp_idx = _find_min_combined_state(
         _as_uint64(combined_state),
         _check_sym_grp(sym_grp, num_edges), 
         num_edges
-        ))
+        )
+        
+    if not return_perm:
+        return int(min_combined_state)
+    
+    if min_grp_idx == -1:   # No minimum permutation found
+        min_perm = np.arange(1, num_edges + 1, dtype = np.int64)
+    else:
+        min_perm = sym_grp[min_grp_idx].copy()
+        
+    return int(min_combined_state), min_perm
 
 #=============================================================================#
 # Orientation reversed state

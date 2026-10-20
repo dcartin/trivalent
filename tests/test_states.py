@@ -40,6 +40,7 @@ from trivalent.states import (
         
         permute_parity_bits,
         permute_orient_bits,
+        permute_combined_bits,
         
         permute_parity_state,
         permute_orient_state,
@@ -628,11 +629,23 @@ class TestStates(unittest.TestCase):
             
     def test_minimization_invalid_edge_counts(self):
         """
-        Canonicalization functions must validate num_edges
-        before processing bitmasks or symmetry groups.
+        Canonicalization must reject invalid num_edges
+        before processing bitmasks, states, or symmetry groups.
         """
     
-        group = np.array([[1]], dtype=np.int64)
+        class MustNotBeInspected:
+    
+            def __index__(self):
+                raise AssertionError(
+                    "State/bitmask checked before num_edges"
+                )
+    
+            def __array__(self, dtype=None, copy=None):
+                raise AssertionError(
+                    "Symmetry group checked before num_edges"
+                )
+    
+        invalid_input = MustNotBeInspected()
     
         cases = (
             (find_min_parity_bits, (0, -1, 65)),
@@ -651,10 +664,82 @@ class TestStates(unittest.TestCase):
                     function=function.__name__,
                     num_edges=E
                 ):
-                    with self.assertRaisesRegex(
-                        ValueError, "Number of edges"
-                    ):
-                        function(0, group, E)
+                    with self.assertRaises(ValueError):
+                        function(invalid_input, invalid_input, E)
+                        
+    def test_canonicalization_returns_orient_perm(self):
+    
+        E = 3
+    
+        group = np.array([
+            [1, 2, 3],
+            [-2, -1, 3]
+        ], dtype=np.int64)
+    
+        bits = 0b011
+    
+        minimum, perm = find_min_orient_bits(
+            bits, group, E, return_perm=True
+        )
+    
+        self.assertEqual(minimum, 0b000)
+    
+        self.assertEqual(
+            permute_orient_bits(bits, perm, E),
+            minimum
+        )
+        
+        self.assertListEqual([-2, -1, 3], list(perm))
+                            
+    def test_canonicalization_returns_parity_perm(self):
+    
+        E = 3
+    
+        group = np.array([
+            [1, 2, 3],
+            [-2, -1, 3]
+        ], dtype=np.int64)
+    
+        bits = 0b110
+    
+        minimum, perm = find_min_parity_bits(
+            bits, group, E, return_perm=True
+        )
+    
+        self.assertEqual(minimum, 0b101)
+    
+        self.assertEqual(
+            permute_parity_bits(bits, perm, E),
+            minimum
+        )
+        
+        self.assertListEqual([-2, -1, 3], list(perm))
+        
+                            
+    def test_canonicalization_returns_combined_perm(self):
+    
+        E = 3
+    
+        group = np.array([
+            [1, 2, 3],
+            [2, 1, 3],
+            [-2, -1, 3]
+        ], dtype=np.int64)
+    
+        bits = 0b011110
+    
+        minimum, perm = find_min_combined_bits(
+            bits, group, E, return_perm=True
+        )
+    
+        self.assertEqual(minimum, 0b000101)
+    
+        self.assertEqual(
+            permute_combined_bits(bits, perm, E),
+            minimum
+        )
+        
+        self.assertListEqual([-2, -1, 3], list(perm))
 
 if __name__ == "__main__":
     unittest.main()

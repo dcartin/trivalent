@@ -10,6 +10,9 @@ __version__ = "0.4.0"
 from .trivalent import Graph
 
 from .states import (
+        combine_bits,
+        separate_bits,
+    
         decode_parity_state,
         decode_orient_state,
         decode_combined_state,
@@ -17,9 +20,11 @@ from .states import (
         encode_parity_state,
         encode_orient_state,
         encode_combined_state,
+        encode_combined_bits_state,
         
         permute_parity_bits,
         permute_orient_bits,
+        permute_combined_bits,
         
         permute_parity_state,
         permute_orient_state,
