@@ -13,6 +13,9 @@ from trivalent.states import (
         find_min_parity_state,
         find_min_orient_state,
         find_min_combined_state,
+        permute_parity_bits,
+        permute_orient_bits,
+        permute_combined_bits,
         permute_parity_state,
         permute_orient_state,
         permute_combined_state
@@ -1009,19 +1012,19 @@ class Graph:
             
         if mask_type == 'parity':
             for sym in sym_grp:
-                if permute_parity_state(bitmask, sym, num_edges = self._num_edges) == bitmask:
+                if permute_parity_bits(bitmask, sym, num_edges = self._num_edges) == bitmask:
                     sym_subgrp[row] = sym
                     row += 1
         
         if mask_type == 'orient':
             for sym in sym_grp:
-                if permute_orient_state(bitmask, sym, num_edges = self._num_edges) == bitmask:
+                if permute_orient_bits(bitmask, sym, num_edges = self._num_edges) == bitmask:
                     sym_subgrp[row] = sym
                     row += 1
                     
         if mask_type == 'combined':
             for sym in sym_grp:
-                if permute_combined_state(bitmask, sym, num_edges = self._num_edges) == bitmask:
+                if permute_combined_bits(bitmask, sym, num_edges = self._num_edges) == bitmask:
                     sym_subgrp[row] = sym
                     row += 1
                     
