@@ -1,0 +1,50 @@
+site_name: trivalent
+site_url: https://dcartin.github.io/trivalent/
+repo_url: https://github.com/dcartin/trivalent
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+nav:
+  - Home: index.md
+  - API Reference:
+      - Graph: reference/graph.md
+      - States: reference/states.md
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: ["."]
+          options:
+            docstring_style: numpy
+            show_if_no_docstring: true
+            show_source: false
+            show_root_heading: true
+            merge_init_into_class: false
+            group_by_category: true
+            show_category_heading: true
+            members_order: alphabetical
+
+extra_css:
+  - css/mkdocstrings.css
+  
+markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
