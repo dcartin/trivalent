@@ -1,10 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-Created on Sat Jun  6 06:47:05 2026
-
-@author: cartin
-"""
-
 import numba as nb
 import numpy as np
 
@@ -363,6 +356,8 @@ class Graph:
     - The graph may be modified in place by Pachner moves.
     - Face information is calculated when needed.
     - Construction does not establish planarity or 3-connectivity.
+    - Isomorphism and automorphism computations assume connected graphs.
+      The constructor does not verify this precondition.
 
     Examples
     --------
@@ -1234,7 +1229,7 @@ class Graph:
                 under the supplied group action.
             
             Notes
-            -----x`
+            -----
             The graph ID is preserved.
             
             The encoding places the orientation bits above the
@@ -1270,7 +1265,7 @@ class Graph:
             
             Returns
             -------
-            numpy.uint64
+            int
                 Encoded parity state with edge decorations expressed
                 in the edge ordering of `other`.
             
@@ -1320,7 +1315,7 @@ class Graph:
             
             Returns
             -------
-            numpy.uint64
+            int
                 Encoded orientation state with edge decorations
                 expressed in the edge ordering of `other`.
             
@@ -1371,7 +1366,7 @@ class Graph:
             
             Returns
             -------
-            numpy.uint64
+            int
                 Encoded combined state with both decorations expressed
                 in the edge ordering of `other`.
             
@@ -1417,7 +1412,7 @@ class Graph:
             
             Returns
             -------
-            numpy.uint64
+            int
                 Encoded state with permuted parity bits.
             
             Notes
@@ -1451,7 +1446,7 @@ class Graph:
             
             Returns
             -------
-            numpy.uint64
+            int
                 Encoded state with permuted orientation bits.
             
             Notes
@@ -1485,7 +1480,7 @@ class Graph:
             
             Returns
             -------
-            numpy.uint64
+            int
                 Encoded state with both decorations permuted.
             
             Notes
@@ -1948,7 +1943,7 @@ class Graph:
             
             Examples
             --------
-            Expand vertex 0 of a tetrahedral graph:
+            Expand vertex 0 of a triangular prism:
             
             >>> G = Graph.create_prism(3)
             >>> new_edges = G.pachner13(0)
@@ -2572,7 +2567,8 @@ class Graph:
             implicitly ordered edge list.
             
             The graph is created using the default vertex
-            storage capacity.
+            storage capacity. Thus, $N \leq 25$ with
+            `DEFAULT_MAX_VERT` = 50
             
             Examples
             --------
