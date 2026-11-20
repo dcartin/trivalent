@@ -959,7 +959,28 @@ class Graph:
         
         if sym_grp is None:
             sym_grp = self.find_sym()
-        sym_grp = np.asarray(sym_grp, dtype = np.int8)
+    
+        else:
+            # Validate externally supplied symmetry group
+            sym_grp = np.asarray(sym_grp)
+        
+            if sym_grp.ndim != 2:
+                raise ValueError("sym_grp must be a 2D array")
+        
+            if sym_grp.shape[0] == 0 or sym_grp.shape[1] != self._num_edges:
+                raise ValueError(
+                    f"sym_grp must have shape (N, {self._num_edges}), N > 0"
+                )
+        
+            if sym_grp.dtype.kind not in "iu":
+                raise TypeError("Symmetry labels must be integers")
+        
+            if (np.any(sym_grp > self._num_edges) or
+                (sym_grp.dtype.kind == "i" and
+                 np.any(sym_grp < -self._num_edges))):
+                raise ValueError("Symmetry labels are out of range")
+        
+            sym_grp = np.ascontiguousarray(sym_grp, dtype=np.int8)
         
         if sym_grp.ndim !=2:
             raise ValueError("sym_grp must be 2d array")
