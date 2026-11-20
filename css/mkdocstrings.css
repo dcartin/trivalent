@@ -1,0 +1,13 @@
+/* Separators between documented objects */
+.doc-children > .doc-object {
+    border-top: 1px solid var(--md-default-fg-color--lightest);
+    margin-top: 1.5rem;
+    padding-top: 1.5rem;
+}
+
+/* No separator immediately after a category heading */
+.doc-children > :is(h2, h3, h4, h5, h6) + .doc-object {
+    border-top: none;
+    margin-top: 0;
+    padding-top: 0;
+}

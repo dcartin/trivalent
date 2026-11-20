@@ -1,0 +1,555 @@
+{
+  "version": "1",
+  "metadata": {
+    "marimo_version": "0.24.0",
+    "script_metadata_hash": null
+  },
+  "cells": [
+    {
+      "id": "Hbol",
+      "code_hash": "a9c63e2080703e2af40ce0935acc1a63",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h1> Using trivalent</h1>\n\n<span class=\"paragraph\">This package allows one to create a Graph object representing a 3-regular graph embedded in a 2d surface. This graph is thus dual to the simplicial triangulation of the surface. One can study the properties of the graph, and use Pachner moves (dual to those for the triangulation) to obtain other graphs.</span>\n<span class=\"paragraph\">In this guide, we will show the basic workflow for using <code>trivalent</code>, including the creation of a graph, understanding its properties, comparing it to other graphs, and using the graph Pachner moves to create other graphs.</span>\n<span class=\"paragraph\">First, import the <code>Graph</code> class from trivalent. This includes various class functions to add in understanding the structure of the graph, along with the ability to apply the Pachner moves to the graph.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "MJUe",
+      "code_hash": "c1fa0cc89cd486b0037fdd22ccba95e1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "vblA",
+      "code_hash": "70db877ca73915773b27d28d52700bcf",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"graph-creation\">Graph creation</h2>\n<span class=\"paragraph\">To create a graph, use the <code>Graph</code> command. Usually, the argument will be a list of edges for the graph; as described below, this list is ordered implicitly to preserve the cyclic orders of the edges around the graph vertices. If no parameters are given, the graph will be created with zero vertices or edges.</span>\n<span class=\"paragraph\">For this guide, we will create a planar tetrahedral graph. To do this, we need to provide an appropriate edge list for the <code>Graph</code> object. There are a few guidelines:</span>\n<ul>\n<li>Vertices are numbered from 1 to <marimo-tex class=\"arithmatex\">||(|V|||)</marimo-tex>. Note that a trivalent 3-regular graph with <marimo-tex class=\"arithmatex\">||(|V|||)</marimo-tex> vertices and <marimo-tex class=\"arithmatex\">||(|E|||)</marimo-tex> edges must have <marimo-tex class=\"arithmatex\">||(3|V| = 2|E|||)</marimo-tex>.</li>\n<li>An edges is given by an ordered list of vertex labels. This will be a list of <marimo-tex class=\"arithmatex\">||(|E|||)</marimo-tex> two-element lists.</li>\n<li>The edges incident to each vertex are attached to that vertex in counterclockwise order as given in the provided edge list. For example, if the edge list contains <code>[[1, 2] ... [1, 3] ... [1, 4]]</code>, then the vertices 2, 3, 4 appear in CCW order around vertex 1.</li>\n</ul>\n<span class=\"paragraph\">An acceptable edge list for the planar tetrahedral graph is given below.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "bkHC",
+      "code_hash": "13e2f5ce3c1a864cb6efb36a704bc5e4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "lEQa",
+      "code_hash": "877cb9b04144302d8e4351712815f53e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"graph-properties\">Graph properties</h2>\n<span class=\"paragraph\">Now that we have a <code>Graph</code> object, we can look at a few of its properties. Note that, unlike the number of vertices <marimo-tex class=\"arithmatex\">||(|V|||)</marimo-tex> and edges <marimo-tex class=\"arithmatex\">||(|E|||)</marimo-tex>, the number of faces <marimo-tex class=\"arithmatex\">||(|F|||)</marimo-tex> requires a computation of the faces from the edge list and cyclic orders of the graph. However, this is done automatically anytime properties of the faces are requested.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "PKri",
+      "code_hash": "266cadecfb393d5513bd159e46242cf4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Number of vertices   : 4\nNumber of edges      : 6\nNumber of faces      : 4\n\nEuler characteristic : 2\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Xref",
+      "code_hash": "f2da1a65633df53442d0fcac2bc2c653",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">We can also get the edge list, and the cyclic orders of the incident edges around each vertex. Each of these is given as a <code>numpy</code> array.</span>\n<span class=\"paragraph\">The edge list is identical to that used to create the <code>Graph</code> object in the first place. It is a list of ordered vertex label pairs.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "SFPL",
+      "code_hash": "510995e3e936d1b85b1f25258eda8046",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "edge 0 : [0 1]\nedge 1 : [0 2]\nedge 2 : [1 3]\nedge 3 : [0 3]\nedge 4 : [1 2]\nedge 5 : [2 3]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "BYtC",
+      "code_hash": "9bafd17063b4b7173838d88c1111141f",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The cyclic orders use these edge labels (i.e. their indices in the original edge list) to give the CCW ordering of the incident edges around each vertex.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "RGSE",
+      "code_hash": "02ae42c12550f22d2ba3be682d3b79d1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "vert 0 : [0 1 3]\nvert 1 : [0 2 4]\nvert 2 : [1 4 5]\nvert 3 : [2 3 5]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Kclp",
+      "code_hash": "0fcf064ea88969051bf61d205a6b44e8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">To see how these two lists match up, as an example, take vertex 2. In the list from <code>G.active_edges</code>, this vertex appears in the pairs describing edges 1, 4, and 5. This is exactly the cyclic order given in <code>G.active_vert</code> for this vertex. Note that the edge labels must be in increasing order, due to the implicit ordering of the edges given in the edge list.</span>\n<span class=\"paragraph\">When the faces are created, they are numbered by their own labels; these labels can be obtained by using <code>G.active_face_indices</code>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "emfo",
+      "code_hash": "9c0beb959faba58755ade7700dbaee10",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "edge 0 : [0 1]\nedge 1 : [2 0]\nedge 2 : [3 1]\nedge 3 : [1 2]\nedge 4 : [0 3]\nedge 5 : [2 3]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "Hstk",
+      "code_hash": "28967cb7e22d4ee0b5f895d185355083",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">As one can see, each face appears three times in the list. Thus, each of the faces have three boundary edges, as expected for the tetrahedron.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nWHF",
+      "code_hash": "bdac244c1f58fcf6aa3ab14ca765385b",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Face sizes : [3 3 3 3]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "iLit",
+      "code_hash": "f00a5cfe4cae8d8135066548b962d3e1",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"graph-isomorphisms-and-symmetry-groups\">Graph isomorphisms and symmetry groups</h2>\n<span class=\"paragraph\">Next we look at determining whether two graphs are identical or not. The same algorithm, when comparing the graph to itself, can give the symmetry group of the graph.</span>\n<span class=\"paragraph\">The implicit ordering of the edge list is invariant under permutations, since all that matters is the incident edges are given in the correct CCW ordering around each vertex. Thus, we can take the same edge list as above, but use a cyclic permutation of the edges in the list to define a new graph <code>H</code>. For example, suppose we take the first three edges in the list, and move them to the end of the list.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ZHCJ",
+      "code_hash": "b5fdf794db46f80244280b6bb13a1929",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ROlb",
+      "code_hash": "baa737975ce1cdcfc3e94a3b4dc0dab2",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">This graph should be equivalent to the original <code>Graph</code> object <code>G</code>. The first time this is run may take a while, since it relies on a <code>numba</code> procedure, which must be complied.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "qnkX",
+      "code_hash": "fa2742928dc09e4a8357723d5d2393ba",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "G = H : True\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "TqIu",
+      "code_hash": "de0dba816e6d3cc47e9f301cf31172f6",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The same thing is true if we permute the vertex labels. Suppose we use the original labels from <code>G</code>, but increase them by 1 mod 4.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Vxnm",
+      "code_hash": "1dbf667bea85b7840aef70ef7c8ebc54",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "G = K : True\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "DnEU",
+      "code_hash": "f795ceed4842a11350f57e7f8e1cd748",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The same algorithm is used to find all the symmetries of a graph. These are reported as signed edge labels, where a label is positive if its original orientation is preserved, and negative if it is reversed. Again, a <code>numba</code> procedure is used to do this, so the first use may take a longer time.</span>\n<span class=\"paragraph\">For the tetrahedron, there are a total of 12 symmetries, as given below. The identity transformation should be the first listed.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "ulZA",
+      "code_hash": "cf6a49eea8d80be769bffdf179ffa6ac",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "[1 2 3 4 5 6]\n[ 4  1 -6  2 -3  5]\n[ 2  4 -5  1  6 -3]\n[-1  3  2  5  4 -6]\n[ 5 -1  6  3 -2  4]\n[ 3  5 -4 -1 -6 -2]\n[-2 -5  4  6  1  3]\n[ 6 -2 -3 -5 -4  1]\n[-5  6 -1 -2  3 -4]\n[-3 -4  5 -6 -1  2]\n[-6 -3 -2 -4 -5 -1]\n[-4 -6  1 -3  2 -5]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "ecfG",
+      "code_hash": "8fc75c93ec2ecf1cb177d1d316ea304d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"pachner-moves\">Pachner moves</h2>\n<span class=\"paragraph\">Finally, we cover the graph Pachner moves on the graphs; at the moment, only the 2-2 move <code>Graph.pachner22()</code> is fully implemented. This move preserves the number of vertices, so the initial and final graphs have the same <marimo-tex class=\"arithmatex\">||(|V|||)</marimo-tex>. However, in general they will not be isomorphic graphs. Thus, given an edge label <code>label</code>, <code>Graph.pachner22(label)</code> performs a 2-2 move on that edge, and returns <code>[label, perm]</code>. Here <code>perm</code> is a <code>numpy</code> array giving the permutation from the original edge labels to the those of the final graph; this is a signed permutation, if any edge orientations are reversed.</span>\n<span class=\"paragraph\">These graph moves are required to preserve the 3-connectedness of the graph, so if this property would be violated, then the move does not go through. In particular, a 2-2 move cannot be done on any edge of the tetrahedron without giving multiple edges between two vertices. In this case, instead of returning the edge label, it returns <code>[-1, []]</code>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "Pvdt",
+      "code_hash": "85c5570b7dab2aa84acdb9a8491f1d0e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "(-1, array([], dtype=int8))\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "ZBYS",
+      "code_hash": "a55f9067e5dbaf8be3aaf1962e331e57",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">All graphs with <marimo-tex class=\"arithmatex\">||(|V| \\ge 6||)</marimo-tex> have at least one possible 2-2 move on them, so we use the unique <marimo-tex class=\"arithmatex\">||(|V| = 6||)</marimo-tex> graph as an example. Obviously, with only one graph possible, the 2-2 move takes this graph to itself, but the edges are permuted.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aLJB",
+      "code_hash": "e6851747d18182596db3b2cbb5160024",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "application/json": "[0, \"text/plain:[4 1 2 3 5 6 7 8 9]\"]"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "nHfw",
+      "code_hash": "97411abbcbbfcc630bae16970ec23ef8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Note that <code>Graph.pachner22()</code> modifies the graph, so that it is not isomorphic to the original graph. This is easier to see if we compare two <marimo-tex class=\"arithmatex\">||(|V| = 8||)</marimo-tex> graphs. Let <code>C</code> be the 4-prism graph (i.e. the projection of the cube onto the plane), and <code>D</code> be the only other graph with eight vertices; the latter is known as the standard graph <marimo-tex class=\"arithmatex\">||(\\Delta_8||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "xXTn",
+      "code_hash": "79268ec28cab04f494d20c541dff6240",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "C = D : False\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "AjVT",
+      "code_hash": "32f85cbe7b12659516e22b8525399ea0",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The only 2-2 move that takes the graph <code>D</code> to <code>C</code> is the one on its first listed edge. When this is done, then <code>D</code> is now the 4-prism graph, rather than its original form. This allows a check for what the resulting final graph is, from the known list of all graphs with a certain number of vertices.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "pHFh",
+      "code_hash": "85aed7a726573b88a1d22b4d41df436d",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "D is standard graph : False\nD is cubic graph    : True\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "NCOB",
+      "code_hash": "c16a68a2065a3386dc5b47d7a8b4a024",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Currently, <code>Graph.pachner13()</code> takes a vertex label, and modifies the graph by changing this vertex into a 3-cycle. However, it does not return any information, such as the mapping of the original edges into the final graph, or the labels of the new vertices and edges.</span>\n<span class=\"paragraph\">We can show that acting on a vertex of the tetrahedron gives the unique six-vertex graph.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "aqbW",
+      "code_hash": "704d5928613c22472779245a203eccf8",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "T is tetrahedron      : False\nT is six-vertex graph : True\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "TRpd",
+      "code_hash": "b5107f4943fd18f305bd14aff8e84be4",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Similarly, <code>Graph.pachner31()</code> takes a list of three edge labels (which must form a 3-cycle), and replaces this cycle with a single vertex. This is the inverse operation of the 1-3 move above.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "TXez",
+      "code_hash": "ed543c19920f87d15758fab34ea31581",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "U is tetrahedron      : True\nU is six-vertex graph : False\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "dNNg",
+      "code_hash": "1d0db38904205bec4d6f6f6a1f6cec3e",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": []
+    }
+  ]
+}

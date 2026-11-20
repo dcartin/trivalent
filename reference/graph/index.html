@@ -1,0 +1,3872 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+      
+      
+        <link rel="canonical" href="https://dcartin.github.io/trivalent/reference/graph/">
+      
+      
+        <link rel="prev" href="../..">
+      
+      
+        <link rel="next" href="../states/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Graph - trivalent</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../css/mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#graph-api" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="trivalent" class="md-header__button md-logo" aria-label="trivalent" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            trivalent
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Graph
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/dcartin/trivalent" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="trivalent" class="md-nav__button md-logo" aria-label="trivalent" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    trivalent
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/dcartin/trivalent" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Graph
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Graph
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graph
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Graph">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.edge_list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        edge_list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.face_adj_matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        face_adj_matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.face_bndy_list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        face_bndy_list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.face_idx_list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        face_idx_list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.face_size_list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        face_size_list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.num_edges" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        num_edges
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.num_faces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        num_faces
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.num_vert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        num_vert
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.vert_cyc_order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        vert_cyc_order
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methods:
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.__eq__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __eq__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.create_prism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create_prism
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.find_faces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_faces
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.find_min_combined_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_min_combined_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.find_min_orient_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_min_orient_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.find_min_parity_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_min_parity_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.find_noniso_edges" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_noniso_edges
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.find_sym" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_sym
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.is_isomorphic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        is_isomorphic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.map_combined_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        map_combined_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.map_orient_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        map_orient_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.map_parity_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        map_parity_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.pachner13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pachner13
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.pachner22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pachner22
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.pachner31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pachner31
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.permute_combined_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        permute_combined_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.permute_orient_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        permute_orient_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.permute_parity_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        permute_parity_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../states/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    States
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graph
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Graph">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph-attributes" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attributes
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Attributes">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.edge_list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        edge_list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.face_adj_matrix" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        face_adj_matrix
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.face_bndy_list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        face_bndy_list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.face_idx_list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        face_idx_list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.face_size_list" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        face_size_list
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.num_edges" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        num_edges
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.num_faces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        num_faces
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.num_vert" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        num_vert
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.vert_cyc_order" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        vert_cyc_order
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph-functions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Methods:
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Methods:">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.__eq__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __eq__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.__init__" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        __init__
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.create_prism" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        create_prism
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.find_faces" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_faces
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.find_min_combined_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_min_combined_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.find_min_orient_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_min_orient_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.find_min_parity_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_min_parity_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.find_noniso_edges" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_noniso_edges
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.find_sym" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        find_sym
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.is_isomorphic" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        is_isomorphic
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.map_combined_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        map_combined_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.map_orient_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        map_orient_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.map_parity_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        map_parity_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.pachner13" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pachner13
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.pachner22" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pachner22
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.pachner31" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        pachner31
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.permute_combined_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        permute_combined_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.permute_orient_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        permute_orient_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#trivalent.trivalent.Graph.permute_parity_state" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        permute_parity_state
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="graph-api">Graph API</h1>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h2 id="trivalent.trivalent.Graph" class="doc doc-heading">
+            <code>trivalent.trivalent.Graph</code>
+
+
+</h2>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Represent a trivalent graph with a specified cyclic ordering of edges.</p>
+<p>A Graph object represents a 3-regular graph together with the
+counterclockwise cyclic ordering of incident edges at each vertex.
+These cyclic orders determine a combinatorial embedding of the graph
+in an orientable surface.</p>
+<p>The graph is constructed from an implicitly ordered edge list:
+the order in which edges appear determines their cyclic ordering
+at each vertex.</p>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <ul>
+<li>Vertex and edge indices are zero-based.</li>
+<li>The endpoints of each edge determine its reference direction,
+  used when constructing signed edge permutations.</li>
+<li>The graph may be modified in place by Pachner moves.</li>
+<li>Face information is calculated when needed.</li>
+<li>Construction does not establish planarity or 3-connectivity.</li>
+<li>Isomorphism and automorphism computations assume connected graphs.
+  The constructor does not verify this precondition.</li>
+</ul>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>Create a triangular prism:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="o">.</span><span class="n">create_prism</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">num_vert</span>
+<span class="go">6</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">num_edges</span>
+<span class="go">9</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">num_faces</span>
+<span class="go">5</span>
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+<h3 id="trivalent.trivalent.Graph-attributes">Attributes</h3>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="trivalent.trivalent.Graph.edge_list" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">edge_list</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>ndarray of shape <span class="arithmatex">\((|E|, 2)\)</span>: Edges <span class="arithmatex">\((u, v)\)</span> of the graph.</p>
+<p>Each row contains the two zero-based vertex indices of an edge.
+The order of the endpoints defines the reference direction of
+the edge, used when constructing signed edge permutations.</p>
+<p>Edges are indexed by their row positions, starting at zero.</p>
+<p>A copy of the active edge list is returned, so modifying the
+returned array does not affect the Graph object.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="trivalent.trivalent.Graph.face_adj_matrix" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">face_adj_matrix</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the symmetric adjacency matrix of the graph's faces.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>ndarray</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Symmetric array of shape <span class="arithmatex">\((|F|, |F|)\)</span>.</p>
+<p>The entry <span class="arithmatex">\(A_{ij}\)</span> counts the number of graph edges
+shared by faces <span class="arithmatex">\(i\)</span> and <span class="arithmatex">\(j\)</span>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The matrix is the adjacency matrix of the dual graph,
+with edge multiplicities retained.</p>
+<p>If an edge has the same face on both sides, it
+contributes two to the diagonal entry <span class="arithmatex">\(A_{ii}\)</span>.</p>
+<p>Face information is calculated on first access if
+necessary. A copy of the matrix is returned.</p>
+</details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="trivalent.trivalent.Graph.face_bndy_list" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">face_bndy_list</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the ordered boundary edges of each face.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>list of list of int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Entry i contains the signed edge labels forming the
+boundary of face i, traversed counterclockwise.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The signed label of edge <span class="arithmatex">\(e\)</span> is <span class="arithmatex">\(+(e+1)\)</span> when
+traversed in its reference direction, and
+    <span class="arithmatex">\(-(e+1)\)</span> when traversed in the opposite direction.</p>
+<p>The reference direction is determined by the order of the
+edge endpoints in edge_list, not by any orientation decoration.</p>
+<p>Face information is calculated on first access if necessary.
+A copy of each face boundary list is returned.</p>
+</details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="trivalent.trivalent.Graph.face_idx_list" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">face_idx_list</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the face indices on either side of each edge.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>ndarray of shape (E, 2)</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>For each edge e:</p>
+<ul>
+<li>[e, 0] gives the index of the face to its left.</li>
+<li>[e, 1] gives the index of the face to its right.</li>
+</ul>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Left and right are defined relative to the reference direction
+of each edge, as specified by its ordered endpoints.</p>
+<p>Face indices are zero-based and determined by find_faces().
+They are not intrinsic labels preserved under graph isomorphisms
+or Pachner moves.</p>
+<p>Face information is calculated on first access if necessary.
+A copy of the array is returned.</p>
+</details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="trivalent.trivalent.Graph.face_size_list" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">face_size_list</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the number of boundary edges of each face.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>ndarray</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>One-dimensional array of shape <span class="arithmatex">\((|F|,)\)</span>, where
+<span class="arithmatex">\(|F|\)</span> is the number of faces.</p>
+<p>Entry <span class="arithmatex">\(i\)</span> gives the length of the boundary walk
+of face <span class="arithmatex">\(i\)</span>, counting edge traversals.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Face information is calculated on first access if
+necessary. A copy of the array is returned.</p>
+</details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="trivalent.trivalent.Graph.num_edges" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">num_edges</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>int: Number of edges <span class="arithmatex">\(|E|\)</span> in the graph.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="trivalent.trivalent.Graph.num_faces" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">num_faces</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>int: Number of faces <span class="arithmatex">\(|F|\)</span> in the graph's combinatorial embedding.</p>
+<p>Face information is calculated on first access if it has
+not already been determined.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="trivalent.trivalent.Graph.num_vert" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">num_vert</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>int: Number of vertices <span class="arithmatex">\(|V|\)</span> in the graph.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="trivalent.trivalent.Graph.vert_cyc_order" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">vert_cyc_order</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>ndarray of shape <span class="arithmatex">\((|V|, 3)\)</span>: Cyclic ordering of incident edges.</p>
+<p>Each row contains the zero-based indices of the three edges
+incident to a vertex, in counterclockwise cyclic order.</p>
+<p>Row i corresponds to vertex i.</p>
+<p>A copy of the active vertex cyclic orders is returned, so
+modifying the returned array does not affect the Graph object.</p>
+
+    </div>
+
+</div>
+
+
+<h3 id="trivalent.trivalent.Graph-functions">Methods:</h3>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="trivalent.trivalent.Graph.__eq__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__eq__</span><span class="p">(</span><span class="n">other</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Test equality of two embedded trivalent graphs.</p>
+<p>Two <code>Graph</code> objects are equal if there exists an isomorphism
+preserving the counterclockwise cyclic order of incident
+edges at every vertex.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>other</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="trivalent.trivalent.Graph" href="#trivalent.trivalent.Graph">Graph</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Graph to compare with the current graph.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>True</code> if the embedded graphs are isomorphic, and
+<code>False</code> otherwise.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Implements the <code>==</code> operator by calling
+<code>is_isomorphic(other, return_perm = False)</code>.</p>
+<p>For objects that are not instances of <code>Graph</code>, the method
+returns <code>NotImplemented</code>, allowing Python's normal
+comparison machinery to handle the result.</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="trivalent.trivalent.Graph.__init__" class="doc doc-heading">
+            <code class="highlight language-python"><span class="fm">__init__</span><span class="p">(</span><span class="n">ordered_edge_list</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">max_num_vert</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">validate</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Initialize a graph from an implicitly ordered edge list.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>ordered_edge_list</code>
+            </td>
+            <td>
+                  <code>array_like of int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Array of shape <span class="arithmatex">\((|E|, 2)\)</span>, containing pairs of vertex
+indices <span class="arithmatex">\((u,v)\)</span> specifying the graph edges.</p>
+<p>Vertex indices run from <span class="arithmatex">\(0\)</span> to <span class="arithmatex">\(|V|-1\)</span>. The order in
+which edges occur in the list determines the
+counterclockwise cyclic order of incident edges
+at each vertex.</p>
+<p>If <code>None</code>, an empty <code>Graph</code> object is created.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>max_num_vert</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Maximum number of vertices accommodated by the graph's
+internal storage, including subsequent Pachner moves.</p>
+<p>Defaults to Graph.DEFAULT_MAX_VERT (currently 50).
+The permitted range is 1 to 84.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>validate</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If True, check that the edge count is compatible with
+a trivalent graph, that vertex labels are consecutive
+starting at zero, and that each vertex occurs exactly
+three times in the edge list.</p>
+<p>This does not test graph connectivity, planarity,
+or 3-connectivity.</p>
+              </div>
+            </td>
+            <td>
+                  <code>True</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If max_num_vert is invalid or the edge list fails
+the implemented validation checks.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The graph's vertex and edge counts are determined from
+the edge list. Face information is computed separately
+when first requested.</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="trivalent.trivalent.Graph.create_prism" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">create_prism</span><span class="p">(</span><span class="n">N</span><span class="p">)</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Construct an <span class="arithmatex">\(N\)</span>-gonal prism as an embedded trivalent graph.</p>
+<p>The prism consists of two <span class="arithmatex">\(N\)</span>-cycles connected by
+<span class="arithmatex">\(N\)</span> edges joining corresponding vertices.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>N</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Number of vertices in each of the two polygonal
+faces. Must satisfy <span class="arithmatex">\(N \geq 3\)</span>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="trivalent.trivalent.Graph" href="#trivalent.trivalent.Graph">Graph</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A new <code>Graph</code> instance representing the
+<span class="arithmatex">\(N\)</span>-gonal prism with its standard planar embedding.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>N</code> is less than 3.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The resulting graph is planar, 3-regular, and
+3-connected, with</p>
+<div class="arithmatex">\[
+|V| = 2N, \qquad |E| = 3N, \qquad |F| = N+2.
+\]</div>
+<p>The vertex cyclic orders are determined by the
+implicitly ordered edge list.</p>
+<p>The graph is created using the default vertex
+storage capacity. Thus, <span class="arithmatex">\(N \leq 25\)</span> with
+<code>DEFAULT_MAX_VERT</code> = 50</p>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>Construct the square prism (cube graph):</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="o">.</span><span class="n">create_prism</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">num_vert</span><span class="p">,</span> <span class="n">G</span><span class="o">.</span><span class="n">num_edges</span><span class="p">,</span> <span class="n">G</span><span class="o">.</span><span class="n">num_faces</span>
+<span class="go">(8, 12, 6)</span>
+</code></pre></div>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="trivalent.trivalent.Graph.find_faces" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">find_faces</span><span class="p">()</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Find the faces of the combinatorially embedded graph.</p>
+<p>The faces are determined by the counterclockwise cyclic
+ordering of incident edges at each vertex. They are
+enumerated by tracing the directed boundary walks.</p>
+<p>The resulting face information is stored in the graph.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>The method updates the internally stored face data.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The following face information is calculated:</p>
+<ul>
+<li><code>num_faces</code>: number of faces <span class="arithmatex">\(|F|\)</span>.</li>
+<li><code>face_bndy_list</code>: signed edge labels for each face boundary.</li>
+<li><code>face_idx_list</code>: left- and right-hand face indices for each edge.</li>
+<li><code>face_size_list</code>: number of edge traversals around each face.</li>
+</ul>
+<p>Face indices are zero-based and assigned in traversal order.</p>
+<p>The boundary of each face is traversed counterclockwise,
+with the face on the left. Boundary edges use one-based
+signed labels, with positive sign when traversed in the
+edge's reference direction.</p>
+<p>For a zero-based edge index <span class="arithmatex">\(e\)</span>, <code>face_idx_list[e, 0]</code>
+and <code>face_idx_list[e, 1]</code> give the faces on the left
+and right of its reference direction, respectively.</p>
+<p>Face labels depend on the edge ordering and are not
+invariant under graph isomorphisms.</p>
+<p>For a non-planar combinatorial embedding, the faces
+correspond to the boundary walks of the associated
+orientable surface embedding, not necessarily the sphere.</p>
+<p>Face information is also calculated automatically when
+first requested through the corresponding properties.</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="trivalent.trivalent.Graph.find_min_combined_state" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">find_min_combined_state</span><span class="p">(</span><span class="n">combined_state</span><span class="p">,</span> <span class="n">sym_grp</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Find the canonical representative of a combined state.</p>
+<p>The state contains both orientation and parity decorations.
+Both bitmasks are transformed simultaneously under the
+same signed edge permutation.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>combined_state</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Encoded combined state containing a graph ID,
+<span class="arithmatex">\(|E|\)</span> orientation bits, and <span class="arithmatex">\(|E|\)</span> parity bits.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>sym_grp</code>
+            </td>
+            <td>
+                  <code>ndarray</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Array of shape <span class="arithmatex">\((N_{\mathrm{sym}}, |E|)\)</span> containing
+signed edge permutations, usually obtained from
+<code>find_sym()</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Numerically smallest encoded combined state
+under the supplied group action.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The graph ID is preserved.</p>
+<p>The encoding places the orientation bits above the
+parity bits. Consequently, numerical minimization
+first minimizes the orientation bitmask and then,
+among equivalent minimum orientations, minimizes
+the parity bitmask.</p>
+<p>The same permutation must act on both decorations;
+they are not minimized independently.</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="trivalent.trivalent.Graph.find_min_orient_state" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">find_min_orient_state</span><span class="p">(</span><span class="n">orient_state</span><span class="p">,</span> <span class="n">sym_grp</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Find the canonical representative of an orientation state.</p>
+<p>The state is minimized over its orbit under the supplied
+group of signed edge permutations.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>orient_state</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Encoded orientation state containing a graph ID and
+<span class="arithmatex">\(|E|\)</span> orientation bits.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>sym_grp</code>
+            </td>
+            <td>
+                  <code>ndarray</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Array of shape <span class="arithmatex">\((N_{\mathrm{sym}}, |E|)\)</span> containing
+signed edge permutations, usually obtained from
+<code>find_sym()</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Numerically smallest encoded orientation state
+under the supplied group action.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The graph ID is preserved. Only the orientation
+bitmask is transformed.</p>
+<p>A negative entry in a signed permutation accounts
+for reversal of the reference direction of an edge
+when transforming its orientation bit.</p>
+<p>Global reversal of all edge orientations is not
+included as an additional equivalence operation.</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="trivalent.trivalent.Graph.find_min_parity_state" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">find_min_parity_state</span><span class="p">(</span><span class="n">parity_state</span><span class="p">,</span> <span class="n">sym_grp</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Find the canonical representative of a parity state.</p>
+<p>The state is minimized over its orbit under the supplied
+group of signed edge permutations.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>parity_state</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Encoded parity state containing a graph ID and
+<span class="arithmatex">\(|E|\)</span> parity bits.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>sym_grp</code>
+            </td>
+            <td>
+                  <code>ndarray</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Array of shape <span class="arithmatex">\((N_{\mathrm{sym}}, |E|)\)</span> containing
+signed edge permutations, usually obtained from
+<code>find_sym()</code>.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Numerically smallest encoded parity state under
+the supplied group action.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The graph ID is preserved. Only the parity bitmask
+is transformed.</p>
+<p>If <code>sym_grp</code> is the full positive automorphism group,
+the result is a canonical representative of the
+parity state under <span class="arithmatex">\(\operatorname{Aut}^{+}(G)\)</span>.</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="trivalent.trivalent.Graph.find_noniso_edges" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">find_noniso_edges</span><span class="p">(</span><span class="n">mask_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">bitmask</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sym_grp</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Find representatives of edge orbits under graph automorphisms.</p>
+<p>The edges are partitioned into orbits under the action of the
+positive automorphism group <span class="arithmatex">\(\operatorname{Aut}^{+}(G)\)</span>, or the
+subgroup preserving a specified edge decoration.</p>
+<p>One representative is returned from each orbit.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>mask_type</code>
+            </td>
+            <td>
+                  <code>(None, orient, parity, combined)</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Type of edge decoration to preserve.</p>
+<ul>
+<li><code>None</code>: use all positive graph automorphisms.</li>
+<li><code>'orient'</code>: preserve the edge orientation bitmask.</li>
+<li><code>'parity'</code>: preserve the edge parity bitmask.</li>
+<li><code>'combined'</code>: preserve both orientations and parities.</li>
+</ul>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>bitmask</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Integer encoding the edge decorations specified by
+<code>mask_type</code>.</p>
+<p>Required when <code>mask_type</code> is not <code>None</code>. Ignored otherwise.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>sym_grp</code>
+            </td>
+            <td>
+                  <code>ndarray</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Array of shape <span class="arithmatex">\((N_{\mathrm{sym}}, |E|)\)</span> containing signed
+edge permutations.</p>
+<p>If <code>None</code>, the positive automorphism group is calculated
+using <code>find_sym()</code>.</p>
+<p>Otherwise, the supplied group is used.</p>
+              </div>
+            </td>
+            <td>
+                  <code>None</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>ndarray</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>One-dimensional integer array containing one zero-based
+edge index from each orbit.</p>
+<p>The number of entries equals the number of edge orbits
+under the selected group action.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>For an undecorated graph, the relevant group is
+<span class="arithmatex">\(\operatorname{Aut}^{+}(G)\)</span>.</p>
+<p>For an oriented graph state <span class="arithmatex">\((G, d)\)</span>, the relevant group is the stabilizer</p>
+<div class="arithmatex">\[
+\operatorname{Aut}^{+}(G, d)
+=
+\{g \in \operatorname{Aut}^{+}(G) : g \cdot d = d\},
+\]</div>
+<p>with the analogous definitions for parity and combined
+decorations.</p>
+<p>The orbit of an edge <span class="arithmatex">\(e\)</span> under a group <span class="arithmatex">\(H\)</span> is</p>
+<div class="arithmatex">\[
+H \cdot e = \{g(e) : g \in H\}.
+\]</div>
+<p>Two edges are equivalent if they belong to the same orbit.</p>
+<p>The returned indices are representatives of these orbits;
+they are not necessarily the smallest indices in their
+respective orbits.</p>
+<p>Only the absolute values of the signed edge permutations
+are used when determining edge equivalence.</p>
+<p>The supplied <code>sym_grp</code> is assumed to contain valid graph
+automorphisms. Its group properties are not verified.</p>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>Find representatives of the edge orbits of a triangular prism:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="o">.</span><span class="n">create_prism</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">edges</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">find_noniso_edges</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span>
+<span class="go">2</span>
+</code></pre></div>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="trivalent.trivalent.Graph.find_sym" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">find_sym</span><span class="p">()</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Find the positive automorphism group <span class="arithmatex">\(\operatorname{Aut}^{+}(G)\)</span>
+of the embedded graph <span class="arithmatex">\(G\)</span>.</p>
+<p>A positive automorphism is an isomorphism from the graph to itself
+that preserves the counterclockwise cyclic ordering of
+incident edges at every vertex.</p>
+<p>These automorphisms are represented by signed permutations
+of the graph edges.</p>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>ndarray</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Integer array of shape <span class="arithmatex">\((N_{\mathrm{sym}}, |E|)\)</span>, where
+<span class="arithmatex">\(N_{\mathrm{sym}}\)</span> is the number of automorphisms found.</p>
+<p>Each row represents one automorphism as a signed
+permutation of the edges.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The returned permutations use one-based signed edge labels.</p>
+<p>For a permutation <code>p</code>, the entry <code>p[e]</code> specifies the
+image of the zero-based edge index <span class="arithmatex">\(e\)</span>:</p>
+<ul>
+<li><code>abs(p[e]) - 1</code> is the corresponding edge index.</li>
+<li>A positive sign means the reference direction is preserved.</li>
+<li>A negative sign means the reference direction is reversed.</li>
+</ul>
+<p>The signs refer to the ordering of edge endpoints, not
+to independently assigned orientation decorations.</p>
+<p>Only automorphisms preserving the vertex cyclic orders
+are included. Automorphisms reversing the embedding
+orientation are excluded.</p>
+<p>The identity automorphism is included. The ordering of
+group elements is not guaranteed.</p>
+<p>The implementation currently limits the number of
+returned automorphisms to <code>DEFAULT_MAX_SYM</code> (60).
+Graphs with larger automorphism groups may therefore
+have incomplete results.</p>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>Find the automorphism group of a triangular prism:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="o">.</span><span class="n">create_prism</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sym_grp</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">find_sym</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sym_grp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">G</span><span class="o">.</span><span class="n">num_edges</span>
+<span class="go">True</span>
+</code></pre></div>
+    <p>The order of the returned group is:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">sym_grp</span><span class="p">)</span>
+<span class="go">6</span>
+</code></pre></div>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="trivalent.trivalent.Graph.is_isomorphic" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">is_isomorphic</span><span class="p">(</span><span class="n">other</span><span class="p">,</span> <span class="n">return_perm</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Determine whether two embedded trivalent graphs are isomorphic.</p>
+<p>An isomorphism is required to preserve the counterclockwise cyclic
+ordering of incident edges at every vertex. Thus, the test is for
+isomorphism of combinatorially embedded graphs, rather than
+abstract graph isomorphism.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>other</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="trivalent.trivalent.Graph" href="#trivalent.trivalent.Graph">Graph</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Graph to compare with the current graph.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>return_perm</code>
+            </td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>True</code>, return a signed edge permutation realizing an
+isomorphism, if one exists.</p>
+<p>If <code>False</code>, return only whether the graphs are isomorphic.</p>
+              </div>
+            </td>
+            <td>
+                  <code>= True</code>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>ndarray or <span title="bool">bool</span> or None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>return_perm = True</code> and the graphs are isomorphic, return
+a signed integer array of shape <span class="arithmatex">\((|E|,)\)</span> describing the
+mapping of edges from <code>self</code> to <code>other</code>.</p>
+<p>Otherwise, return <code>None</code> if no isomorphism exists.</p>
+<p>If <code>return_perm = False</code>, return <code>True</code> or <code>False</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The returned signed permutation uses one-based edge labels.
+For each zero-based source edge index <span class="arithmatex">\(e\)</span>,</p>
+<div class="arithmatex">\[
+p[e] = s_e (j+1),
+\]</div>
+<p>where <span class="arithmatex">\(j\)</span> is the corresponding zero-based edge index in
+<code>other</code>, and <span class="arithmatex">\(s_e = \pm 1\)</span>.</p>
+<p>The sign records whether the isomorphism preserves (<span class="arithmatex">\(+1\)</span>)
+or reverses (<span class="arithmatex">\(-1\)</span>) the reference direction of that edge,
+as specified by its ordered endpoints.</p>
+<p>The sign does not indicate an independently assigned
+orientation decoration.</p>
+<p>Mirror embeddings are distinguished because the isomorphism
+must preserve the vertex cyclic orders.</p>
+<p>If multiple isomorphisms exist, only one is returned.</p>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>Test isomorphism without constructing an edge permutation:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="o">.</span><span class="n">create_prism</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">is_isomorphic</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">return_perm</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
+<span class="go">True</span>
+</code></pre></div>
+    <p>Obtain a signed edge permutation:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">perm</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">is_isomorphic</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">perm</span><span class="p">)</span> <span class="o">==</span> <span class="n">G</span><span class="o">.</span><span class="n">num_edges</span>
+<span class="go">True</span>
+</code></pre></div>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="trivalent.trivalent.Graph.map_combined_state" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">map_combined_state</span><span class="p">(</span><span class="n">combined_state</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Map a combined state to a positively isomorphic graph.</p>
+<p>Find a positive isomorphism from the current graph <code>self</code>
+to <code>other</code>, then transform both orientation and parity
+decorations to match the edge ordering of <code>other</code>.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>combined_state</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Encoded combined state whose edge indices correspond
+to the current graph.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>other</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="trivalent.trivalent.Graph" href="#trivalent.trivalent.Graph">Graph</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Target graph, positively isomorphic to the current graph.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Encoded combined state with both decorations expressed
+in the edge ordering of <code>other</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the two embedded graphs are not positively isomorphic.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Both decorations are transformed using the same signed
+edge permutation obtained from <code>is_isomorphic()</code>.</p>
+<p>Negative permutation entries reverse orientation bits,
+but do not affect parity values.</p>
+<p>The encoded graph ID is preserved. Neither graph is modified.</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="trivalent.trivalent.Graph.map_orient_state" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">map_orient_state</span><span class="p">(</span><span class="n">orient_state</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Map an orientation state to a positively isomorphic graph.</p>
+<p>Find a positive isomorphism from the current graph <code>self</code>
+to <code>other</code>, then transform the orientation state to match
+the edge ordering and reference directions of <code>other</code>.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>orient_state</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Encoded orientation state whose edge indices correspond
+to the current graph.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>other</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="trivalent.trivalent.Graph" href="#trivalent.trivalent.Graph">Graph</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Target graph, positively isomorphic to the current graph.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Encoded orientation state with edge decorations
+expressed in the edge ordering of <code>other</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the two embedded graphs are not positively isomorphic.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The signed edge permutation is obtained automatically
+using <code>is_isomorphic()</code>.</p>
+<p>A negative permutation entry reverses the corresponding
+orientation bit to account for the change in edge
+reference direction.</p>
+<p>The encoded graph ID is preserved. Neither graph is modified.</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="trivalent.trivalent.Graph.map_parity_state" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">map_parity_state</span><span class="p">(</span><span class="n">parity_state</span><span class="p">,</span> <span class="n">other</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Map a parity state to a positively isomorphic graph.</p>
+<p>Find a positive isomorphism from the current graph <code>self</code>
+to <code>other</code>, then transform the parity state to match the
+edge ordering of <code>other</code>.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>parity_state</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Encoded parity state whose edge indices correspond
+to the current graph.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>other</code>
+            </td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="trivalent.trivalent.Graph" href="#trivalent.trivalent.Graph">Graph</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Target graph, positively isomorphic to the current graph.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Encoded parity state with edge decorations expressed
+in the edge ordering of <code>other</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the two embedded graphs are not positively isomorphic.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The signed edge permutation is obtained automatically
+using <code>is_isomorphic()</code>.</p>
+<p>Only edge positions are permuted; signs in the permutation
+do not change parity values.</p>
+<p>The encoded graph ID is preserved. Neither graph is modified.</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="trivalent.trivalent.Graph.pachner13" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">pachner13</span><span class="p">(</span><span class="n">vert_idx</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Perform a Pachner 1-3 move at a specified vertex.</p>
+<p>Replace the vertex by a triangular face, reconnecting
+its three incident edges to the vertices of the triangle.</p>
+<p>The graph is modified in place.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>vert_idx</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Zero-based index of the vertex to expand.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>tuple of int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Zero-based indices of the three newly created edges,
+in their order in the updated edge list.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the move would exceed the graph's <code>max_num_vert</code>
+storage limit.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The move changes the graph sizes according to</p>
+<div class="arithmatex">\[
+(|V|, |E|, |F|)
+\longmapsto
+(|V|+2, |E|+3, |F|+1).
+\]</div>
+<p>The original vertex is retained, and two new vertices
+are appended to the vertex list.</p>
+<p>The indices of all existing edges are preserved.
+The three new edges are appended at indices
+<span class="arithmatex">\(|E|\)</span>, <span class="arithmatex">\(|E|+1\)</span>, and <span class="arithmatex">\(|E|+2\)</span>, where <span class="arithmatex">\(|E|\)</span>
+is the original edge count.</p>
+<p>Face information is invalidated and recalculated when
+subsequently requested.</p>
+<p>The method does not assign orientation or parity
+decorations to the new edges.</p>
+<p>Consequently, existing edge decorations retain
+their edge indices, while the new edges require
+additional decoration values.</p>
+<p>Existing edge indices are preserved, but changes
+in reference direction may require updating their
+orientation bits.</p>
+</details>
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>Expand vertex 0 of a triangular prism:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="o">.</span><span class="n">create_prism</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_edges</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">pachner13</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">new_edges</span>
+<span class="go">(9, 10, 11)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">num_vert</span>
+<span class="go">8</span>
+</code></pre></div>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="trivalent.trivalent.Graph.pachner22" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">pachner22</span><span class="p">(</span><span class="n">edge_idx</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Perform a Pachner 2-2 move on a specified edge.</p>
+<p>Replace the local connection between the two vertices
+incident to the edge, preserving the trivalent structure
+and cyclic ordering of incident edges.</p>
+<p>The graph is modified in place if the move succeeds.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>edge_idx</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Zero-based index of the edge on which to perform
+the move.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>tuple of (int, numpy.ndarray)</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>A pair <code>(new_edge_idx, move_perm)</code>.</p>
+<p><code>new_edge_idx</code> is the zero-based index of the
+transformed edge in the updated graph.</p>
+<p><code>move_perm</code> is a signed integer array of shape
+<span class="arithmatex">\((|E|,)\)</span> mapping old edge indices to new indices.</p>
+<p>If the move is prohibited, return <code>-1</code> and an
+empty integer array. The graph is not modified.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If <code>edge_idx</code> is outside the range of valid
+edge indices.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The move preserves the numbers of vertices, edges,
+and faces.</p>
+<p>The implementation rejects a move when the two
+opposite faces involved already share an edge,
+as this would violate the intended 3-connectivity
+restriction.</p>
+<p>The signed edge mapping uses one-based labels.
+For an original edge index <span class="arithmatex">\(e\)</span>,</p>
+<div class="arithmatex">\[
+p[e] = s_e(j+1),
+\]</div>
+<p>where <span class="arithmatex">\(j\)</span> is its index after the move and
+<span class="arithmatex">\(s_e = \pm 1\)</span> records any reversal of its
+reference direction.</p>
+<p>The edge list may be reordered to preserve the
+implicit cyclic-order convention.</p>
+<p>Face information is invalidated after a successful
+move and recalculated when subsequently requested.</p>
+<p>The method does not assign new edge decorations
+or determine admissible decorated Pachner moves.</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="trivalent.trivalent.Graph.pachner31" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">pachner31</span><span class="p">(</span><span class="n">cycle_list</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Perform a Pachner 3-1 move on a triangular cycle.</p>
+<p>Contract a 3-cycle to a single vertex, reconnecting
+the three external edges incident to the cycle.</p>
+<p>The graph is modified in place.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>cycle_list</code>
+            </td>
+            <td>
+                  <code>array_like of int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Three zero-based edge indices forming a 3-cycle
+in the graph.</p>
+<p>The indices may be supplied in any order.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code>ndarray</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Signed integer array of shape <span class="arithmatex">\((|E|-3,)\)</span>,
+where <span class="arithmatex">\(|E|\)</span> denotes the original edge count.</p>
+<p>Entry <code>perm[j]</code> gives the signed one-based index
+of the original edge corresponding to new
+zero-based edge index <span class="arithmatex">\(j\)</span>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="ValueError">ValueError</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>If the number of supplied edges is not three,
+an edge index is out of range, or the given
+edges do not form a 3-cycle.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The move changes the graph sizes according to</p>
+<div class="arithmatex">\[
+(|V|, |E|, |F|)
+\longmapsto
+(|V|-2, |E|-3, |F|-1).
+\]</div>
+<p>The vertex with the smallest index in the 3-cycle
+is retained. The other two vertices and the three
+cycle edges are removed.</p>
+<p>Remaining vertices and edges are relabeled to
+maintain consecutive indices and the implicit
+cyclic-order convention.</p>
+<p>The returned mapping is from NEW edges to OLD edges:</p>
+<div class="arithmatex">\[
+p[j] = s_j(i+1),
+\]</div>
+<p>where <span class="arithmatex">\(i\)</span> is the original index of the surviving
+edge corresponding to new edge <span class="arithmatex">\(j\)</span>, and
+<span class="arithmatex">\(s_j = \pm 1\)</span> records any reversal of the
+reference direction.</p>
+<p>Face information is invalidated and recalculated
+when subsequently requested.</p>
+<p>The method does not update edge decorations or
+verify that the resulting graph is 3-connected.</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="trivalent.trivalent.Graph.permute_combined_state" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">permute_combined_state</span><span class="p">(</span><span class="n">combo_state</span><span class="p">,</span> <span class="n">signed_edge_perm</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Apply a signed edge permutation to an encoded combined state.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>combo_state</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Encoded state containing orientation and parity bits.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>signed_edge_perm</code>
+            </td>
+            <td>
+                  <code>array_like of int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Signed permutation of shape <span class="arithmatex">\((|E|,)\)</span> using one-based
+edge labels.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Encoded state with both decorations permuted.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>The same signed permutation acts on both decorations.</p>
+<p>Negative entries reverse the corresponding orientation
+bits but do not change parity values.</p>
+<p>The graph ID is preserved.</p>
+<p>The permutation is checked for validity as a signed
+permutation, but is not verified to be a positive
+automorphism of the graph.</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="trivalent.trivalent.Graph.permute_orient_state" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">permute_orient_state</span><span class="p">(</span><span class="n">orient_state</span><span class="p">,</span> <span class="n">signed_edge_perm</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Apply a signed edge permutation to an encoded orientation state.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>orient_state</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Encoded orientation state to transform.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>signed_edge_perm</code>
+            </td>
+            <td>
+                  <code>array_like of int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Signed permutation of shape <span class="arithmatex">\((|E|,)\)</span> using one-based
+edge labels.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Encoded state with permuted orientation bits.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>A negative permutation entry reverses the corresponding
+orientation bit when assigning it to its target edge.</p>
+<p>The graph ID is preserved.</p>
+<p>The permutation is checked for validity as a signed
+permutation, but is not verified to be a positive
+automorphism of the graph.</p>
+</details>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="trivalent.trivalent.Graph.permute_parity_state" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">permute_parity_state</span><span class="p">(</span><span class="n">parity_state</span><span class="p">,</span> <span class="n">signed_edge_perm</span><span class="p">)</span></code>
+
+</h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Apply a signed edge permutation to an encoded parity state.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+          <th>Default</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                <code>parity_state</code>
+            </td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Encoded parity state to transform.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td>
+                <code>signed_edge_perm</code>
+            </td>
+            <td>
+                  <code>array_like of int</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Signed permutation of shape <span class="arithmatex">\((|E|,)\)</span> using one-based
+edge labels.</p>
+              </div>
+            </td>
+            <td>
+                <em>required</em>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+    <p><span class="doc-section-title">Returns:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Encoded state with permuted parity bits.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+<details class="note" open>
+  <summary>Notes</summary>
+  <p>Only the absolute values of the permutation entries
+affect the parity bitmask.</p>
+<p>The graph ID is preserved.</p>
+<p>The permutation is checked for validity as a signed
+permutation, but is not verified to be a positive
+automorphism of the graph.</p>
+</details>
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": [], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
