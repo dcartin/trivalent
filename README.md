@@ -7,8 +7,7 @@ This graph is thus dual to the simplicial triangulation of the surface. One can 
 the graph, and use Pachner moves (dual to those for the triangulation) to obtain other graphs.
 
 Below is a brief description of the package. For more information, see the
-`marimo` [notebook](https://molab.marimo.io/github/dcartin/trivalent/blob/master/docs/trivalent-guide.py)
-for an overview of using `Graph` objects.
+[documentation](https://dcartin.github.io/trivalent) for an overview of using `Graph` objects.
 
 ## Dependencies
 

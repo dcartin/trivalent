@@ -1,4 +1,4 @@
-# trivalent Documentation
+# trivalent documentation
 
 `trivalent` is a Python package for studying
 embedded trivalent graphs and their transformations.
