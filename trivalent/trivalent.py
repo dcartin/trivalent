@@ -762,7 +762,7 @@ class Graph:
         # Verify whether number of vertices, edges are equal
         
         if self._num_vert != other._num_vert or self._num_edges != other._num_edges:
-            return False
+            return None if return_perm else False
         
         # Load in vertex face triples to (1) compute profile dicts for each
         # graph, with triples as keys, values as counts of these triples, and
@@ -788,7 +788,7 @@ class Graph:
         other_profile = Counter(map(tuple, other_triples))
         
         if self_profile != other_profile:
-            return False
+            return None if return_perm else False
         
         # If all quick tests have been passes, try full-blown isomorphism test.
         # The idea is to find, for both graphs, the set of vertices which have
