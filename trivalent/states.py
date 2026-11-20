@@ -956,7 +956,7 @@ def permute_combined_bits(combined_bits, signed_perm, num_edges):
         
         Returns
         -------
-        numpy.uint64
+        int
             Permuted combined decoration bitmask.
         
         Notes
@@ -1006,7 +1006,7 @@ def permute_combined_bits(combined_bits, signed_perm, num_edges):
     
     signed_perm = _check_signed_perm(signed_perm, num_edges)
     
-    return _permute_combined_bits(combined_bits, signed_perm, num_edges)
+    return int(_permute_combined_bits(combined_bits, signed_perm, num_edges))
 
 #-----------------------------------------------------------------------------#
 
@@ -1029,7 +1029,7 @@ def permute_parity_state(parity_state, signed_perm, num_edges):
         
         Returns
         -------
-        numpy.uint64
+        int
             Encoded state with permuted parity bits.
         
         Notes
@@ -1062,7 +1062,7 @@ def permute_parity_state(parity_state, signed_perm, num_edges):
     graph_num, parity_bits = _decode_parity_state(parity_state, num_edges)
     parity_bits = _permute_parity_bits(parity_bits, signed_perm, num_edges)
     
-    return _encode_parity_state(graph_num, parity_bits, num_edges)
+    return int(_encode_parity_state(graph_num, parity_bits, num_edges))
 
 #-----------------------------------------------------------------------------#
 
@@ -1085,7 +1085,7 @@ def permute_orient_state(orient_state, signed_perm, num_edges):
         
         Returns
         -------
-        numpy.uint64
+        int
             Encoded state with permuted orientation bits.
         
         Notes
@@ -1123,7 +1123,7 @@ def permute_orient_state(orient_state, signed_perm, num_edges):
     graph_num, orient_bits = _decode_orient_state(orient_state, num_edges)
     orient_bits = _permute_orient_bits(orient_bits, signed_perm, num_edges)
     
-    return _encode_orient_state(graph_num, orient_bits, num_edges)
+    return int(_encode_orient_state(graph_num, orient_bits, num_edges))
 
 #-----------------------------------------------------------------------------#
 
@@ -1149,7 +1149,7 @@ def permute_combined_state(combined_state, signed_perm, num_edges):
         
         Returns
         -------
-        numpy.uint64
+        int
             Encoded state with both decorations permuted.
         
         Notes
@@ -1189,7 +1189,7 @@ def permute_combined_state(combined_state, signed_perm, num_edges):
     orient_bits = _permute_orient_bits(orient_bits, signed_perm, num_edges)
     parity_bits = _permute_parity_bits(parity_bits, signed_perm, num_edges)
     
-    return _encode_combined_state(graph_num, orient_bits, parity_bits, num_edges)
+    return int(_encode_combined_state(graph_num, orient_bits, parity_bits, num_edges))
 
 #=============================================================================#
 # Find lexicographic minimum graph state
