@@ -338,16 +338,91 @@ def _get_non_iso_edges(num_edges, sym_grp):
 # Graph class
 #=============================================================================#
 
+
 class Graph:
+    """
+    Represent a trivalent graph with a specified cyclic ordering of edges.
+
+    A Graph object represents a 3-regular graph together with the
+    counterclockwise cyclic ordering of incident edges at each vertex.
+    These cyclic orders determine a combinatorial embedding of the graph
+    in an orientable surface.
+
+    The graph is constructed from an implicitly ordered edge list:
+    the order in which edges appear determines their cyclic ordering
+    at each vertex.
+
+    Notes
+    -----
+    - Vertex and edge indices are zero-based.
+    - The endpoints of each edge determine its reference direction,
+      used when constructing signed edge permutations.
+    - The graph may be modified in place by Pachner moves.
+    - Face information is calculated when needed.
+    - Construction does not establish planarity or 3-connectivity.
+
+    Examples
+    --------
+    Create a triangular prism:
+
+    >>> G = Graph.create_prism(3)
+    >>> G.num_vert
+    6
+    >>> G.num_edges
+    9
+    >>> G.num_faces
+    5
+    """
     
     DEFAULT_MAX_VERT = 50       # Maximum number of vertices for any possible graph
     DEFAULT_MAX_SYM = 60        # Maximum number of graph symmetries (for dodecahedron)
     
     #-------------------------------------------------------------------------#
-    
+
     def __init__(self, ordered_edge_list = None, max_num_vert = None, validate = True):
-        """
-            Construct an instance using only an implicitly ordered edge list
+        r"""
+        Initialize a graph from an implicitly ordered edge list.
+        
+        Parameters
+        ----------
+        ordered_edge_list : array_like of int, optional
+            Array of shape $(|E|, 2)$, containing pairs of vertex
+            indices $(u,v)$ specifying the graph edges.
+        
+            Vertex indices run from $0$ to $|V|-1$. The order in
+            which edges occur in the list determines the
+            counterclockwise cyclic order of incident edges
+            at each vertex.
+        
+            If `None`, an empty `Graph` object is created.
+        
+        max_num_vert : int, optional
+            Maximum number of vertices accommodated by the graph's
+            internal storage, including subsequent Pachner moves.
+        
+            Defaults to Graph.DEFAULT_MAX_VERT (currently 50).
+            The permitted range is 1 to 84.
+        
+        validate : bool, default=True
+            If True, check that the edge count is compatible with
+            a trivalent graph, that vertex labels are consecutive
+            starting at zero, and that each vertex occurs exactly
+            three times in the edge list.
+        
+            This does not test graph connectivity, planarity,
+            or 3-connectivity.
+        
+        Raises
+        ------
+        ValueError
+            If max_num_vert is invalid or the edge list fails
+            the implemented validation checks.
+        
+        Notes
+        -----
+        The graph's vertex and edge counts are determined from
+        the edge list. Face information is computed separately
+        when first requested.
         """
         
         # Default placeholders for quantities to be computed when needed
@@ -425,18 +500,32 @@ class Graph:
     
     @property
     def num_vert(self):
+        r"""
+            int: Number of vertices $|V|$ in the graph.
+        """
+        
         return self._num_vert
                 
     #-------------------------------------------------------------------------#
     
     @property
     def num_edges(self):
+        r"""
+            int: Number of edges $|E|$ in the graph.
+        """
+        
         return self._num_edges
             
     #-------------------------------------------------------------------------#
     
     @property
     def num_faces(self):
+        r"""
+            int: Number of faces $|F|$ in the graph's combinatorial embedding.
+        
+            Face information is calculated on first access if it has
+            not already been determined.
+        """
     
         if self._num_faces is None:
             self.find_faces()
@@ -601,35 +690,75 @@ class Graph:
     #-------------------------------------------------------------------------#
     
     def is_isomorphic(self, other, return_perm = True):
-        """
-            Test whether two embedded trivalent graphs are isomorphic.
-        
-            The isomorphism preserves the cyclic ordering of incident edges at every
-            vertex. Consequently, mirror embeddings are not regarded as isomorphic.
-        
+        r"""
+            Determine whether two embedded trivalent graphs are isomorphic.
+            
+            An isomorphism is required to preserve the counterclockwise cyclic
+            ordering of incident edges at every vertex. Thus, the test is for
+            isomorphism of combinatorially embedded graphs, rather than
+            abstract graph isomorphism.
+            
             Parameters
             ----------
             other : Graph
-                Graph to compare with this graph.
-            return_perm : bool, default=True
-                If True, return a signed permutation of the edge labels realizing an
-                isomorphism. If False, return only whether an isomorphism exists.
-        
+                Graph to compare with the current graph.
+            
+            return_perm : bool, default = True
+                If `True`, return a signed edge permutation realizing an
+                isomorphism, if one exists.
+            
+                If `False`, return only whether the graphs are isomorphic.
+            
             Returns
             -------
-            numpy.ndarray or None or bool
-                If `return_perm` is True, a 1-based signed edge permutation, or None
-                if no isomorphism exists. The sign records whether the canonical
-                orientation of an edge is reversed.
-        
-                If `return_perm` is False, return True or False.
-        
+            numpy.ndarray or bool or None
+                If `return_perm = True` and the graphs are isomorphic, return
+                a signed integer array of shape $(|E|,)$ describing the
+                mapping of edges from `self` to `other`.
+            
+                Otherwise, return `None` if no isomorphism exists.
+            
+                If `return_perm = False`, return `True` or `False`.
+            
             Notes
             -----
-            This tests isomorphism of the graph together with its vertex cyclic
-            ordering, rather than abstract graph isomorphism.
+            The returned signed permutation uses one-based edge labels.
+            For each zero-based source edge index $e$,
+            
+            $$
+            p[e] = s_e (j+1),
+            $$
+            
+            where $j$ is the corresponding zero-based edge index in
+            `other`, and $s_e = \pm 1$.
+            
+            The sign records whether the isomorphism preserves ($+1$)
+            or reverses ($-1$) the reference direction of that edge,
+            as specified by its ordered endpoints.
+            
+            The sign does not indicate an independently assigned
+            orientation decoration.
+            
+            Mirror embeddings are distinguished because the isomorphism
+            must preserve the vertex cyclic orders.
+            
+            If multiple isomorphisms exist, only one is returned.
+            
+            Examples
+            --------
+            Test isomorphism without constructing an edge permutation:
+            
+            >>> G = Graph.create_prism(3)
+            >>> G.is_isomorphic(G, return_perm = False)
+            True
+            
+            Obtain a signed edge permutation:
+            
+            >>> perm = G.is_isomorphic(G)
+            >>> len(perm) == G.num_edges
+            True
         """
-        
+
         # Verify whether number of vertices, edges are equal
         
         if self._num_vert != other._num_vert or self._num_edges != other._num_edges:
@@ -703,10 +832,34 @@ class Graph:
     #-------------------------------------------------------------------------#
     
     def __eq__(self, other):
+        r"""
+            Test equality of two embedded trivalent graphs.
+            
+            Two `Graph` objects are equal if there exists an isomorphism
+            preserving the counterclockwise cyclic order of incident
+            edges at every vertex.
+            
+            Parameters
+            ----------
+            other : Graph
+                Graph to compare with the current graph.
+            
+            Returns
+            -------
+            bool
+                `True` if the embedded graphs are isomorphic, and
+                `False` otherwise.
+            
+            Notes
+            -----
+            Implements the `==` operator by calling
+            `is_isomorphic(other, return_perm = False)`.
+            
+            For objects that are not instances of `Graph`, the method
+            returns `NotImplemented`, allowing Python's normal
+            comparison machinery to handle the result.
         """
-            Overloads the == operator
-        """
-        
+
         if not isinstance(other, Graph):
             return NotImplemented
         
@@ -715,37 +868,95 @@ class Graph:
     #-------------------------------------------------------------------------#
     
     def find_noniso_edges(self, mask_type = None, bitmask = None, sym_grp = None):
-        """
-        Find non-isomorphic edges of graph that preserve given edge property,
-        or if mask_type = None, all symmetries of the graph.
-
-        Parameters
-        ----------
-        mask_type : str, optional
-            Description of edge property to preserve, either 'orient', 'parity',
-            or 'combined'.
-        bitmask : int or np.integer, optional
-            Integer bitmask of edge properties (orientation, parities, or both);
-            if None, assume all edges are interchangable. 
-        sym_grp : np.array, optional
-            Symmetry group of graph, if provided; if None, this group will be
-            calculated.
-
-        Returns
-        -------
-        np.array
-            List of edge labels non-isomorphic under given property
-
-        Raises
-        ------
-        ValueError
-            If provided, mask_type must be string as given above, bitmask an
-            integer, and sym_grp must have same number of columns as number of
-            graph edges
+        r"""
+            Find representatives of edge orbits under graph automorphisms.
+            
+            The edges are partitioned into orbits under the action of the
+            positive automorphism group $\operatorname{Aut}^{+}(G)$, or the
+            subgroup preserving a specified edge decoration.
+            
+            One representative is returned from each orbit.
+            
+            Parameters
+            ----------
+            mask_type : {None, 'orient', 'parity', 'combined'}, optional
+                Type of edge decoration to preserve.
+            
+                - `None`: use all positive graph automorphisms.
+                - `'orient'`: preserve the edge orientation bitmask.
+                - `'parity'`: preserve the edge parity bitmask.
+                - `'combined'`: preserve both orientations and parities.
+            
+            bitmask : int, optional
+                Integer encoding the edge decorations specified by
+                `mask_type`.
+            
+                Required when `mask_type` is not `None`. Ignored otherwise.
+            
+            sym_grp : numpy.ndarray, optional
+                Array of shape $(N_{\mathrm{sym}}, |E|)$ containing signed
+                edge permutations.
+            
+                If `None`, the positive automorphism group is calculated
+                using `find_sym()`.
+            
+                Otherwise, the supplied group is used.
+            
+            Returns
+            -------
+            numpy.ndarray
+                One-dimensional integer array containing one zero-based
+                edge index from each orbit.
+            
+                The number of entries equals the number of edge orbits
+                under the selected group action.
+            
+            Notes
+            -----
+            For an undecorated graph, the relevant group is
+            $\operatorname{Aut}^{+}(G)$.
+            
+            For an oriented graph state $(G, d)$, the relevant group is the stabilizer
+            
+            $$
+            \operatorname{Aut}^{+}(G, d)
+            =
+            \{g \in \operatorname{Aut}^{+}(G) : g \cdot d = d\},
+            $$
+            
+            with the analogous definitions for parity and combined
+            decorations.
+            
+            The orbit of an edge $e$ under a group $H$ is
+            
+            $$
+            H \cdot e = \{g(e) : g \in H\}.
+            $$
+            
+            Two edges are equivalent if they belong to the same orbit.
+            
+            The returned indices are representatives of these orbits;
+            they are not necessarily the smallest indices in their
+            respective orbits.
+            
+            Only the absolute values of the signed edge permutations
+            are used when determining edge equivalence.
+            
+            The supplied `sym_grp` is assumed to contain valid graph
+            automorphisms. Its group properties are not verified.
+            
+            Examples
+            --------
+            Find representatives of the edge orbits of a triangular prism:
+            
+            >>> G = Graph.create_prism(3)
+            >>> edges = G.find_noniso_edges()
+            >>> len(edges)
+            2
         """
         
         # Calculate full graph symmetry group if none is given
-
+        
         if sym_grp is None:
             sym_grp = self.find_sym()
         sym_grp = np.asarray(sym_grp, dtype = np.int8)
@@ -798,9 +1009,65 @@ class Graph:
     #-------------------------------------------------------------------------#
 
     def find_sym(self):
-        """
-            Find all signed symmetries of the graph, where sign indicates
-            reversal of edge direction.
+        r"""
+            Find the positive automorphism group $\operatorname{Aut}^{+}(G)$
+            of the embedded graph $G$.
+
+            A positive automorphism is an isomorphism from the graph to itself
+            that preserves the counterclockwise cyclic ordering of
+            incident edges at every vertex.
+            
+            These automorphisms are represented by signed permutations
+            of the graph edges.
+            
+            Returns
+            -------
+            numpy.ndarray
+                Integer array of shape $(N_{\mathrm{sym}}, |E|)$, where
+                $N_{\mathrm{sym}}$ is the number of automorphisms found.
+            
+                Each row represents one automorphism as a signed
+                permutation of the edges.
+            
+            Notes
+            -----
+            The returned permutations use one-based signed edge labels.
+            
+            For a permutation `p`, the entry `p[e]` specifies the
+            image of the zero-based edge index $e$:
+            
+            - `abs(p[e]) - 1` is the corresponding edge index.
+            - A positive sign means the reference direction is preserved.
+            - A negative sign means the reference direction is reversed.
+            
+            The signs refer to the ordering of edge endpoints, not
+            to independently assigned orientation decorations.
+            
+            Only automorphisms preserving the vertex cyclic orders
+            are included. Automorphisms reversing the embedding
+            orientation are excluded.
+            
+            The identity automorphism is included. The ordering of
+            group elements is not guaranteed.
+            
+            The implementation currently limits the number of
+            returned automorphisms to `DEFAULT_MAX_SYM` (60).
+            Graphs with larger automorphism groups may therefore
+            have incomplete results.
+            
+            Examples
+            --------
+            Find the automorphism group of a triangular prism:
+            
+            >>> G = Graph.create_prism(3)
+            >>> sym_grp = G.find_sym()
+            >>> sym_grp.shape[1] == G.num_edges
+            True
+            
+            The order of the returned group is:
+            
+            >>> len(sym_grp)
+            6
         """
     
         self_triples = self._find_vert_triples()
@@ -839,24 +1106,164 @@ class Graph:
     #-------------------------------------------------------------------------#
     
     def find_min_parity_state(self, parity_state, sym_grp):
+        r"""
+            Find the canonical representative of a parity state.
+            
+            The state is minimized over its orbit under the supplied
+            group of signed edge permutations.
+            
+            Parameters
+            ----------
+            parity_state : int
+                Encoded parity state containing a graph ID and
+                $|E|$ parity bits.
+            
+            sym_grp : numpy.ndarray
+                Array of shape $(N_{\mathrm{sym}}, |E|)$ containing
+                signed edge permutations, usually obtained from
+                `find_sym()`.
+            
+            Returns
+            -------
+            int
+                Numerically smallest encoded parity state under
+                the supplied group action.
+            
+            Notes
+            -----
+            The graph ID is preserved. Only the parity bitmask
+            is transformed.
+            
+            If `sym_grp` is the full positive automorphism group,
+            the result is a canonical representative of the
+            parity state under $\operatorname{Aut}^{+}(G)$.
+        """
+
         return find_min_parity_state(parity_state, sym_grp, num_edges = self._num_edges)
     
     #-------------------------------------------------------------------------#
     
     def find_min_orient_state(self, orient_state, sym_grp):
+        r"""
+            Find the canonical representative of an orientation state.
+            
+            The state is minimized over its orbit under the supplied
+            group of signed edge permutations.
+            
+            Parameters
+            ----------
+            orient_state : int
+                Encoded orientation state containing a graph ID and
+                $|E|$ orientation bits.
+            
+            sym_grp : numpy.ndarray
+                Array of shape $(N_{\mathrm{sym}}, |E|)$ containing
+                signed edge permutations, usually obtained from
+                `find_sym()`.
+            
+            Returns
+            -------
+            int
+                Numerically smallest encoded orientation state
+                under the supplied group action.
+            
+            Notes
+            -----
+            The graph ID is preserved. Only the orientation
+            bitmask is transformed.
+            
+            A negative entry in a signed permutation accounts
+            for reversal of the reference direction of an edge
+            when transforming its orientation bit.
+            
+            Global reversal of all edge orientations is not
+            included as an additional equivalence operation.
+        """
+
         return find_min_orient_state(orient_state, sym_grp, num_edges = self._num_edges)
     
-        
     #-------------------------------------------------------------------------#
     
     def find_min_combined_state(self, combined_state, sym_grp):
+        r"""
+            Find the canonical representative of a combined state.
+            
+            The state contains both orientation and parity decorations.
+            Both bitmasks are transformed simultaneously under the
+            same signed edge permutation.
+            
+            Parameters
+            ----------
+            combined_state : int
+                Encoded combined state containing a graph ID,
+                $|E|$ orientation bits, and $|E|$ parity bits.
+            
+            sym_grp : numpy.ndarray
+                Array of shape $(N_{\mathrm{sym}}, |E|)$ containing
+                signed edge permutations, usually obtained from
+                `find_sym()`.
+            
+            Returns
+            -------
+            int
+                Numerically smallest encoded combined state
+                under the supplied group action.
+            
+            Notes
+            -----x`
+            The graph ID is preserved.
+            
+            The encoding places the orientation bits above the
+            parity bits. Consequently, numerical minimization
+            first minimizes the orientation bitmask and then,
+            among equivalent minimum orientations, minimizes
+            the parity bitmask.
+            
+            The same permutation must act on both decorations;
+            they are not minimized independently.
+        """
+
         return find_min_combined_state(combined_state, sym_grp, num_edges = self._num_edges)
         
     #-------------------------------------------------------------------------#
     
     def map_parity_state(self, parity_state, other):
-        """
-            Map parity state for current graph to match edge list of target graph
+        r"""
+            Map a parity state to a positively isomorphic graph.
+            
+            Find a positive isomorphism from the current graph `self`
+            to `other`, then transform the parity state to match the
+            edge ordering of `other`.
+            
+            Parameters
+            ----------
+            parity_state : int
+                Encoded parity state whose edge indices correspond
+                to the current graph.
+            
+            other : Graph
+                Target graph, positively isomorphic to the current graph.
+            
+            Returns
+            -------
+            numpy.uint64
+                Encoded parity state with edge decorations expressed
+                in the edge ordering of `other`.
+            
+            Raises
+            ------
+            ValueError
+                If the two embedded graphs are not positively isomorphic.
+            
+            Notes
+            -----
+            The signed edge permutation is obtained automatically
+            using `is_isomorphic()`.
+            
+            Only edge positions are permuted; signs in the permutation
+            do not change parity values.
+            
+            The encoded graph ID is preserved. Neither graph is modified.
         """
         
         signed_edge_perm = self.is_isomorphic(other)
@@ -871,8 +1278,43 @@ class Graph:
     #-------------------------------------------------------------------------#
     
     def map_orient_state(self, orient_state, other):
-        """
-            Map orientation state for current graph to match edge list of target graph
+        r"""
+            Map an orientation state to a positively isomorphic graph.
+            
+            Find a positive isomorphism from the current graph `self`
+            to `other`, then transform the orientation state to match
+            the edge ordering and reference directions of `other`.
+            
+            Parameters
+            ----------
+            orient_state : int
+                Encoded orientation state whose edge indices correspond
+                to the current graph.
+            
+            other : Graph
+                Target graph, positively isomorphic to the current graph.
+            
+            Returns
+            -------
+            numpy.uint64
+                Encoded orientation state with edge decorations
+                expressed in the edge ordering of `other`.
+            
+            Raises
+            ------
+            ValueError
+                If the two embedded graphs are not positively isomorphic.
+            
+            Notes
+            -----
+            The signed edge permutation is obtained automatically
+            using `is_isomorphic()`.
+            
+            A negative permutation entry reverses the corresponding
+            orientation bit to account for the change in edge
+            reference direction.
+            
+            The encoded graph ID is preserved. Neither graph is modified.
         """
         
         signed_edge_perm = self.is_isomorphic(other)
@@ -887,8 +1329,42 @@ class Graph:
     #-------------------------------------------------------------------------#
     
     def map_combined_state(self, combined_state, other):
-        """
-            Map combined state for current graph to match edge list of target graph
+        r"""
+            Map a combined state to a positively isomorphic graph.
+            
+            Find a positive isomorphism from the current graph `self`
+            to `other`, then transform both orientation and parity
+            decorations to match the edge ordering of `other`.
+            
+            Parameters
+            ----------
+            combined_state : int
+                Encoded combined state whose edge indices correspond
+                to the current graph.
+            
+            other : Graph
+                Target graph, positively isomorphic to the current graph.
+            
+            Returns
+            -------
+            numpy.uint64
+                Encoded combined state with both decorations expressed
+                in the edge ordering of `other`.
+            
+            Raises
+            ------
+            ValueError
+                If the two embedded graphs are not positively isomorphic.
+            
+            Notes
+            -----
+            Both decorations are transformed using the same signed
+            edge permutation obtained from `is_isomorphic()`.
+            
+            Negative permutation entries reverse orientation bits,
+            but do not affect parity values.
+            
+            The encoded graph ID is preserved. Neither graph is modified.
         """
         
         signed_edge_perm = self.is_isomorphic(other)
@@ -903,24 +1379,122 @@ class Graph:
     #-------------------------------------------------------------------------#
     
     def permute_parity_state(self, parity_state, signed_edge_perm):
+        r"""
+            Apply a signed edge permutation to an encoded parity state.
+            
+            Parameters
+            ----------
+            parity_state : int
+                Encoded parity state to transform.
+            
+            signed_edge_perm : array_like of int
+                Signed permutation of shape $(|E|,)$ using one-based
+                edge labels.
+            
+            Returns
+            -------
+            numpy.uint64
+                Encoded state with permuted parity bits.
+            
+            Notes
+            -----
+            Only the absolute values of the permutation entries
+            affect the parity bitmask.
+            
+            The graph ID is preserved.
+            
+            The permutation is checked for validity as a signed
+            permutation, but is not verified to be a positive
+            automorphism of the graph.
+        """
+
         return permute_parity_state(parity_state, signed_edge_perm, num_edges = self._num_edges)
     
     #-------------------------------------------------------------------------#
     
     def permute_orient_state(self, orient_state, signed_edge_perm):
+        r"""
+            Apply a signed edge permutation to an encoded orientation state.
+            
+            Parameters
+            ----------
+            orient_state : int
+                Encoded orientation state to transform.
+            
+            signed_edge_perm : array_like of int
+                Signed permutation of shape $(|E|,)$ using one-based
+                edge labels.
+            
+            Returns
+            -------
+            numpy.uint64
+                Encoded state with permuted orientation bits.
+            
+            Notes
+            -----
+            A negative permutation entry reverses the corresponding
+            orientation bit when assigning it to its target edge.
+            
+            The graph ID is preserved.
+            
+            The permutation is checked for validity as a signed
+            permutation, but is not verified to be a positive
+            automorphism of the graph.
+        """
+
         return permute_orient_state(orient_state, signed_edge_perm, num_edges = self._num_edges)
         
     #-------------------------------------------------------------------------#
     
     def permute_combined_state(self, combo_state, signed_edge_perm):
+        r"""
+            Apply a signed edge permutation to an encoded combined state.
+            
+            Parameters
+            ----------
+            combo_state : int
+                Encoded state containing orientation and parity bits.
+            
+            signed_edge_perm : array_like of int
+                Signed permutation of shape $(|E|,)$ using one-based
+                edge labels.
+            
+            Returns
+            -------
+            numpy.uint64
+                Encoded state with both decorations permuted.
+            
+            Notes
+            -----
+            The same signed permutation acts on both decorations.
+            
+            Negative entries reverse the corresponding orientation
+            bits but do not change parity values.
+            
+            The graph ID is preserved.
+            
+            The permutation is checked for validity as a signed
+            permutation, but is not verified to be a positive
+            automorphism of the graph.
+        """
+
         return permute_combined_state(combo_state, signed_edge_perm, num_edges = self._num_edges)
     
     #-------------------------------------------------------------------------#
     
     @property
     def edge_list(self):
-        """
-            Return only those edges that are currently active
+        r"""
+            ndarray of shape $(|E|, 2)$: Edges $(u, v)$ of the graph.
+            
+            Each row contains the two zero-based vertex indices of an edge.
+            The order of the endpoints defines the reference direction of
+            the edge, used when constructing signed edge permutations.
+            
+            Edges are indexed by their row positions, starting at zero.
+            
+            A copy of the active edge list is returned, so modifying the
+            returned array does not affect the Graph object.
         """
         
         return self._edge_list[:self._num_edges].copy()
@@ -929,8 +1503,16 @@ class Graph:
     
     @property
     def vert_cyc_order(self):
-        """
-            Return only cyclic orders of currently active vertices
+        r"""
+            ndarray of shape $(|V|, 3)$: Cyclic ordering of incident edges.
+            
+            Each row contains the zero-based indices of the three edges
+            incident to a vertex, in counterclockwise cyclic order.
+            
+            Row i corresponds to vertex i.
+            
+            A copy of the active vertex cyclic orders is returned, so
+            modifying the returned array does not affect the Graph object.
         """
         
         return self._vert_cyc_order[:self._num_vert].copy()
@@ -939,12 +1521,26 @@ class Graph:
     
     @property
     def face_bndy_list(self):
-        """
-        List of boundary edges for each face in graph
-
-        Returns
-        -------
-        np.array of num_faces length
+        r"""
+            Return the ordered boundary edges of each face.
+            
+            Returns
+            -------
+            list of list of int
+                Entry i contains the signed edge labels forming the
+                boundary of face i, traversed counterclockwise.
+            
+            Notes
+            -----
+            The signed label of edge $e$ is $+(e+1)$ when
+            traversed in its reference direction, and
+                $-(e+1)$ when traversed in the opposite direction.
+            
+            The reference direction is determined by the order of the
+            edge endpoints in edge_list, not by any orientation decoration.
+            
+            Face information is calculated on first access if necessary.
+            A copy of each face boundary list is returned.
         """
         
         if self._face_bndy_list is None:
@@ -956,8 +1552,28 @@ class Graph:
     
     @property
     def face_idx_list(self):
-        """
-            Return left-, right-hand face indices for all active edges
+        r"""
+            Return the face indices on either side of each edge.
+            
+            Returns
+            -------
+            ndarray of shape (E, 2)
+                For each edge e:
+            
+                - [e, 0] gives the index of the face to its left.
+                - [e, 1] gives the index of the face to its right.
+            
+            Notes
+            -----
+            Left and right are defined relative to the reference direction
+            of each edge, as specified by its ordered endpoints.
+            
+            Face indices are zero-based and determined by find_faces().
+            They are not intrinsic labels preserved under graph isomorphisms
+            or Pachner moves.
+            
+            Face information is calculated on first access if necessary.
+            A copy of the array is returned.
         """
         
         if self._face_idx_list is None:
@@ -969,8 +1585,27 @@ class Graph:
     
     @property
     def face_adj_matrix(self):
-        """
-            Returns symmetric face adjacency matrix
+        r"""
+            Return the symmetric adjacency matrix of the graph's faces.
+            
+            Returns
+            -------
+            numpy.ndarray
+                Symmetric array of shape $(|F|, |F|)$.
+            
+                The entry $A_{ij}$ counts the number of graph edges
+                shared by faces $i$ and $j$.
+            
+            Notes
+            -----
+            The matrix is the adjacency matrix of the dual graph,
+            with edge multiplicities retained.
+            
+            If an edge has the same face on both sides, it
+            contributes two to the diagonal entry $A_{ii}$.
+            
+            Face information is calculated on first access if
+            necessary. A copy of the matrix is returned.
         """
         
         if self._face_adj_matrix is None:
@@ -993,8 +1628,22 @@ class Graph:
     
     @property
     def face_size_list(self):
-        """
-            Return face sizes
+        r"""
+            Return the number of boundary edges of each face.
+            
+            Returns
+            -------
+            numpy.ndarray
+                One-dimensional array of shape $(|F|,)$, where
+                $|F|$ is the number of faces.
+            
+                Entry $i$ gives the length of the boundary walk
+                of face $i$, counting edge traversals.
+            
+            Notes
+            -----
+            Face information is calculated on first access if
+            necessary. A copy of the array is returned.
         """
         
         if self._face_size_list is None:
@@ -1052,10 +1701,49 @@ class Graph:
     #-------------------------------------------------------------------------#
     
     def find_faces(self):
-        """
-            Given edge list, calculate the labels of the faces on the left,
-            right sides of each edge; record the face indices, so that we have
-            a constant size array for all information.
+        r"""
+            Find the faces of the combinatorially embedded graph.
+            
+            The faces are determined by the counterclockwise cyclic
+            ordering of incident edges at each vertex. They are
+            enumerated by tracing the directed boundary walks.
+            
+            The resulting face information is stored in the graph.
+            
+            Returns
+            -------
+            None
+                The method updates the internally stored face data.
+            
+            Notes
+            -----
+            The following face information is calculated:
+            
+            - `num_faces`: number of faces $|F|$.
+            - `face_bndy_list`: signed edge labels for each face boundary.
+            - `face_idx_list`: left- and right-hand face indices for each edge.
+            - `face_size_list`: number of edge traversals around each face.
+            
+            Face indices are zero-based and assigned in traversal order.
+            
+            The boundary of each face is traversed counterclockwise,
+            with the face on the left. Boundary edges use one-based
+            signed labels, with positive sign when traversed in the
+            edge's reference direction.
+            
+            For a zero-based edge index $e$, `face_idx_list[e, 0]`
+            and `face_idx_list[e, 1]` give the faces on the left
+            and right of its reference direction, respectively.
+            
+            Face labels depend on the edge ordering and are not
+            invariant under graph isomorphisms.
+            
+            For a non-planar combinatorial embedding, the faces
+            correspond to the boundary walks of the associated
+            orientable surface embedding, not necessarily the sphere.
+            
+            Face information is also calculated automatically when
+            first requested through the corresponding properties.
         """
         
         # The face indices are recorded in a master list for each edge, with
@@ -1177,8 +1865,73 @@ class Graph:
     #-------------------------------------------------------------------------#
     
     def pachner13(self, vert_idx):
-        """
-            Use the Pachner 1-3 move to expand the given vertex into a 3-cycle
+        r"""
+            Perform a Pachner 1-3 move at a specified vertex.
+            
+            Replace the vertex by a triangular face, reconnecting
+            its three incident edges to the vertices of the triangle.
+            
+            The graph is modified in place.
+            
+            Parameters
+            ----------
+            vert_idx : int
+                Zero-based index of the vertex to expand.
+            
+            Returns
+            -------
+            tuple of int
+                Zero-based indices of the three newly created edges,
+                in their order in the updated edge list.
+            
+            Raises
+            ------
+            ValueError
+                If the move would exceed the graph's `max_num_vert`
+                storage limit.
+            
+            Notes
+            -----
+            The move changes the graph sizes according to
+            
+            $$
+            (|V|, |E|, |F|)
+            \longmapsto
+            (|V|+2, |E|+3, |F|+1).
+            $$
+            
+            The original vertex is retained, and two new vertices
+            are appended to the vertex list.
+            
+            The indices of all existing edges are preserved.
+            The three new edges are appended at indices
+            $|E|$, $|E|+1$, and $|E|+2$, where $|E|$
+            is the original edge count.
+            
+            Face information is invalidated and recalculated when
+            subsequently requested.
+            
+            The method does not assign orientation or parity
+            decorations to the new edges.
+            
+            Consequently, existing edge decorations retain
+            their edge indices, while the new edges require
+            additional decoration values.
+            
+            Existing edge indices are preserved, but changes
+            in reference direction may require updating their
+            orientation bits.
+            
+            Examples
+            --------
+            Expand vertex 0 of a tetrahedral graph:
+            
+            >>> G = Graph.create_prism(3)
+            >>> new_edges = G.pachner13(0)
+            >>> new_edges
+            (9, 10, 11)
+            >>> G.num_vert
+            8
         """
         
         if (self._num_vert + 2) > self._max_num_vert:
@@ -1233,9 +1986,70 @@ class Graph:
     #-------------------------------------------------------------------------#
     
     def pachner22(self, edge_idx):
-        """
-            Use a Pachner 2-2 move for given edge, flipping the connections
-            with its four neighboring vertices
+        r"""
+            Perform a Pachner 2-2 move on a specified edge.
+            
+            Replace the local connection between the two vertices
+            incident to the edge, preserving the trivalent structure
+            and cyclic ordering of incident edges.
+            
+            The graph is modified in place if the move succeeds.
+            
+            Parameters
+            ----------
+            edge_idx : int
+                Zero-based index of the edge on which to perform
+                the move.
+            
+            Returns
+            -------
+            tuple of (int, numpy.ndarray)
+                A pair `(new_edge_idx, move_perm)`.
+            
+                `new_edge_idx` is the zero-based index of the
+                transformed edge in the updated graph.
+            
+                `move_perm` is a signed integer array of shape
+                $(|E|,)$ mapping old edge indices to new indices.
+            
+                If the move is prohibited, return `-1` and an
+                empty integer array. The graph is not modified.
+            
+            Raises
+            ------
+            ValueError
+                If `edge_idx` is outside the range of valid
+                edge indices.
+            
+            Notes
+            -----
+            The move preserves the numbers of vertices, edges,
+            and faces.
+            
+            The implementation rejects a move when the two
+            opposite faces involved already share an edge,
+            as this would violate the intended 3-connectivity
+            restriction.
+            
+            The signed edge mapping uses one-based labels.
+            For an original edge index $e$,
+            
+            $$
+            p[e] = s_e(j+1),
+            $$
+            
+            where $j$ is its index after the move and
+            $s_e = \pm 1$ records any reversal of its
+            reference direction.
+            
+            The edge list may be reordered to preserve the
+            implicit cyclic-order convention.
+            
+            Face information is invalidated after a successful
+            move and recalculated when subsequently requested.
+            
+            The method does not assign new edge decorations
+            or determine admissible decorated Pachner moves.
         """
         
         if (edge_idx < 0) or (edge_idx >= self._num_edges):
@@ -1445,9 +2259,73 @@ class Graph:
     #-------------------------------------------------------------------------#
     
     def pachner31(self, cycle_list):
-        """
-            Given a list of edge indices that form a 3-cycle, reduce the face
-            to a single vertex.
+        r"""
+            Perform a Pachner 3-1 move on a triangular cycle.
+            
+            Contract a 3-cycle to a single vertex, reconnecting
+            the three external edges incident to the cycle.
+            
+            The graph is modified in place.
+            
+            Parameters
+            ----------
+            cycle_list : array_like of int
+                Three zero-based edge indices forming a 3-cycle
+                in the graph.
+            
+                The indices may be supplied in any order.
+            
+            Returns
+            -------
+            numpy.ndarray
+                Signed integer array of shape $(|E|-3,)$,
+                where $|E|$ denotes the original edge count.
+            
+                Entry `perm[j]` gives the signed one-based index
+                of the original edge corresponding to new
+                zero-based edge index $j$.
+            
+            Raises
+            ------
+            ValueError
+                If the number of supplied edges is not three,
+                an edge index is out of range, or the given
+                edges do not form a 3-cycle.
+            
+            Notes
+            -----
+            The move changes the graph sizes according to
+            
+            $$
+            (|V|, |E|, |F|)
+            \longmapsto
+            (|V|-2, |E|-3, |F|-1).
+            $$
+            
+            The vertex with the smallest index in the 3-cycle
+            is retained. The other two vertices and the three
+            cycle edges are removed.
+            
+            Remaining vertices and edges are relabeled to
+            maintain consecutive indices and the implicit
+            cyclic-order convention.
+            
+            The returned mapping is from NEW edges to OLD edges:
+            
+            $$
+            p[j] = s_j(i+1),
+            $$
+            
+            where $i$ is the original index of the surviving
+            edge corresponding to new edge $j$, and
+            $s_j = \pm 1$ records any reversal of the
+            reference direction.
+            
+            Face information is invalidated and recalculated
+            when subsequently requested.
+            
+            The method does not update edge decorations or
+            verify that the resulting graph is 3-connected.
         """
 
         cycle_list = np.asarray(cycle_list, dtype = np.int8)
@@ -1634,25 +2512,51 @@ class Graph:
     
     @classmethod
     def create_prism(cls, N):
-        """
-        Construct an n-prism Graph object with 2N vertices.
-
-        Parameters
-        ----------
-        N : int
-            The order of the prism base polygons (number of vertices in the 
-            top/bottom faces). Must be at least 3.
-
-        Returns
-        -------
-        Graph
-            An initialized Graph instance representing the n-prism topology.
-
-        Raises
-        ------
-        ValueError
-            If `N < 3`, as a valid 3-connected trivalent prism requires at 
-            least a triangular base.
+        r"""
+            Construct an $N$-gonal prism as an embedded trivalent graph.
+            
+            The prism consists of two $N$-cycles connected by
+            $N$ edges joining corresponding vertices.
+            
+            Parameters
+            ----------
+            N : int
+                Number of vertices in each of the two polygonal
+                faces. Must satisfy $N \geq 3$.
+            
+            Returns
+            -------
+            Graph
+                A new `Graph` instance representing the
+                $N$-gonal prism with its standard planar embedding.
+            
+            Raises
+            ------
+            ValueError
+                If `N` is less than 3.
+            
+            Notes
+            -----
+            The resulting graph is planar, 3-regular, and
+            3-connected, with
+            
+            $$
+            |V| = 2N, \qquad |E| = 3N, \qquad |F| = N+2.
+            $$
+            
+            The vertex cyclic orders are determined by the
+            implicitly ordered edge list.
+            
+            The graph is created using the default vertex
+            storage capacity.
+            
+            Examples
+            --------
+            Construct the square prism (cube graph):
+            
+            >>> G = Graph.create_prism(4)
+            >>> G.num_vert, G.num_edges, G.num_faces
+            (8, 12, 6)
         """
         
         if N < 3:
