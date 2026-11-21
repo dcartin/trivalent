@@ -288,6 +288,53 @@
   
   
   
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
     <li class="md-nav__item">
       <a href="../../using-Graph-objects/" class="md-nav__link">
         
@@ -305,6 +352,14 @@
   
 
       </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
     </li>
   
 
@@ -336,7 +391,7 @@
   <span class="md-ellipsis">
     
   
-    API Reference
+    Reference
   
 
     
@@ -352,7 +407,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    API Reference
+    Reference
   
 
           </label>
@@ -1276,7 +1331,7 @@ at each vertex.</p>
 
 <p><span class="doc-section-title">Examples:</span></p>
     <p>Create a triangular prism:</p>
-    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="o">.</span><span class="n">create_prism</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="o">.</span><span class="n">create_prism</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">num_vert</span>
 <span class="go">6</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">num_edges</span>
@@ -1983,7 +2038,7 @@ storage capacity. Thus, <span class="arithmatex">\(N \leq 25\)</span> with
 
 <p><span class="doc-section-title">Examples:</span></p>
     <p>Construct the square prism (cube graph):</p>
-    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="o">.</span><span class="n">create_prism</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+    <div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="o">.</span><span class="n">create_prism</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">num_vert</span><span class="p">,</span> <span class="n">G</span><span class="o">.</span><span class="n">num_edges</span><span class="p">,</span> <span class="n">G</span><span class="o">.</span><span class="n">num_faces</span>
 <span class="go">(8, 12, 6)</span>
 </code></pre></div>
@@ -2526,7 +2581,7 @@ automorphisms. Its group properties are not verified.</p>
 
 <p><span class="doc-section-title">Examples:</span></p>
     <p>Find representatives of the edge orbits of a triangular prism:</p>
-    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="o">.</span><span class="n">create_prism</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="o">.</span><span class="n">create_prism</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">edges</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">find_noniso_edges</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">edges</span><span class="p">)</span>
 <span class="go">2</span>
@@ -2608,13 +2663,13 @@ have incomplete results.</p>
 
 <p><span class="doc-section-title">Examples:</span></p>
     <p>Find the automorphism group of a triangular prism:</p>
-    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="o">.</span><span class="n">create_prism</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="o">.</span><span class="n">create_prism</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sym_grp</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">find_sym</span><span class="p">()</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">sym_grp</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="n">G</span><span class="o">.</span><span class="n">num_edges</span>
 <span class="go">True</span>
 </code></pre></div>
     <p>The order of the returned group is:</p>
-    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">sym_grp</span><span class="p">)</span>
+    <div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">sym_grp</span><span class="p">)</span>
 <span class="go">6</span>
 </code></pre></div>
 
@@ -2738,12 +2793,12 @@ must preserve the vertex cyclic orders.</p>
 
 <p><span class="doc-section-title">Examples:</span></p>
     <p>Test isomorphism without constructing an edge permutation:</p>
-    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="o">.</span><span class="n">create_prism</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="o">.</span><span class="n">create_prism</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">G</span><span class="o">.</span><span class="n">is_isomorphic</span><span class="p">(</span><span class="n">G</span><span class="p">,</span> <span class="n">return_perm</span> <span class="o">=</span> <span class="kc">False</span><span class="p">)</span>
 <span class="go">True</span>
 </code></pre></div>
     <p>Obtain a signed edge permutation:</p>
-    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">perm</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">is_isomorphic</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
+    <div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">perm</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">is_isomorphic</span><span class="p">(</span><span class="n">G</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">perm</span><span class="p">)</span> <span class="o">==</span> <span class="n">G</span><span class="o">.</span><span class="n">num_edges</span>
 <span class="go">True</span>
 </code></pre></div>
@@ -3253,7 +3308,7 @@ orientation bits.</p>
 
 <p><span class="doc-section-title">Examples:</span></p>
     <p>Expand vertex 0 of a triangular prism:</p>
-    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="o">.</span><span class="n">create_prism</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <div class="language-pycon highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="o">.</span><span class="n">create_prism</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">new_edges</span> <span class="o">=</span> <span class="n">G</span><span class="o">.</span><span class="n">pachner13</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span><span class="n">new_edges</span>
 <span class="go">(9, 10, 11)</span>

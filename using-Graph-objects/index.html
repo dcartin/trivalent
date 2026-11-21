@@ -290,6 +290,55 @@
   
   
   
+    
+    
+    
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Tutorials
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Tutorials
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
     <li class="md-nav__item md-nav__item--active">
       
       <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
@@ -399,6 +448,14 @@
     </li>
   
 
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
     
       
       
@@ -425,7 +482,7 @@
   <span class="md-ellipsis">
     
   
-    API Reference
+    Reference
   
 
     
@@ -441,7 +498,7 @@
             <span class="md-nav__icon md-icon"></span>
             
   
-    API Reference
+    Reference
   
 
           </label>
@@ -611,8 +668,8 @@ graphs, and using the graph Pachner moves to create other graphs. First, import
 the Graph class from trivalent. This includes various class functions to add in
 understanding the structure of the graph, along with the ability to apply the
 Pachner moves to the graph.</p>
-<pre><code class="language-python">from trivalent import Graph
-</code></pre>
+<div class="language-python highlight"><pre><span></span><code><span class="kn">from</span><span class="w"> </span><span class="nn">trivalent</span><span class="w"> </span><span class="kn">import</span> <span class="n">Graph</span>
+</code></pre></div>
 <h2 id="graph-creation">Graph creation</h2>
 <p>To create a graph, use the <code>Graph</code> command. Usually, the argument will be a
 list of edges for the graph; as described below, this list is ordered
@@ -633,83 +690,83 @@ edge list contains <code>[[0, 1] ... [0, 2] ... [0, 3]]</code>, then the vertice
 appear in CCW order around vertex 0.</li>
 </ul>
 <p>An acceptable edge list for the planar tetrahedral graph is given below.</p>
-<pre><code class="language-python"># Define edge list for later use
+<div class="language-python highlight"><pre><span></span><code><span class="c1"># Define edge list for later use</span>
 
-tet_edge_list = [[0, 1], [0, 2], [1, 3], [0, 3], [1, 2], [2, 3]]
+<span class="n">tet_edge_list</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]]</span>
 
-# Define tetrahedral Graph object
+<span class="c1"># Define tetrahedral Graph object</span>
 
-G = Graph(tet_edge_list)
-</code></pre>
+<span class="n">G</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">tet_edge_list</span><span class="p">)</span>
+</code></pre></div>
 <h2 id="graph-properties">Graph properties</h2>
 <p>Now that we have a <code>Graph</code> object, we can look at a few of its properties. Note
 that, unlike the number of vertices <span class="arithmatex">\(|V|\)</span> and edges <span class="arithmatex">\(|E|\)</span>, the number of faces
 <span class="arithmatex">\(|F|\)</span> requires a computation of the faces from the edge list and cyclic orders
 of the graph. However, this is done automatically anytime properties of the
 faces are requested.</p>
-<pre><code class="language-python">print(f'Number of vertices   : {G.num_vert}')
-print(f'Number of edges      : {G.num_edges}')
-print(f'Number of faces      : {G.num_faces}')
+<div class="language-python highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Number of vertices   : </span><span class="si">{</span><span class="n">G</span><span class="o">.</span><span class="n">num_vert</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Number of edges      : </span><span class="si">{</span><span class="n">G</span><span class="o">.</span><span class="n">num_edges</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Number of faces      : </span><span class="si">{</span><span class="n">G</span><span class="o">.</span><span class="n">num_faces</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-print(f'\nEuler characteristic : {G.num_vert - G.num_edges + G.num_faces}')
-</code></pre>
-<pre><code>Number of vertices   : 4
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">Euler characteristic : </span><span class="si">{</span><span class="n">G</span><span class="o">.</span><span class="n">num_vert</span><span class="w"> </span><span class="o">-</span><span class="w"> </span><span class="n">G</span><span class="o">.</span><span class="n">num_edges</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="n">G</span><span class="o">.</span><span class="n">num_faces</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>Number of vertices   : 4
 Number of edges      : 6
 Number of faces      : 4
 
 Euler characteristic : 2
-</code></pre>
+</code></pre></div>
 <p>We can also get the edge list, and the cyclic orders of the incident edges
 around each vertex. Each of these is given as a <code>numpy</code> array.</p>
 <p>The edge list is identical to that used to create the <code>Graph</code> object in the
 first place. It is a list of ordered vertex label pairs.</p>
-<pre><code class="language-python">for edge_label, edge in enumerate(G.edge_list):
-    print(f'edge {edge_label} : {edge}')
-</code></pre>
-<pre><code>edge 0 : [0 1]
+<div class="language-python highlight"><pre><span></span><code><span class="k">for</span> <span class="n">edge_label</span><span class="p">,</span> <span class="n">edge</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">edge_list</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;edge </span><span class="si">{</span><span class="n">edge_label</span><span class="si">}</span><span class="s1"> : </span><span class="si">{</span><span class="n">edge</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>edge 0 : [0 1]
 edge 1 : [0 2]
 edge 2 : [1 3]
 edge 3 : [0 3]
 edge 4 : [1 2]
 edge 5 : [2 3]
-</code></pre>
+</code></pre></div>
 <p>The cyclic orders use these edge labels (i.e. their indices in the original
 edge list) to give the CCW ordering of the incident edges around each vertex.</p>
-<pre><code class="language-python">for vert_label, cyc_order in enumerate(G.vert_cyc_order):
-    print(f'vert {vert_label} : {cyc_order}')
-</code></pre>
-<pre><code>vert 0 : [0 1 3]
+<div class="language-python highlight"><pre><span></span><code><span class="k">for</span> <span class="n">vert_label</span><span class="p">,</span> <span class="n">cyc_order</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">vert_cyc_order</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;vert </span><span class="si">{</span><span class="n">vert_label</span><span class="si">}</span><span class="s1"> : </span><span class="si">{</span><span class="n">cyc_order</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>vert 0 : [0 1 3]
 vert 1 : [0 2 4]
 vert 2 : [1 4 5]
 vert 3 : [2 3 5]
-</code></pre>
+</code></pre></div>
 <p>To see how these two lists match up, as an example, take vertex 2. In the list from <code>Graph.edge_list</code>, this vertex appears in the pairs describing edges 1, 4, and 5. This is exactly the cyclic order given in <code>Graph.vert_cyc_order</code> for this vertex. Note that the edge labels must be in increasing order, due to the implicit ordering of the edges given in the edge list.</p>
 <p>The faces of the graph are created when <code>Graph.find_faces()</code> is invoked. One way to see these faces is to show their boundary edges using <code>Graph.face_bndy_list</code>. This gives a list of 1-based signed lists, each giving the boundary edges when traveling around the face in a counterclockwise direction (so the face is always on the left in the direction of travel). The sign for each edge label gives whether this travel around the face is with, or against, the canonical direction of the edge <span class="arithmatex">\((u, v)\)</span>, from <span class="arithmatex">\(u\)</span> to <span class="arithmatex">\(v\)</span>.</p>
-<pre><code class="language-python">for face_label, face_edge_list in enumerate(G.face_bndy_list):
-    print(f'Face label {face_label} : {face_edge_list}')
-</code></pre>
-<pre><code>Face label 0 : [1, 5, -2]
+<div class="language-python highlight"><pre><span></span><code><span class="k">for</span> <span class="n">face_label</span><span class="p">,</span> <span class="n">face_edge_list</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">face_bndy_list</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Face label </span><span class="si">{</span><span class="n">face_label</span><span class="si">}</span><span class="s1"> : </span><span class="si">{</span><span class="n">face_edge_list</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>Face label 0 : [1, 5, -2]
 Face label 1 : [-1, 4, -3]
 Face label 2 : [2, 6, -4]
 Face label 3 : [3, -6, -5]
-</code></pre>
+</code></pre></div>
 <p>Each edge appears twice in the list above, for its two incident faces, once with each sign choice. The same information can be given from an edge-oriented view by using <code>Graph.face_idx_list</code>. We can determine the face "to the left" or "right" of the edge from this direction. The faces incident to each edge are given as the pair <code>[left_face_idx, right_face_idx]</code> in the list below.</p>
-<pre><code class="language-python">for edge_label, face_pair in enumerate(G.face_idx_list):
-    print(f'edge {edge_label} : {face_pair}')
-</code></pre>
-<pre><code>edge 0 : [0 1]
+<div class="language-python highlight"><pre><span></span><code><span class="k">for</span> <span class="n">edge_label</span><span class="p">,</span> <span class="n">face_pair</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">face_idx_list</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;edge </span><span class="si">{</span><span class="n">edge_label</span><span class="si">}</span><span class="s1"> : </span><span class="si">{</span><span class="n">face_pair</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>edge 0 : [0 1]
 edge 1 : [2 0]
 edge 2 : [3 1]
 edge 3 : [1 2]
 edge 4 : [0 3]
 edge 5 : [2 3]
-</code></pre>
+</code></pre></div>
 <p>As one can see, each face appears three times in the list. Thus, each of the
 faces have three boundary edges, as expected for the tetrahedron.</p>
-<pre><code class="language-python">print(f'Face sizes : {G.face_size_list}')
-</code></pre>
-<pre><code>Face sizes : [3 3 3 3]
-</code></pre>
+<div class="language-python highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Face sizes : </span><span class="si">{</span><span class="n">G</span><span class="o">.</span><span class="n">face_size_list</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>Face sizes : [3 3 3 3]
+</code></pre></div>
 <h2 id="graph-isomorphisms-and-symmetry-groups">Graph isomorphisms and symmetry groups</h2>
 <p>Next we look at determining whether two graphs are identical or not. The same
 algorithm, when comparing the graph to itself, can give the symmetry group of
@@ -720,33 +777,33 @@ around each vertex. Thus, we can take the same edge list as above, but use a
 cyclic permutation of the edges in the list to define a new graph <code>H</code>. For
 example, suppose we take the first three edges in the list, and move them to
 the end of the list.</p>
-<pre><code class="language-python">H = Graph([[0, 3], [1, 2], [2, 3], [0, 1], [0, 2], [1, 3]])
-</code></pre>
+<div class="language-python highlight"><pre><span></span><code><span class="n">H</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">([[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">]])</span>
+</code></pre></div>
 <p>This graph should be equivalent to the original <code>Graph</code> object <code>G</code>. The first
 time this is run may take a while, since it relies on a <code>numba</code> procedure,
 which must be complied.</p>
-<pre><code class="language-python">print(f'G == H : {G == H}')
-</code></pre>
-<pre><code>G == H : True
-</code></pre>
+<div class="language-python highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;G == H : </span><span class="si">{</span><span class="n">G</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">H</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>G == H : True
+</code></pre></div>
 <p>The same thing is true if we permute the vertex labels. Suppose we use the
 original labels from <code>G</code>, but increase them by 1 mod 4.</p>
-<pre><code class="language-python">K = Graph([[1, 2], [1, 3], [2, 0], [1, 0], [2, 3], [3, 0]])
+<div class="language-python highlight"><pre><span></span><code><span class="n">K</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">([[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">0</span><span class="p">]])</span>
 
-print(f'G == K : {G == K}')
-</code></pre>
-<pre><code>G == K : True
-</code></pre>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;G == K : </span><span class="si">{</span><span class="n">G</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">K</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>G == K : True
+</code></pre></div>
 <p>The same algorithm is used to find all the symmetries of a graph. These are
 reported as signed edge labels, where a label is positive if its original
 canonical orientation is preserved, and negative if it is reversed. Again, a
 <code>numba</code> procedure is used to do this, so the first use may take a longer time.</p>
 <p>For the tetrahedron, there are a total of 12 symmetries, as given below. The
 identity transformation should be the first listed.</p>
-<pre><code class="language-python">for sym in G.find_sym():
-    print(sym)
-</code></pre>
-<pre><code>[1 2 3 4 5 6]
+<div class="language-python highlight"><pre><span></span><code><span class="k">for</span> <span class="n">sym</span> <span class="ow">in</span> <span class="n">G</span><span class="o">.</span><span class="n">find_sym</span><span class="p">():</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">sym</span><span class="p">)</span>
+</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>[1 2 3 4 5 6]
 [ 4  1 -6  2 -3  5]
 [ 2  4 -5  1  6 -3]
 [-1  3  2  5  4 -6]
@@ -758,7 +815,7 @@ identity transformation should be the first listed.</p>
 [-3 -4  5 -6 -1  2]
 [-6 -3 -2 -4 -5 -1]
 [-4 -6  1 -3  2 -5]
-</code></pre>
+</code></pre></div>
 <h2 id="pachner-moves">Pachner moves</h2>
 <p>Finally, we cover the graph Pachner moves on the graphs, starting with the 2-2
 move <code>Graph.pachner22()</code>. This move preserves the number of vertices, so the
@@ -776,94 +833,94 @@ if this property would be violated, then the move does not go through. In
 particular, a 2-2 move cannot be done on any edge of the tetrahedron without
 giving multiple edges between two vertices. In this case, instead of returning
 the edge label, it returns <code>[-1, []]</code>.</p>
-<pre><code class="language-python">print(G.pachner22(0))
-</code></pre>
-<pre><code>(-1, array([], dtype=int8))
-</code></pre>
+<div class="language-python highlight"><pre><span></span><code><span class="nb">print</span><span class="p">(</span><span class="n">G</span><span class="o">.</span><span class="n">pachner22</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>(-1, array([], dtype=int8))
+</code></pre></div>
 <p>All graphs with <span class="arithmatex">\(|V| \ge 6\)</span> have at least one possible 2-2 move on them, so we
 use the unique <span class="arithmatex">\(|V| = 6\)</span> graph as an example. Obviously, with only one graph
 possible, the 2-2 move takes this graph to itself, but the edges are permuted.</p>
-<pre><code class="language-python"># Define edge list for later use
+<div class="language-python highlight"><pre><span></span><code><span class="c1"># Define edge list for later use</span>
 
-six_vert_edge_list = [[0, 1], [0, 4], [0, 5], [1, 2], [3, 4], \
-                      [1, 3], [4, 5], [2, 5], [2, 3]]
+<span class="n">six_vert_edge_list</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> \
+                      <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">]]</span>
 
-# Define Graph object, act with 2-2 move
+<span class="c1"># Define Graph object, act with 2-2 move</span>
 
-P = Graph(six_vert_edge_list)
-new_edge, perm = P.pachner22(0)
+<span class="n">P</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">six_vert_edge_list</span><span class="p">)</span>
+<span class="n">new_edge</span><span class="p">,</span> <span class="n">perm</span> <span class="o">=</span> <span class="n">P</span><span class="o">.</span><span class="n">pachner22</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-print(f'New edge idx : {new_edge}')
-print(f'Permutation  : {perm}')
-</code></pre>
-<pre><code>New edge idx: 3
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;New edge idx : </span><span class="si">{</span><span class="n">new_edge</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Permutation  : </span><span class="si">{</span><span class="n">perm</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>New edge idx: 3
 Permutation : [4 1 2 3 5 6 7 8 9]
-</code></pre>
+</code></pre></div>
 <p>Note that <code>Graph.pachner22()</code> modifies the graph, so that it is not isomorphic
 to the original graph. This is easier to see if we compare two <span class="arithmatex">\(|V| = 8\)</span> graphs.
 Let <code>C</code> be the 4-prism graph (i.e. the projection of the cube onto the plane),
 and <code>D</code> be the only other graph with eight vertices; the latter is known as the
 standard graph <span class="arithmatex">\(\Delta_8\)</span>.</p>
-<pre><code class="language-python"># Define edge lists separately for later use
+<div class="language-python highlight"><pre><span></span><code><span class="c1"># Define edge lists separately for later use</span>
 
-cube_edge_list = [[0, 1], [0, 6], [0, 7], [1, 2], [4, 6], [6, 7], \
-                  [3, 4], [2, 5], [5, 7], [1, 3], [2, 3], [4, 5]]
-std_edge_list = [[0, 1], [2, 6], [1, 6], [0, 4], [3, 4], [2, 5], \
-                 [0, 7], [5, 7], [1, 3], [2, 3], [4, 5], [6, 7]]
+<span class="n">cube_edge_list</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> \
+                  <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">]]</span>
+<span class="n">std_edge_list</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">3</span><span class="p">,</span> <span class="mi">4</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> \
+                 <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">7</span><span class="p">],</span> <span class="p">[</span><span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">2</span><span class="p">,</span> <span class="mi">3</span><span class="p">],</span> <span class="p">[</span><span class="mi">4</span><span class="p">,</span> <span class="mi">5</span><span class="p">],</span> <span class="p">[</span><span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">]]</span>
 
-# Define Graph objects, show they are not isomorphic graphs
+<span class="c1"># Define Graph objects, show they are not isomorphic graphs</span>
 
-C = Graph(cube_edge_list)
-D = Graph(std_edge_list)
+<span class="n">C</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">cube_edge_list</span><span class="p">)</span>
+<span class="n">D</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">std_edge_list</span><span class="p">)</span>
 
-print(f'C == D : {C == D}')
-</code></pre>
-<pre><code>C == D : False
-</code></pre>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;C == D : </span><span class="si">{</span><span class="n">C</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">D</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>C == D : False
+</code></pre></div>
 <p>The only 2-2 move that takes the graph <code>D</code> to <code>C</code> is the one on its first listed edge. When this is done, then <code>D</code> is now the 4-prism graph, rather than its original form. This allows a check for what the resulting final graph is, from the known list of all graphs with a certain number of vertices.</p>
-<pre><code class="language-python"># Perform 2-2 move on edge 0
+<div class="language-python highlight"><pre><span></span><code><span class="c1"># Perform 2-2 move on edge 0</span>
 
-D.pachner22(0)
+<span class="n">D</span><span class="o">.</span><span class="n">pachner22</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 
-# Identify which edge list D now matches with
+<span class="c1"># Identify which edge list D now matches with</span>
 
-print(f'D is standard graph : {D == Graph(std_edge_list)}')
-print(f'D is cubic graph    : {D == Graph(cube_edge_list)}')
-</code></pre>
-<pre><code>D is standard graph : False
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;D is standard graph : </span><span class="si">{</span><span class="n">D</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Graph</span><span class="p">(</span><span class="n">std_edge_list</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;D is cubic graph    : </span><span class="si">{</span><span class="n">D</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Graph</span><span class="p">(</span><span class="n">cube_edge_list</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>D is standard graph : False
 D is cubic graph    : True
-</code></pre>
+</code></pre></div>
 <p><code>Graph.pachner13()</code> takes a vertex label, and modifies the graph by changing this vertex into a 3-cycle. It returns the labels for the newly created edges, which will all be at the end of the graph edge list.</p>
 <p>We can show that acting on a vertex of the tetrahedron gives the unique six-vertex graph.</p>
-<pre><code class="language-python"># Perform 1-3 move on vertex 0
+<div class="language-python highlight"><pre><span></span><code><span class="c1"># Perform 1-3 move on vertex 0</span>
 
-T = Graph(tet_edge_list)
-print(f'New edge labels: {T.pachner13(0)}')
+<span class="n">T</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">tet_edge_list</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;New edge labels: </span><span class="si">{</span><span class="n">T</span><span class="o">.</span><span class="n">pachner13</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-# Identify new form of T
+<span class="c1"># Identify new form of T</span>
 
-print(f'T is tetrahedron      : {T == Graph(tet_edge_list)}')
-print(f'T is six-vertex graph : {T == Graph(six_vert_edge_list)}')
-</code></pre>
-<pre><code>New edge labels: (6, 7, 8)
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;T is tetrahedron      : </span><span class="si">{</span><span class="n">T</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Graph</span><span class="p">(</span><span class="n">tet_edge_list</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;T is six-vertex graph : </span><span class="si">{</span><span class="n">T</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Graph</span><span class="p">(</span><span class="n">six_vert_edge_list</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>New edge labels: (6, 7, 8)
 T is tetrahedron      : False
 T is six-vertex graph : True
-</code></pre>
+</code></pre></div>
 <p>Similarly, <code>Graph.pachner31()</code> takes a list of three edge labels (which must form a 3-cycle), and replaces this cycle with a single vertex. This is the inverse operation of the 1-3 move above. The function returns the 1-based signed permutation from the <em>new</em> edge labels to the <em>old</em>. This facilitates mapping over any edge decorations on the graph. Note that this permutation cannot be given the opposite way, since two of the edges are removed.</p>
-<pre><code class="language-python"># Perform 3-1 move on edges 1, 2, 6
+<div class="language-python highlight"><pre><span></span><code><span class="c1"># Perform 3-1 move on edges 1, 2, 6</span>
 
-U = Graph(six_vert_edge_list)
-print(f'Signed permutation: {U.pachner31([1, 2, 6])}')
+<span class="n">U</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">six_vert_edge_list</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;Signed permutation: </span><span class="si">{</span><span class="n">U</span><span class="o">.</span><span class="n">pachner31</span><span class="p">([</span><span class="mi">1</span><span class="p">,</span><span class="w"> </span><span class="mi">2</span><span class="p">,</span><span class="w"> </span><span class="mi">6</span><span class="p">])</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
 
-# Identify new form of U
+<span class="c1"># Identify new form of U</span>
 
-print(f'U is tetrahedron      : {U == Graph(tet_edge_list)}')
-print(f'U is six-vertex graph : {U == Graph(six_vert_edge_list)}')
-</code></pre>
-<pre><code>Signed permutation: [ 1  4 -5  6 -8  9]
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;U is tetrahedron      : </span><span class="si">{</span><span class="n">U</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Graph</span><span class="p">(</span><span class="n">tet_edge_list</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s1">&#39;U is six-vertex graph : </span><span class="si">{</span><span class="n">U</span><span class="w"> </span><span class="o">==</span><span class="w"> </span><span class="n">Graph</span><span class="p">(</span><span class="n">six_vert_edge_list</span><span class="p">)</span><span class="si">}</span><span class="s1">&#39;</span><span class="p">)</span>
+</code></pre></div>
+<div class="language-text highlight"><pre><span></span><code>Signed permutation: [ 1  4 -5  6 -8  9]
 U is tetrahedron      : True
 U is six-vertex graph : False
-</code></pre>
+</code></pre></div>
 
 
 
