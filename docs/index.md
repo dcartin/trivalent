@@ -34,5 +34,7 @@ print(decode_orient_state(canonical, G.num_edges))
 
 ## Documentation
 
+- [Using Graph objects](using-Graph-objects.md)
+
 - [Graph API](reference/graph.md)
 - [States API](reference/states.md)
