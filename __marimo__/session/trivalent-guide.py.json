@@ -1,7 +1,7 @@
 {
   "version": "1",
   "metadata": {
-    "marimo_version": "0.24.0",
+    "marimo_version": "0.25.0",
     "script_metadata_hash": null
   },
   "cells": [
@@ -33,12 +33,12 @@
     },
     {
       "id": "vblA",
-      "code_hash": "70db877ca73915773b27d28d52700bcf",
+      "code_hash": "d03768718d0beda314d36602b50f7382",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"graph-creation\">Graph creation</h2>\n<span class=\"paragraph\">To create a graph, use the <code>Graph</code> command. Usually, the argument will be a list of edges for the graph; as described below, this list is ordered implicitly to preserve the cyclic orders of the edges around the graph vertices. If no parameters are given, the graph will be created with zero vertices or edges.</span>\n<span class=\"paragraph\">For this guide, we will create a planar tetrahedral graph. To do this, we need to provide an appropriate edge list for the <code>Graph</code> object. There are a few guidelines:</span>\n<ul>\n<li>Vertices are numbered from 1 to <marimo-tex class=\"arithmatex\">||(|V|||)</marimo-tex>. Note that a trivalent 3-regular graph with <marimo-tex class=\"arithmatex\">||(|V|||)</marimo-tex> vertices and <marimo-tex class=\"arithmatex\">||(|E|||)</marimo-tex> edges must have <marimo-tex class=\"arithmatex\">||(3|V| = 2|E|||)</marimo-tex>.</li>\n<li>An edges is given by an ordered list of vertex labels. This will be a list of <marimo-tex class=\"arithmatex\">||(|E|||)</marimo-tex> two-element lists.</li>\n<li>The edges incident to each vertex are attached to that vertex in counterclockwise order as given in the provided edge list. For example, if the edge list contains <code>[[1, 2] ... [1, 3] ... [1, 4]]</code>, then the vertices 2, 3, 4 appear in CCW order around vertex 1.</li>\n</ul>\n<span class=\"paragraph\">An acceptable edge list for the planar tetrahedral graph is given below.</span></span>"
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"graph-creation\">Graph creation</h2>\n<span class=\"paragraph\">To create a graph, use the <code>Graph</code> command. Usually, the argument will be a list of edges for the graph; as described below, this list is ordered implicitly to preserve the cyclic orders of the edges around the graph vertices. If no parameters are given, the graph will be created with zero vertices or edges.</span>\n<span class=\"paragraph\">For this guide, we will create a planar tetrahedral graph. To do this, we need to provide an appropriate edge list for the <code>Graph</code> object. There are a few guidelines:</span>\n<ul>\n<li>Vertices are numbered from 0 to <marimo-tex class=\"arithmatex\">||(|V| - 1||)</marimo-tex>. Note that a trivalent 3-regular graph with <marimo-tex class=\"arithmatex\">||(|V|||)</marimo-tex> vertices and <marimo-tex class=\"arithmatex\">||(|E|||)</marimo-tex> edges must have <marimo-tex class=\"arithmatex\">||(3|V| = 2|E|||)</marimo-tex>.</li>\n<li>An edges is given by an ordered list of vertex labels. This will be a list of <marimo-tex class=\"arithmatex\">||(|E|||)</marimo-tex> two-element lists.</li>\n<li>The edges incident to each vertex are attached to that vertex in counterclockwise order as given in the provided edge list. For example, if the edge list contains <code>[[0, 1] ... [0, 2] ... [0, 3]]</code>, then the vertices 1, 2, 3 appear in CCW order around vertex 0.</li>\n</ul>\n<span class=\"paragraph\">An acceptable edge list for the planar tetrahedral graph is given below.</span></span>"
           }
         }
       ],
@@ -105,7 +105,7 @@
     },
     {
       "id": "SFPL",
-      "code_hash": "510995e3e936d1b85b1f25258eda8046",
+      "code_hash": "3749d0f2ba3530ad4b992c605cbc31b9",
       "outputs": [
         {
           "type": "data",
@@ -138,7 +138,7 @@
     },
     {
       "id": "RGSE",
-      "code_hash": "02ae42c12550f22d2ba3be682d3b79d1",
+      "code_hash": "246b573cfdbd95a282e1181f935ff440",
       "outputs": [
         {
           "type": "data",
@@ -158,12 +158,45 @@
     },
     {
       "id": "Kclp",
-      "code_hash": "0fcf064ea88969051bf61d205a6b44e8",
+      "code_hash": "ad6e5811f942b746f13b50793c516905",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">To see how these two lists match up, as an example, take vertex 2. In the list from <code>G.active_edges</code>, this vertex appears in the pairs describing edges 1, 4, and 5. This is exactly the cyclic order given in <code>G.active_vert</code> for this vertex. Note that the edge labels must be in increasing order, due to the implicit ordering of the edges given in the edge list.</span>\n<span class=\"paragraph\">When the faces are created, they are numbered by their own labels; these labels can be obtained by using <code>G.active_face_indices</code>.</span></span>"
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">To see how these two lists match up, as an example, take vertex 2. In the list from <code>Graph.edge_list</code>, this vertex appears in the pairs describing edges 1, 4, and 5. This is exactly the cyclic order given in <code>Graph.vert_cyc_order</code> for this vertex. Note that the edge labels must be in increasing order, due to the implicit ordering of the edges given in the edge list.</span>\n<span class=\"paragraph\">The faces of the graph are created when <code>Graph.find_faces()</code> is invoked. One way to see these faces is to show their boundary edges using <code>Graph.face_bndy_list</code>. This gives a list of 1-based signed lists, each giving the boundary edges when traveling around the face in a counterclockwise direction (so the face is always on the left in the direction of travel). The sign for each edge label gives whether this travel around the face is with, or against, the canonical direction of the edge <marimo-tex class=\"arithmatex\">||((u, v)||)</marimo-tex>, from <marimo-tex class=\"arithmatex\">||(u||)</marimo-tex> to <marimo-tex class=\"arithmatex\">||(v||)</marimo-tex>.</span></span>"
+          }
+        }
+      ],
+      "console": []
+    },
+    {
+      "id": "raOZ",
+      "code_hash": "0e443ff1f6e72dc3f454b3cac4081526",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/plain": ""
+          }
+        }
+      ],
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "Face label 0 : [1, 5, -2]\nFace label 1 : [-1, 4, -3]\nFace label 2 : [2, 6, -4]\nFace label 3 : [3, -6, -5]\n",
+          "mimetype": "text/plain"
+        }
+      ]
+    },
+    {
+      "id": "pqYA",
+      "code_hash": "7563f88c321717aedcab17bba84d0577",
+      "outputs": [
+        {
+          "type": "data",
+          "data": {
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Each edge appears twice in the list above, for its two incident faces, once with each sign choice. The same information can be given from an edge-oriented view by using <code>Graph.face_idx_list</code>. We can determine the face \"to the left\" or \"right\" of the edge from this direction. The faces incident to each edge are given as the pair <code>[left_face_idx, right_face_idx]</code> in the list below.</span></span>"
           }
         }
       ],
@@ -171,7 +204,7 @@
     },
     {
       "id": "emfo",
-      "code_hash": "9c0beb959faba58755ade7700dbaee10",
+      "code_hash": "bc60707aeca543e53f61263b34d472b2",
       "outputs": [
         {
           "type": "data",
@@ -204,7 +237,7 @@
     },
     {
       "id": "nWHF",
-      "code_hash": "bdac244c1f58fcf6aa3ab14ca765385b",
+      "code_hash": "655a8585470ae4f497d4b188ca565c39",
       "outputs": [
         {
           "type": "data",
@@ -263,7 +296,7 @@
     },
     {
       "id": "qnkX",
-      "code_hash": "fa2742928dc09e4a8357723d5d2393ba",
+      "code_hash": "1404674e1d7bfea892be2a71099615db",
       "outputs": [
         {
           "type": "data",
@@ -276,7 +309,7 @@
         {
           "type": "stream",
           "name": "stdout",
-          "text": "G = H : True\n",
+          "text": "G == H : True\n",
           "mimetype": "text/plain"
         }
       ]
@@ -316,12 +349,12 @@
     },
     {
       "id": "DnEU",
-      "code_hash": "f795ceed4842a11350f57e7f8e1cd748",
+      "code_hash": "c9b520bbd8bde0b8511792636281ff6b",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The same algorithm is used to find all the symmetries of a graph. These are reported as signed edge labels, where a label is positive if its original orientation is preserved, and negative if it is reversed. Again, a <code>numba</code> procedure is used to do this, so the first use may take a longer time.</span>\n<span class=\"paragraph\">For the tetrahedron, there are a total of 12 symmetries, as given below. The identity transformation should be the first listed.</span></span>"
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">The same algorithm is used to find all the symmetries of a graph. These are reported as signed edge labels, where a label is positive if its original canonical orientation is preserved, and negative if it is reversed. Again, a <code>numba</code> procedure is used to do this, so the first use may take a longer time.</span>\n<span class=\"paragraph\">For the tetrahedron, there are a total of 12 symmetries, as given below. The identity transformation should be the first listed.</span></span>"
           }
         }
       ],
@@ -349,12 +382,12 @@
     },
     {
       "id": "ecfG",
-      "code_hash": "8fc75c93ec2ecf1cb177d1d316ea304d",
+      "code_hash": "6b97e73a97d7dbe8da16661f0f58cc8d",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"pachner-moves\">Pachner moves</h2>\n<span class=\"paragraph\">Finally, we cover the graph Pachner moves on the graphs; at the moment, only the 2-2 move <code>Graph.pachner22()</code> is fully implemented. This move preserves the number of vertices, so the initial and final graphs have the same <marimo-tex class=\"arithmatex\">||(|V|||)</marimo-tex>. However, in general they will not be isomorphic graphs. Thus, given an edge label <code>label</code>, <code>Graph.pachner22(label)</code> performs a 2-2 move on that edge, and returns <code>[label, perm]</code>. Here <code>perm</code> is a <code>numpy</code> array giving the permutation from the original edge labels to the those of the final graph; this is a signed permutation, if any edge orientations are reversed.</span>\n<span class=\"paragraph\">These graph moves are required to preserve the 3-connectedness of the graph, so if this property would be violated, then the move does not go through. In particular, a 2-2 move cannot be done on any edge of the tetrahedron without giving multiple edges between two vertices. In this case, instead of returning the edge label, it returns <code>[-1, []]</code>.</span></span>"
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><h2 id=\"pachner-moves\">Pachner moves</h2>\n<span class=\"paragraph\">Finally, we cover the graph Pachner moves on the graphs, starting with the 2-2 move <code>Graph.pachner22()</code>. This move preserves the number of vertices, so the initial and final graphs have the same <marimo-tex class=\"arithmatex\">||(|V|||)</marimo-tex>. However, in general they will not be isomorphic graphs. Thus, given an edge label <code>label</code>, <code>Graph.pachner22(label)</code> performs a 2-2 move on that edge, and returns <code>[label, perm]</code>. Here <code>perm</code> is a <code>numpy</code> array giving the permutation from the original edge labels to the those of the final graph; this is a signed permutation, if any edge orientations are reversed.</span>\n<span class=\"paragraph\">These graph moves are required to preserve the 3-connectedness of the graph, so if this property would be violated, then the move does not go through. In particular, a 2-2 move cannot be done on any edge of the tetrahedron without giving multiple edges between two vertices. In this case, instead of returning the edge label, it returns <code>[-1, []]</code>.</span></span>"
           }
         }
       ],
@@ -395,16 +428,23 @@
     },
     {
       "id": "aLJB",
-      "code_hash": "e6851747d18182596db3b2cbb5160024",
+      "code_hash": "2acf95c4faec68c27a9a810717d40ee0",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "application/json": "[0, \"text/plain:[4 1 2 3 5 6 7 8 9]\"]"
+            "text/plain": ""
           }
         }
       ],
-      "console": []
+      "console": [
+        {
+          "type": "stream",
+          "name": "stdout",
+          "text": "New edge idx: 3\nPermutation : [4 1 2 3 5 6 7 8 9]\n",
+          "mimetype": "text/plain"
+        }
+      ]
     },
     {
       "id": "nHfw",
@@ -474,12 +514,12 @@
     },
     {
       "id": "NCOB",
-      "code_hash": "c16a68a2065a3386dc5b47d7a8b4a024",
+      "code_hash": "b238a450957a2d83b9414932b93a26b0",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Currently, <code>Graph.pachner13()</code> takes a vertex label, and modifies the graph by changing this vertex into a 3-cycle. However, it does not return any information, such as the mapping of the original edges into the final graph, or the labels of the new vertices and edges.</span>\n<span class=\"paragraph\">We can show that acting on a vertex of the tetrahedron gives the unique six-vertex graph.</span></span>"
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\"><code>Graph.pachner13()</code> takes a vertex label, and modifies the graph by changing this vertex into a 3-cycle. It returns the labels for the newly created edges, which will all be at the end of the graph</span>\n<span class=\"paragraph\">We can show that acting on a vertex of the tetrahedron gives the unique six-vertex graph.</span></span>"
           }
         }
       ],
@@ -487,7 +527,7 @@
     },
     {
       "id": "aqbW",
-      "code_hash": "704d5928613c22472779245a203eccf8",
+      "code_hash": "40a14f433024a198169b19a255110c97",
       "outputs": [
         {
           "type": "data",
@@ -500,19 +540,19 @@
         {
           "type": "stream",
           "name": "stdout",
-          "text": "T is tetrahedron      : False\nT is six-vertex graph : True\n",
+          "text": "New edge labels: (6, 7, 8)\nT is tetrahedron      : False\nT is six-vertex graph : True\n",
           "mimetype": "text/plain"
         }
       ]
     },
     {
       "id": "TRpd",
-      "code_hash": "b5107f4943fd18f305bd14aff8e84be4",
+      "code_hash": "6d5d74638b4ffe8feca1f70881486f3f",
       "outputs": [
         {
           "type": "data",
           "data": {
-            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Similarly, <code>Graph.pachner31()</code> takes a list of three edge labels (which must form a 3-cycle), and replaces this cycle with a single vertex. This is the inverse operation of the 1-3 move above.</span></span>"
+            "text/markdown": "<span class=\"markdown prose dark:prose-invert contents\"><span class=\"paragraph\">Similarly, <code>Graph.pachner31()</code> takes a list of three edge labels (which must form a 3-cycle), and replaces this cycle with a single vertex. This is the inverse operation of the 1-3 move above. The function returns the 1-based signed permutation from the <em>new</em> edge labels to the <em>old</em>. This facilitates mapping over any edge decorations on the graph. Note that this permutation cannot be given the opposite way, since two of the edges are removed.</span></span>"
           }
         }
       ],
@@ -520,7 +560,7 @@
     },
     {
       "id": "TXez",
-      "code_hash": "ed543c19920f87d15758fab34ea31581",
+      "code_hash": "c995e1ec664a7e86536406adec3e52a7",
       "outputs": [
         {
           "type": "data",
@@ -533,7 +573,7 @@
         {
           "type": "stream",
           "name": "stdout",
-          "text": "U is tetrahedron      : True\nU is six-vertex graph : False\n",
+          "text": "Signed permutation: [ 1  4 -5  6 -8  9]\nU is tetrahedron      : True\nU is six-vertex graph : False\n",
           "mimetype": "text/plain"
         }
       ]
