@@ -32,9 +32,11 @@ canonical = G.min_orient_state(state, symGrp)
 print(decode_orient_state(canonical, G.num_edges))
 ```
 
-## Documentation
+## Tutorials
 
 - [Using Graph objects](using-Graph-objects.md)
+
+## Reference
 
 - [Graph API](reference/graph.md)
 - [States API](reference/states.md)

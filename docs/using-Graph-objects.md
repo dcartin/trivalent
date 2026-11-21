@@ -259,8 +259,10 @@ standard graph $\Delta_8$.
 ```python
 # Define edge lists separately for later use
 
-cube_edge_list = [[0, 1], [0, 6], [0, 7], [1, 2], [4, 6], [6, 7], [3, 4], [2, 5], [5, 7], [1, 3], [2, 3], [4, 5]]
-std_edge_list = [[0, 1], [2, 6], [1, 6], [0, 4], [3, 4], [2, 5], [0, 7], [5, 7], [1, 3], [2, 3], [4, 5], [6, 7]]
+cube_edge_list = [[0, 1], [0, 6], [0, 7], [1, 2], [4, 6], [6, 7], \
+                  [3, 4], [2, 5], [5, 7], [1, 3], [2, 3], [4, 5]]
+std_edge_list = [[0, 1], [2, 6], [1, 6], [0, 4], [3, 4], [2, 5], \
+                 [0, 7], [5, 7], [1, 3], [2, 3], [4, 5], [6, 7]]
 
 # Define Graph objects, show they are not isomorphic graphs
 
