@@ -11,6 +11,10 @@
         <link rel="canonical" href="https://dcartin.github.io/trivalent/using-Graph-objects/">
       
       
+        <link rel="prev" href="..">
+      
+      
+        <link rel="next" href="../reference/graph/">
       
       
         
@@ -282,6 +286,124 @@
       
   
   
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Working with Graph objects
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Working with Graph objects
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#graph-creation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graph creation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#graph-properties" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graph properties
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#graph-isomorphisms-and-symmetry-groups" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Graph isomorphisms and symmetry groups
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#pachner-moves" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pachner moves
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
   
   
     
@@ -293,10 +415,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
         
           
-          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
             
   
   
@@ -314,8 +436,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_2">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -684,8 +806,10 @@ and <code>D</code> be the only other graph with eight vertices; the latter is kn
 standard graph <span class="arithmatex">\(\Delta_8\)</span>.</p>
 <pre><code class="language-python"># Define edge lists separately for later use
 
-cube_edge_list = [[0, 1], [0, 6], [0, 7], [1, 2], [4, 6], [6, 7], [3, 4], [2, 5], [5, 7], [1, 3], [2, 3], [4, 5]]
-std_edge_list = [[0, 1], [2, 6], [1, 6], [0, 4], [3, 4], [2, 5], [0, 7], [5, 7], [1, 3], [2, 3], [4, 5], [6, 7]]
+cube_edge_list = [[0, 1], [0, 6], [0, 7], [1, 2], [4, 6], [6, 7], \
+                  [3, 4], [2, 5], [5, 7], [1, 3], [2, 3], [4, 5]]
+std_edge_list = [[0, 1], [2, 6], [1, 6], [0, 4], [3, 4], [2, 5], \
+                 [0, 7], [5, 7], [1, 3], [2, 3], [4, 5], [6, 7]]
 
 # Define Graph objects, show they are not isomorphic graphs
 
