@@ -18,8 +18,9 @@ theme:
 
 nav:
   - Home: index.md
-  - Working with Graph objects: using-Graph-objects.md
-  - API Reference:
+  - Tutorials:
+    - Working with Graph objects: using-Graph-objects.md
+  - Reference:
       - Graph: reference/graph.md
       - States: reference/states.md
 
@@ -45,6 +46,9 @@ extra_css:
 markdown_extensions:
   - pymdownx.arithmatex:
       generic: true
+  - pymdownx.highlight:
+      pygments_lang_class: true
+  - pymdownx.superfences
 
 extra_javascript:
   - javascripts/mathjax.js

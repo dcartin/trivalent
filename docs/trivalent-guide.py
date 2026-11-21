@@ -1,6 +1,6 @@
 import marimo
 
-__generated_with = "0.24.0"
+__generated_with = "0.25.0"
 app = marimo.App(width="medium")
 
 
@@ -34,9 +34,9 @@ def _(mo):
 
     For this guide, we will create a planar tetrahedral graph. To do this, we need to provide an appropriate edge list for the `Graph` object. There are a few guidelines:
 
-    * Vertices are numbered from 1 to $|V|$. Note that a trivalent 3-regular graph with $|V|$ vertices and $|E|$ edges must have $3|V| = 2|E|$.
+    * Vertices are numbered from 0 to $|V| - 1$. Note that a trivalent 3-regular graph with $|V|$ vertices and $|E|$ edges must have $3|V| = 2|E|$.
     * An edges is given by an ordered list of vertex labels. This will be a list of $|E|$ two-element lists.
-    * The edges incident to each vertex are attached to that vertex in counterclockwise order as given in the provided edge list. For example, if the edge list contains `[[1, 2] ... [1, 3] ... [1, 4]]`, then the vertices 2, 3, 4 appear in CCW order around vertex 1.
+    * The edges incident to each vertex are attached to that vertex in counterclockwise order as given in the provided edge list. For example, if the edge list contains `[[0, 1] ... [0, 2] ... [0, 3]]`, then the vertices 1, 2, 3 appear in CCW order around vertex 0.
 
     An acceptable edge list for the planar tetrahedral graph is given below.
     """)
@@ -87,7 +87,7 @@ def _(mo):
 
 @app.cell
 def _(G):
-    for edge_label, edge in enumerate(G.active_edges):
+    for edge_label, edge in enumerate(G.edge_list):
         print(f'edge {edge_label} : {edge}')
     return
 
@@ -102,7 +102,7 @@ def _(mo):
 
 @app.cell
 def _(G):
-    for vert_label, cyc_order in enumerate(G.active_vert):
+    for vert_label, cyc_order in enumerate(G.vert_cyc_order):
         print(f'vert {vert_label} : {cyc_order}')
     return
 
@@ -110,16 +110,31 @@ def _(G):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    To see how these two lists match up, as an example, take vertex 2. In the list from `G.active_edges`, this vertex appears in the pairs describing edges 1, 4, and 5. This is exactly the cyclic order given in `G.active_vert` for this vertex. Note that the edge labels must be in increasing order, due to the implicit ordering of the edges given in the edge list.
+    To see how these two lists match up, as an example, take vertex 2. In the list from `Graph.edge_list`, this vertex appears in the pairs describing edges 1, 4, and 5. This is exactly the cyclic order given in `Graph.vert_cyc_order` for this vertex. Note that the edge labels must be in increasing order, due to the implicit ordering of the edges given in the edge list.
 
-    When the faces are created, they are numbered by their own labels; these labels can be obtained by using `G.active_face_indices`.
+    The faces of the graph are created when `Graph.find_faces()` is invoked. One way to see these faces is to show their boundary edges using `Graph.face_bndy_list`. This gives a list of 1-based signed lists, each giving the boundary edges when traveling around the face in a counterclockwise direction (so the face is always on the left in the direction of travel). The sign for each edge label gives whether this travel around the face is with, or against, the canonical direction of the edge $(u, v)$, from $u$ to $v$.
     """)
     return
 
 
 @app.cell
 def _(G):
-    for arrow_label, face_pair in enumerate(G.active_face_indices):
+    for face_label, face_edge_list in enumerate(G.face_bndy_list):
+        print(f'Face label {face_label} : {face_edge_list}')
+    return
+
+
+@app.cell(hide_code=True)
+def _(mo):
+    mo.md(r"""
+    Each edge appears twice in the list above, for its two incident faces, once with each sign choice. The same information can be given from an edge-oriented view by using `Graph.face_idx_list`. We can determine the face "to the left" or "right" of the edge from this direction. The faces incident to each edge are given as the pair `[left_face_idx, right_face_idx]` in the list below.
+    """)
+    return
+
+
+@app.cell
+def _(G):
+    for arrow_label, face_pair in enumerate(G.face_idx_list):
         print(f'edge {arrow_label} : {face_pair}')
     return
 
@@ -134,7 +149,7 @@ def _(mo):
 
 @app.cell
 def _(G):
-    print(f'Face sizes : {G.active_face_sizes}')
+    print(f'Face sizes : {G.face_size_list}')
     return
 
 
@@ -166,7 +181,7 @@ def _(mo):
 
 @app.cell
 def _(G, H):
-    print(f'G = H : {G == H}')
+    print(f'G == H : {G == H}')
     return
 
 
@@ -189,7 +204,7 @@ def _(G, Graph):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    The same algorithm is used to find all the symmetries of a graph. These are reported as signed edge labels, where a label is positive if its original orientation is preserved, and negative if it is reversed. Again, a `numba` procedure is used to do this, so the first use may take a longer time.
+    The same algorithm is used to find all the symmetries of a graph. These are reported as signed edge labels, where a label is positive if its original canonical orientation is preserved, and negative if it is reversed. Again, a `numba` procedure is used to do this, so the first use may take a longer time.
 
     For the tetrahedron, there are a total of 12 symmetries, as given below. The identity transformation should be the first listed.
     """)
@@ -208,7 +223,7 @@ def _(mo):
     mo.md(r"""
     ## Pachner moves
 
-    Finally, we cover the graph Pachner moves on the graphs; at the moment, only the 2-2 move `Graph.pachner22()` is fully implemented. This move preserves the number of vertices, so the initial and final graphs have the same $|V|$. However, in general they will not be isomorphic graphs. Thus, given an edge label `label`, `Graph.pachner22(label)` performs a 2-2 move on that edge, and returns `[label, perm]`. Here `perm` is a `numpy` array giving the permutation from the original edge labels to the those of the final graph; this is a signed permutation, if any edge orientations are reversed.
+    Finally, we cover the graph Pachner moves on the graphs, starting with the 2-2 move `Graph.pachner22()`. This move preserves the number of vertices, so the initial and final graphs have the same $|V|$. However, in general they will not be isomorphic graphs. Thus, given an edge label `label`, `Graph.pachner22(label)` performs a 2-2 move on that edge, and returns `[label, perm]`. Here `perm` is a `numpy` array giving the permutation from the original edge labels to the those of the final graph; this is a signed permutation, if any edge orientations are reversed.
 
     These graph moves are required to preserve the 3-connectedness of the graph, so if this property would be violated, then the move does not go through. In particular, a 2-2 move cannot be done on any edge of the tetrahedron without giving multiple edges between two vertices. In this case, instead of returning the edge label, it returns `[-1, []]`.
     """)
@@ -238,7 +253,10 @@ def _(Graph):
     # Define Graph object, act with 2-2 move
 
     P = Graph(six_vert_edge_list)
-    P.pachner22(0)
+    new_edge, perm = P.pachner22(0)
+
+    print(f'New edge idx : {new_edge}')
+    print(f'Permutation  : {perm}')
     return (six_vert_edge_list,)
 
 
@@ -290,7 +308,7 @@ def _(D, Graph, cube_edge_list, std_edge_list):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    Currently, `Graph.pachner13()` takes a vertex label, and modifies the graph by changing this vertex into a 3-cycle. However, it does not return any information, such as the mapping of the original edges into the final graph, or the labels of the new vertices and edges.
+    `Graph.pachner13()` takes a vertex label, and modifies the graph by changing this vertex into a 3-cycle. It returns the labels for the newly created edges, which will all be at the end of the graph edge list.
 
     We can show that acting on a vertex of the tetrahedron gives the unique six-vertex graph.
     """)
@@ -302,7 +320,7 @@ def _(Graph, six_vert_edge_list, tet_edge_list):
     # Perform 1-3 move on vertex 0
 
     T = Graph(tet_edge_list)
-    T.pachner13(0)
+    print(f'New edge labels: {T.pachner13(0)}')
 
     # Identify new form of T
 
@@ -314,7 +332,7 @@ def _(Graph, six_vert_edge_list, tet_edge_list):
 @app.cell(hide_code=True)
 def _(mo):
     mo.md(r"""
-    Similarly, `Graph.pachner31()` takes a list of three edge labels (which must form a 3-cycle), and replaces this cycle with a single vertex. This is the inverse operation of the 1-3 move above.
+    Similarly, `Graph.pachner31()` takes a list of three edge labels (which must form a 3-cycle), and replaces this cycle with a single vertex. This is the inverse operation of the 1-3 move above. The function returns the 1-based signed permutation from the *new* edge labels to the *old*. This facilitates mapping over any edge decorations on the graph. Note that this permutation cannot be given the opposite way, since two of the edges are removed.
     """)
     return
 
@@ -324,7 +342,7 @@ def _(Graph, six_vert_edge_list, tet_edge_list):
     # Perform 3-1 move on edges 1, 2, 6
 
     U = Graph(six_vert_edge_list)
-    U.pachner31([1, 2, 6])
+    print(f'Signed permutation: {U.pachner31([1, 2, 6])}')
 
     # Identify new form of U
 
